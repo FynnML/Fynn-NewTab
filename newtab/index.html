@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Fynn New Tab</title>
+
+    <link rel="stylesheet" href="style.css" />
+  </head>
+
+  <body>
+    <main class="app">
+      <!-- Dynamic Background -->
+
+      <video
+        class="background-video"
+        id="backgroundVideo"
+        autoplay
+        muted
+        loop
+        playsinline
+      ></video>
+
+      <div class="overlay"></div>
+
+      <!-- Search -->
+      <section class="search-container">
+        <div class="search-bar">
+          <button class="engine-button" id="engineButton">
+            <img id="engineIcon" src="../assets/icons/brave.png" alt="Brave" />
+          </button>
+
+          <input
+            type="text"
+            id="searchInput"
+            placeholder="Search the Web"
+            autocomplete="off"
+          />
+
+          <button class="search-button" id="searchButton">🔍</button>
+
+          <!-- Search engine menu -->
+          <div class="engine-menu" id="engineMenu">
+            <button class="engine-option" data-engine="brave">
+              <img src="../assets/icons/brave.png" alt="Brave" />
+              <span>Brave</span>
+            </button>
+
+            <button class="engine-option" data-engine="google">
+              <img src="../assets/icons/google.png" alt="Google" />
+              <span>Google</span>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Clock -->
+      <section class="clock-container widget" data-widget="clock">
+        <h1 id="clock">...</h1>
+      </section>
+
+      <p id="date" class="date-widget widget" data-widget="date">
+        Sunday, September 13
+      </p>
+
+      <!-- Greeting -->
+      <section class="greeting widget" data-widget="greeting">
+        <h2 id="greetingText">Good Evening</h2>
+        <p id="greetingMessage">Quiet evening.</p>
+      </section>
+
+      <!-- Notes -->
+      <div class="note-container widget" data-widget="notes">
+        <textarea id="noteText" placeholder="Enter notes here..."></textarea>
+      </div>
+
+      <!-- Dashboard button -->
+      <button class="dashboard-toggle" id="dashboardToggle">
+        <span class="icon">◀</span>
+      </button>
+    </main>
+
+    <!-- Dashboard -->
+    <aside class="dashboard" id="dashboard">
+      <div class="dashboard-header">
+        <div class="dashboard-tabs">
+          <button class="dashboard-tab active" data-tab="wallpapers">
+            Wallpapers
+          </button>
+
+          <button class="dashboard-tab" data-tab="widgets">Widgets</button>
+
+          <button class="dashboard-tab" data-tab="settings">Settings</button>
+        </div>
+      </div>
+
+      <!-- Wallpapers -->
+      <section class="dashboard-content active" id="wallpapers">
+        <h2>Wallpapers</h2>
+        <label class="upload-wallpaper">
+          <input
+            type="file"
+            id="wallpaperInput"
+            accept="video/mp4,image/jpeg,image/png,image/webp"
+            hidden
+          />
+          <span>Upload Wallpaper</span>
+        </label>
+        <div class="wallpaper-list" id="wallpaperList"></div>
+      </section>
+
+      <!-- Widgets -->
+      <section class="dashboard-content" id="widgets">
+        <h2>Widgets</h2>
+
+        <div class="widget-setting">
+          <span>Clock</span>
+          <label class="switch">
+            <input
+              type="checkbox"
+              class="widget-toggle"
+              data-widget="clock"
+              checked
+            />
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <div class="widget-setting">
+          <span>Date</span>
+          <label class="switch">
+            <input
+              type="checkbox"
+              class="widget-toggle"
+              data-widget="date"
+              checked
+            />
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <div class="widget-setting">
+          <span>Greeting</span>
+          <label class="switch">
+            <input
+              type="checkbox"
+              class="widget-toggle"
+              data-widget="greeting"
+              checked
+            />
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <div class="widget-setting">
+          <span>Notes</span>
+          <label class="switch">
+            <input type="checkbox" class="widget-toggle" data-widget="notes" />
+            <span class="slider"></span>
+          </label>
+        </div>
+      </section>
+
+      <!-- Settings -->
+      <section class="dashboard-content" id="settings">
+        <h2>Settings</h2>
+        <div class="empty-state">
+          <p>No settings yet.</p>
+        </div>
+      </section>
+    </aside>
+
+    <script src="app.js"></script>
+  </body>
+</html>

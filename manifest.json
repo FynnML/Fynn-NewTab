@@ -1,0 +1,10 @@
+{
+    "manifest_version": 3,
+    "name": "Fynn New Tab",
+    "version": "0.1.0",
+    "description": "A customizable cinematic new tab for Brave.",
+    "chrome_url_overrides": {
+        "newtab": "newtab/index.html"
+    },
+    "permissions": ["unlimitedStorage"]
+}
