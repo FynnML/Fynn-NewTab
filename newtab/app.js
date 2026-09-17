@@ -1,5 +1,3 @@
-
-
 /* ==========================================================================
    1. APP INITIALIZATION & DATABASE (IndexedDB)
    ========================================================================== */
@@ -35,6 +33,11 @@ function openDatabase() {
 async function initApp() {
   try {
     await openDatabase();
+
+    initializeWidgets();
+    applyWidgetLayout();
+    initializeSettings();
+
     await initializeWallpaperSystem();
     await initializeNotes();
   } catch (error) {
@@ -50,10 +53,31 @@ async function initApp() {
 const WIDGET_SETTINGS_KEY = "fynn-widget-settings";
 const widgetToggles = document.querySelectorAll(".widget-toggle");
 
+const defaultWidgetSettings = {
+  clock: true,
+  date: true,
+  greeting: true,
+  notes: false,
+  search: true,
+};
+
+function getWidgetElements(widgetName) {
+  const widgetTargets = {
+    clock: document.querySelector(".clock-container"),
+    date: document.querySelector(".date-widget"),
+    greeting: document.querySelector(".greeting"),
+    notes: document.querySelector(".notes-widget"),
+    search: document.querySelector(".search-container"),
+  };
+
+  const element = widgetTargets[widgetName];
+
+  return element ? [element] : [];
+}
+
 function setWidgetVisibility(widgetName, visible) {
-  const widgets = document.querySelectorAll(
-    `[data-widget="${widgetName}"].widget`,
-  );
+  const widgets = getWidgetElements(widgetName);
+
   widgets.forEach((widget) => {
     widget.classList.toggle("hidden", !visible);
   });
@@ -61,18 +85,21 @@ function setWidgetVisibility(widgetName, visible) {
 
 function loadWidgetSettings() {
   const saved = localStorage.getItem(WIDGET_SETTINGS_KEY);
-  if (!saved) return;
+
+  if (!saved) {
+    return { ...defaultWidgetSettings };
+  }
 
   try {
-    const settings = JSON.parse(saved);
-    widgetToggles.forEach((toggle) => {
-      const widgetName = toggle.dataset.widget;
-      if (Object.prototype.hasOwnProperty.call(settings, widgetName)) {
-        toggle.checked = settings[widgetName];
-      }
-    });
+    const parsed = JSON.parse(saved);
+
+    return {
+      ...defaultWidgetSettings,
+      ...parsed,
+    };
   } catch (error) {
     console.error("Failed to load widget settings:", error);
+    return { ...defaultWidgetSettings };
   }
 }
 
@@ -85,14 +112,28 @@ function saveWidgetSettings() {
 }
 
 function initializeWidgets() {
-  loadWidgetSettings();
+  const settings = loadWidgetSettings();
 
   widgetToggles.forEach((toggle) => {
-    setWidgetVisibility(toggle.dataset.widget, toggle.checked);
+    const widgetName = toggle.dataset.widget;
+
+    toggle.checked =
+      Object.prototype.hasOwnProperty.call(settings, widgetName)
+        ? settings[widgetName]
+        : true;
+
+    setWidgetVisibility(widgetName, toggle.checked);
 
     toggle.addEventListener("change", () => {
-      setWidgetVisibility(toggle.dataset.widget, toggle.checked);
-      saveWidgetSettings();
+      setWidgetVisibility(widgetName, toggle.checked);
+
+      const currentSettings = loadWidgetSettings();
+      currentSettings[widgetName] = toggle.checked;
+
+      localStorage.setItem(
+        WIDGET_SETTINGS_KEY,
+        JSON.stringify(currentSettings),
+      );
     });
   });
 }
@@ -103,7 +144,7 @@ function updateClock() {
   const time = now.toLocaleTimeString("en-US", {
     hour: "2-digit",
     minute: "2-digit",
-    hour12: true,
+    hour12: timeFormat === "12h",
   });
   const date = now.toLocaleDateString("en-US", {
     weekday: "long",
@@ -118,7 +159,39 @@ function updateClock() {
   document.querySelector("#date").textContent = date;
 }
 
-// --- 2.3 Search Widget ---
+/* ==========================================================================
+   2.3 SETTINGS SYSTEM
+   (moved above the Search Widget section — it was previously declared
+   further down the file, but the Search Widget code below needs these
+   constants immediately, which caused:
+   "Uncaught ReferenceError: Cannot access 'SEARCH_ENGINE_KEY' before initialization")
+   ========================================================================== */
+
+const SEARCH_ENGINE_KEY = "fynn-search-engine";
+const TIME_FORMAT_KEY = "fynn-time-format";
+const SEARCH_FOCUS_EFFECT_KEY = "fynn-search-focus-effect";
+
+const defaultSettings = {
+  searchEngine: "brave",
+  timeFormat: "12h",
+  searchFocusEffect: true,
+};
+
+function loadSetting(key, fallback) {
+  const value = localStorage.getItem(key);
+  return value ?? fallback;
+}
+
+function saveSetting(key, value) {
+  localStorage.setItem(key, value);
+}
+
+let timeFormat = loadSetting(
+  TIME_FORMAT_KEY,
+  defaultSettings.timeFormat,
+);
+
+// --- 2.4 Search Widget ---
 const engineButton = document.querySelector("#engineButton");
 const engineIcon = document.querySelector("#engineIcon");
 const engineMenu = document.querySelector("#engineMenu");
@@ -126,7 +199,26 @@ const searchInput = document.querySelector("#searchInput");
 const searchButton = document.querySelector("#searchButton");
 const engineOptions = document.querySelectorAll(".engine-option");
 
-let currentEngine = "brave";
+let currentEngine = loadSetting(
+  SEARCH_ENGINE_KEY,
+  defaultSettings.searchEngine,
+);
+
+function applySearchEngine(engine) {
+  currentEngine = engine;
+
+  if (engine === "brave") {
+    engineIcon.src = "../assets/icons/brave.png";
+    engineIcon.alt = "Brave";
+    searchInput.placeholder = "Search with Brave";
+  }
+
+  if (engine === "google") {
+    engineIcon.src = "../assets/icons/google.png";
+    engineIcon.alt = "Google";
+    searchInput.placeholder = "Search with Google";
+  }
+}
 
 engineButton.addEventListener("click", (event) => {
   event.stopPropagation();
@@ -136,19 +228,9 @@ engineButton.addEventListener("click", (event) => {
 engineOptions.forEach((option) => {
   option.addEventListener("click", () => {
     const engine = option.dataset.engine;
-    currentEngine = engine;
 
-    if (engine === "brave") {
-      engineIcon.src = "../assets/icons/brave.png";
-      engineIcon.alt = "Brave";
-      searchInput.placeholder = "Search with Brave";
-    }
-
-    if (engine === "google") {
-      engineIcon.src = "../assets/icons/google.png";
-      engineIcon.alt = "Google";
-      searchInput.placeholder = "Search with Google";
-    }
+    applySearchEngine(engine);
+    saveSetting(SEARCH_ENGINE_KEY, engine);
 
     engineMenu.classList.remove("active");
     searchInput.focus();
@@ -247,8 +329,8 @@ const dashboardTabs = document.querySelectorAll(".dashboard-tab");
 const dashboardContents = document.querySelectorAll(".dashboard-content");
 
 dashboardToggle.addEventListener("click", () => {
-  const isOpen = dashboard.classList.toggle("open");
-  document.querySelector(".app").classList.toggle("dashboard-open", isOpen);
+  const isOpen = !dashboard.classList.contains("open");
+  setDashboardOpen(isOpen);
 });
 
 dashboardTabs.forEach((tab) => {
@@ -275,21 +357,24 @@ document.addEventListener("click", (event) => {
   const clickedToggle = dashboardToggle.contains(event.target);
 
   if (!clickedInsideDashboard && !clickedToggle) {
-    dashboard.classList.remove("open");
-    document.querySelector(".app").classList.remove("dashboard-open");
+    setDashboardOpen(false);
   }
 });
 
 document.addEventListener("keydown", (event) => {
   if (event.key !== "Escape") return;
+  if (!dashboard.classList.contains("open")) return;
 
-  if (!dashboard.classList.contains("open")) {
-    return;
-  }
-
-  dashboard.classList.remove("open");
-  document.querySelector(".app").classList.remove("dashboard-open");
+  setDashboardOpen(false);
 });
+
+function setDashboardOpen(isOpen) {
+  dashboard.classList.toggle("open", isOpen);
+  document.querySelector(".app").classList.toggle(
+    "dashboard-open",
+    isOpen,
+  );
+}
 
 /* ==========================================================================
    4. WALLPAPER SYSTEM
@@ -765,6 +850,8 @@ const backgroundDim = document.querySelector("#backgroundDim");
    ========================= */
 
 searchContainer.addEventListener("mouseenter", () => {
+  if (!isSearchFocusEffectEnabled()) return;
+
   backgroundDim.classList.add("active");
 });
 
@@ -779,6 +866,8 @@ searchContainer.addEventListener("mouseleave", () => {
 });
 
 searchInput.addEventListener("focus", () => {
+  if (!isSearchFocusEffectEnabled()) return;
+
   backgroundDim.classList.add("active");
 });
 
@@ -808,4 +897,98 @@ function setWidgetPosition(
 
     applyWidgetLayout();
 
+}
+
+function initializeSettings() {
+  const searchEngineSetting = document.querySelector(
+    "#searchEngineSetting",
+  );
+
+  const timeFormatSetting = document.querySelector(
+    "#timeFormatSetting",
+  );
+
+  const searchFocusEffectSetting = document.querySelector(
+    "#searchFocusEffectSetting",
+  );
+
+  const resetSettingsButton = document.querySelector(
+    "#resetSettingsButton",
+  );
+
+  searchEngineSetting.value = loadSetting(
+    SEARCH_ENGINE_KEY,
+    defaultSettings.searchEngine,
+  );
+
+  timeFormatSetting.value = loadSetting(
+    TIME_FORMAT_KEY,
+    defaultSettings.timeFormat,
+  );
+
+  searchFocusEffectSetting.checked =
+    loadSetting(
+      SEARCH_FOCUS_EFFECT_KEY,
+      String(defaultSettings.searchFocusEffect),
+    ) === "true";
+
+  searchEngineSetting.addEventListener("change", () => {
+    const engine = searchEngineSetting.value;
+
+    saveSetting(SEARCH_ENGINE_KEY, engine);
+    applySearchEngine(engine);
+  });
+
+  timeFormatSetting.addEventListener("change", () => {
+    timeFormat = timeFormatSetting.value;
+
+    saveSetting(TIME_FORMAT_KEY, timeFormat);
+
+    updateClock();
+  });
+
+  searchFocusEffectSetting.addEventListener("change", () => {
+    saveSetting(
+      SEARCH_FOCUS_EFFECT_KEY,
+      String(searchFocusEffectSetting.checked),
+    );
+  });
+
+  resetSettingsButton.addEventListener("click", () => {
+    const confirmed = confirm(
+      "Reset Fynn NewTab settings?",
+    );
+
+    if (!confirmed) return;
+
+    localStorage.removeItem(SEARCH_ENGINE_KEY);
+    localStorage.removeItem(TIME_FORMAT_KEY);
+    localStorage.removeItem(SEARCH_FOCUS_EFFECT_KEY);
+
+    applySearchEngine(defaultSettings.searchEngine);
+
+    timeFormat = defaultSettings.timeFormat;
+    updateClock();
+
+    searchEngineSetting.value = defaultSettings.searchEngine;
+    timeFormatSetting.value = defaultSettings.timeFormat;
+    searchFocusEffectSetting.checked =
+      defaultSettings.searchFocusEffect;
+  });
+
+  applySearchEngine(
+    loadSetting(
+      SEARCH_ENGINE_KEY,
+      defaultSettings.searchEngine,
+    ),
+  );
+}
+
+function isSearchFocusEffectEnabled() {
+  return (
+    loadSetting(
+      SEARCH_FOCUS_EFFECT_KEY,
+      String(defaultSettings.searchFocusEffect),
+    ) === "true"
+  );
 }

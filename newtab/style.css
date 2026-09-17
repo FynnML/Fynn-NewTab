@@ -166,7 +166,11 @@ body {
 }
 
 .widget.hidden {
-  display: none;
+  display: none !important;
+}
+
+.search-container.hidden {
+  display: none !important;
 }
 
 .widget[data-position="top-center"] {
@@ -1325,6 +1329,104 @@ body {
 
 .wallpaper-action.delete-button:hover {
   background: rgba(232, 112, 112, 0.1);
+}
+
+/* ==========================================================================
+   Settings
+   ========================================================================== */
+
+.setting-group {
+  margin-bottom: var(--space-lg);
+}
+
+.setting-group-title {
+  margin-bottom: var(--space-xs);
+
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 600;
+
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.setting-item {
+  min-height: 58px;
+}
+
+.setting-item > div:first-child {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.setting-item strong {
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.setting-item span {
+  color: var(--text-muted);
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.setting-select {
+  height: 32px;
+  min-width: 90px;
+
+  padding: 0 28px 0 10px;
+
+  border: 1px solid var(--glass-border-soft);
+  border-radius: var(--radius-sm);
+
+  outline: none;
+
+  background: var(--surface-glass);
+  color: var(--text-primary);
+
+  font-family: inherit;
+  font-size: 12px;
+
+  cursor: pointer;
+}
+
+.setting-select:focus {
+  border-color: var(--glass-border);
+}
+
+.setting-select option {
+  background: #111;
+  color: #fff;
+}
+
+.reset-settings-button {
+  width: 100%;
+  height: 42px;
+
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-md);
+
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-secondary);
+
+  font-family: inherit;
+  font-size: 12px;
+
+  cursor: pointer;
+
+  transition:
+    background var(--transition-fast),
+    color var(--transition-fast),
+    border-color var(--transition-fast);
+}
+
+.reset-settings-button:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.14);
+  color: var(--text-primary);
 }
 
 /* ==========================================================================

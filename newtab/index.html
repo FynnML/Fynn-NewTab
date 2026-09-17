@@ -33,7 +33,7 @@
         </div>
 
         <!-- Search -->
-        <section class="search-container" id="searchContainer">
+        <section class="search-container" id="searchContainer" data-widget="search">
           <div class="search-bar">
             <button class="engine-button" id="engineButton">
               <img id="engineIcon" src="../assets/icons/brave.png" alt="Brave" />
@@ -185,8 +185,68 @@
       <!-- Settings -->
       <section class="dashboard-content" id="settings">
         <h2>Settings</h2>
-        <div class="empty-state">
-          <p>No settings yet.</p>
+
+        <div class="setting-group">
+          <div class="setting-group-title">Search</div>
+
+          <div class="setting-item">
+            <div>
+              <strong>Default search engine</strong>
+              <span>Used when you open a new tab</span>
+            </div>
+
+            <select id="searchEngineSetting" class="setting-select">
+              <option value="brave">Brave</option>
+              <option value="google">Google</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="setting-group">
+          <div class="setting-group-title">Clock</div>
+
+          <div class="setting-item">
+            <div>
+              <strong>Time format</strong>
+              <span>Choose how the clock is displayed</span>
+            </div>
+
+            <select id="timeFormatSetting" class="setting-select">
+              <option value="12h">12-hour</option>
+              <option value="24h">24-hour</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="setting-group">
+          <div class="setting-group-title">Appearance</div>
+
+          <div class="setting-item">
+            <div>
+              <strong>Search focus effect</strong>
+              <span>Dim and blur wallpaper when searching</span>
+            </div>
+
+            <label class="switch">
+              <input
+                type="checkbox"
+                id="searchFocusEffectSetting"
+              />
+              <span class="slider"></span>
+            </label>
+          </div>
+        </div>
+
+        <div class="setting-group danger-group">
+          <div class="setting-group-title">Reset</div>
+
+          <button
+            type="button"
+            class="reset-settings-button"
+            id="resetSettingsButton"
+          >
+            Reset settings
+          </button>
         </div>
       </section>
     </aside>
