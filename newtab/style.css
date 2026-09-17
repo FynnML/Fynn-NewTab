@@ -1,3 +1,47 @@
+/* ==========================================================================
+   Design tokens
+   ========================================================================== */
+
+:root {
+  --text-primary: #f5f7f6;
+  --text-secondary: rgba(245, 247, 246, 0.72);
+  --text-muted: rgba(245, 247, 246, 0.45);
+
+  --accent: #20c9b0;
+  --accent-contrast: #071411;
+
+  --glass-bg: rgba(255, 255, 255, 0.06);
+  --glass-bg-strong: rgba(18, 18, 18, 0.55);
+  --glass-bg-panel: rgba(16, 16, 16, 0.72);
+  --glass-border: rgba(255, 255, 255, 0.14);
+  --glass-border-soft: rgba(255, 255, 255, 0.08);
+
+  --blur-sm: blur(12px);
+  --blur-md: blur(18px);
+  --blur-lg: blur(28px);
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+
+  --space-2xs: 4px;
+  --space-xs: 8px;
+  --space-sm: 12px;
+  --space-md: 18px;
+  --space-lg: 28px;
+  --space-xl: 40px;
+
+  --shadow-soft: 0 10px 34px rgba(0, 0, 0, 0.22);
+  --shadow-strong: 0 18px 50px rgba(0, 0, 0, 0.35);
+
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ==========================================================================
+   Reset & base
+   ========================================================================== */
+
 * {
   box-sizing: border-box;
 }
@@ -8,12 +52,12 @@ body {
   height: 100%;
   margin: 0;
   overflow: hidden;
-  background-color: #050505; /* thêm dòng này */
+  background-color: #050505;
 }
 
 body {
-  font-family: 'Inter', sans-serif;
-  color: white;
+  font-family: "Inter", sans-serif;
+  color: var(--text-primary);
 }
 
 .app {
@@ -23,910 +67,30 @@ body {
   overflow: hidden;
 }
 
-/* Background */
-
-.background {
-  position: absolute;
-  inset: 0;
-
-  background-image: url("../assets/background.jpg");
-  background-size: cover;
-  background-position: center;
-
-  z-index: 0;
-}
-
-/* Overlay giúp chữ dễ đọc */
-
-.overlay {
-  position: absolute;
-  inset: 0;
-
-  background: linear-gradient(
-    to bottom,
-    rgba(0, 0, 0, 0.15),
-    rgba(0, 0, 0, 0.35)
-  );
-
-  z-index: 1;
-}
-
-/* Clock */
-
-.clock-container {
-  position: absolute;
-
-  text-align: center;
-  z-index: 2;
-}
-
-.clock-container h1 {
-  margin: 0;
-
-  font-size: clamp(48px, 5vw, 80px);
-  font-weight: 600;
-}
-
-.clock-container h1 span {
-  font-size: 0.4em;
-  font-weight: 400;
-}
-
-/* Greeting */
-
-.greeting {
-  position: absolute;
-
-  z-index: 2;
-  padding: 12px 18px;
-  background: rgba(10, 15, 10, 0.35);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-}
-
-.greeting h2 {
-  margin: 0;
-
-  font-size: 36px;
-  font-style: italic;
-}
-
-.greeting p {
-  margin-top: 4px;
-
-  font-size: 13px;
-  color: rgba(255, 255, 255, 0.7);
-}
-
-/* =========================
-   Dashboard Toggle
-   ========================= */
-
-.dashboard-toggle {
-  position: fixed;
-
-  right: 0;
-  bottom: 5%;
-
-  width: 42px;
-  height: 42px;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  border: none;
-  border-radius: 8px 0 0 8px;
-
-  background: rgba(20, 20, 20, 0.7);
-  color: white;
-
-  font-size: 20px;
-
-  cursor: pointer;
-
-  z-index: 101;
-
-  transition:
-    right 0.35s cubic-bezier(0.22, 1, 0.36, 1),
-    background 0.2s ease;
-}
-
-.dashboard-toggle .icon {
-  display: inline-block;
-  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.dashboard-toggle:hover {
-  background: rgba(50, 50, 50, 0.9);
-}
-
-/* Khi dashboard mở */
-
-.app.dashboard-open .dashboard-toggle {
-  right: min(380px, 90vw);
-}
-
-.app.dashboard-open .dashboard-toggle .icon {
-  transform: rotate(180deg);
-}
-
-/* =========================
-   Search
-   ========================= */
-
-.search-container {
-  position: absolute;
-
-  top: 44%;
-  left: 50%;
-
-  transform: translate(-50%, -50%);
-
-  z-index: 5;
-}
-
-.search-bar {
-  position: relative;
-
-  width: min(520px, 80vw);
-  height: 52px;
-
-  display: flex;
-  align-items: center;
-
-  padding: 0 8px;
-
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  border-radius: 10px;
-
-  background: rgba(30, 25, 30, 0.65);
-
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
-
-  transition:
-    border-color 0.2s ease,
-    background 0.2s ease;
-}
-
-.search-bar:focus-within {
-  border-color: rgba(255, 255, 255, 0.35);
-
-  background: rgba(30, 25, 30, 0.78);
-}
-
-/* Engine button */
-
-.engine-button {
-  width: 38px;
-  height: 38px;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  border: none;
-  border-radius: 8px;
-
-  background: transparent;
-
-  color: white;
-
-  font-size: 18px;
-
-  cursor: pointer;
-}
-
-.engine-button:hover {
-  background: rgba(255, 255, 255, 0.1);
-}
-
-/* Input */
-
-#searchInput {
-  flex: 1;
-
-  height: 100%;
-
-  padding: 0 10px;
-
-  border: none;
-  outline: none;
-
-  background: transparent;
-
-  color: white;
-
-  font-size: 15px;
-}
-
-#searchInput::placeholder {
-  color: rgba(255, 255, 255, 0.55);
-}
-
-/* Search button */
-
-.search-button {
-  width: 38px;
-  height: 38px;
-
-  border: none;
-  border-radius: 8px;
-
-  background: transparent;
-
-  color: white;
-
-  cursor: pointer;
-
-  font-size: 16px;
-}
-
-.search-button:hover {
-  background: rgba(255, 255, 255, 0.1);
-}
-
-/* =========================
-   Engine menu
-   ========================= */
-
-.engine-menu {
-  position: absolute;
-
-  top: calc(100% + 8px);
-  left: 0;
-
-  width: 190px;
-
-  padding: 8px;
-
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 10px;
-
-  background: rgba(25, 25, 25, 0.95);
-
-  backdrop-filter: blur(20px);
-
-  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.45);
-
-  opacity: 0;
-  visibility: hidden;
-
-  transform: translateY(-5px);
-
-  transition:
-    opacity 0.18s ease,
-    transform 0.18s ease,
-    visibility 0.18s;
-}
-
-.engine-menu.active {
-  opacity: 1;
-  visibility: visible;
-
-  transform: translateY(0);
-}
-
-.engine-option {
-  width: 100%;
-  height: 42px;
-
-  display: flex;
-  align-items: center;
-
-  gap: 12px;
-
-  padding: 0 12px;
-
-  border: none;
-  border-radius: 7px;
-
-  background: transparent;
-
-  color: rgba(255, 255, 255, 0.85);
-
-  font-size: 14px;
-
-  cursor: pointer;
-
-  text-align: left;
-}
-
-.engine-option:hover {
-  background: rgba(255, 255, 255, 0.1);
-}
-
-/* Search engine icons */
-
-.engine-button img {
-  width: 22px;
-  height: 22px;
-
-  object-fit: contain;
-}
-
-.engine-option img {
-  width: 22px;
-  height: 22px;
-
-  object-fit: contain;
-}
-
-/* =========================
-   Dashboard
-   ========================= */
-
-.dashboard {
-  position: fixed;
-
-  top: 0;
-  right: 0;
-
-  width: min(380px, 90vw);
-  height: 100vh;
-
-  padding: 20px;
-
-  background: rgba(20, 20, 20, 0.92);
-
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-
-  border-left: 1px solid rgba(255, 255, 255, 0.1);
-
-  box-shadow: -15px 0 50px rgba(0, 0, 0, 0.35);
-
-  transform: translateX(100%);
-
-  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
-
-  z-index: 100;
-}
-
-.dashboard.open {
-  transform: translateX(0);
-}
-
-/* Tabs */
-
-.dashboard-tabs {
-  display: flex;
-  gap: 8px;
-
-  padding-bottom: 15px;
-
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.dashboard-tab {
-  flex: 1;
-
-  padding: 10px 8px;
-
-  border: none;
-  border-radius: 8px;
-
-  background: transparent;
-
-  color: rgba(255, 255, 255, 0.5);
-
-  font-size: 13px;
-
-  cursor: pointer;
-
-  transition: 0.2s ease;
-}
-
-.dashboard-tab:hover {
-  background: rgba(255, 255, 255, 0.07);
-
-  color: white;
-}
-
-.dashboard-tab.active {
-  background: rgba(255, 255, 255, 0.1);
-
-  color: white;
-}
-
-/* Content */
-
-.dashboard-content {
-  display: none;
-
-  padding-top: 20px;
-}
-
-.dashboard-content.active {
-  display: block;
-}
-
-.dashboard-content h2 {
-  margin: 0 0 20px;
-
-  font-size: 18px;
-}
-
-/* Empty state */
-
-.empty-state {
-  padding: 30px 15px;
-
-  border: 1px dashed rgba(255, 255, 255, 0.15);
-  border-radius: 12px;
-
-  text-align: center;
-
-  color: rgba(255, 255, 255, 0.6);
-}
-
-.empty-state p {
-  margin: 0 0 8px;
-
-  color: white;
-}
-
-.empty-state span {
-  font-size: 12px;
-}
-
-/* Widget settings */
-
-.widget-setting,
-.setting-item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-
-  min-height: 52px;
-
-  padding: 0 14px;
-
-  margin-bottom: 8px;
-
-  border-radius: 10px;
-
-  background: rgba(255, 255, 255, 0.05);
-
-  color: rgba(255, 255, 255, 0.85);
-}
-
-/* Switch */
-
-.switch {
-  position: relative;
-
-  width: 42px;
-  height: 24px;
-
-  display: inline-block;
-}
-
-.switch input {
-  display: none;
-}
-
-.slider {
-  position: absolute;
-  inset: 0;
-
-  border-radius: 20px;
-
-  background: rgba(255, 255, 255, 0.15);
-
-  cursor: pointer;
-
-  transition: 0.2s ease;
-}
-
-.slider::before {
-  content: "";
-
-  position: absolute;
-
-  width: 18px;
-  height: 18px;
-
-  left: 3px;
-  top: 3px;
-
-  border-radius: 50%;
-
-  background: white;
-
-  transition: 0.2s ease;
-}
-
-.switch input:checked + .slider {
-  background: #20c9b0;
-}
-
-.switch input:checked + .slider::before {
-  transform: translateX(18px);
-}
-
-/* =========================
-   Video Background
-   ========================= */
-
-.background-video {
-  position: absolute;
-
-  inset: 0;
-
-  width: 100%;
-  height: 100%;
-
-  object-fit: cover;
-
-  z-index: 0;
-
-  display: none;
-}
-
-.background-video.active {
-  display: block;
-}
-
-/* =========================
-   Wallpaper Manager
-   ========================= */
-
-.upload-wallpaper {
-  width: 100%;
-  height: 48px;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  margin-bottom: 18px;
-
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 10px;
-
-  background: rgba(255, 255, 255, 0.06);
-
-  color: white;
-
-  font-size: 14px;
-  font-weight: 600;
-
-  cursor: pointer;
-
-  transition: 0.2s ease;
-}
-
-.upload-wallpaper:hover {
-  background: rgba(255, 255, 255, 0.1);
-
-  border-color: rgba(255, 255, 255, 0.25);
-}
-
-/* Wallpaper list */
-
-.wallpaper-list {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-/* Wallpaper card */
-
-.wallpaper-card {
-  padding: 10px;
-
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 12px;
-
-  background: rgba(255, 255, 255, 0.04);
-}
-
-.wallpaper-card.primary {
-  border-color: #20c9b0;
-}
-
-/* Preview */
-
-.wallpaper-preview {
-  position: relative;
-
-  width: 100%;
-  height: 110px;
-
-  overflow: hidden;
-
-  border-radius: 8px;
-
-  background: #111;
-}
-
-.wallpaper-preview img,
-.wallpaper-preview video {
-  width: 100%;
-  height: 100%;
-
-  object-fit: cover;
-}
-
-/* Information */
-
-.wallpaper-info {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-
-  margin-top: 10px;
-}
-
-.wallpaper-name {
-  min-width: 0;
-
-  overflow: hidden;
-
-  color: white;
-
-  font-size: 13px;
-
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.wallpaper-size {
-  margin-left: 8px;
-
-  color: rgba(255, 255, 255, 0.45);
-
-  font-size: 11px;
-
-  white-space: nowrap;
-}
-
-/* Actions */
-
-.wallpaper-actions {
-  display: flex;
-  gap: 6px;
-
-  margin-top: 8px;
-}
-
-.wallpaper-action {
-  flex: 1;
-
-  height: 32px;
-
-  border: none;
-  border-radius: 7px;
-
-  background: rgba(255, 255, 255, 0.07);
-
-  color: rgba(255, 255, 255, 0.8);
-
-  cursor: pointer;
-
-  font-size: 12px;
-}
-
-.wallpaper-action:hover {
-  background: rgba(255, 255, 255, 0.13);
-}
-
-.wallpaper-action.primary-button {
-  background: #20c9b0;
-
-  color: #071411;
-}
-
-.wallpaper-action.delete-button {
-  color: #ff8b8b;
-}
-
-/* =========================
-   Widget Visibility
-   ========================= */
-
-.widget.hidden {
-  display: none;
-}
-
-.date-widget {
-  position: absolute;
-
-  margin: 0;
-
-  z-index: 2;
-
-  font-size: 20px;
-  font-weight: 600;
-
-  text-align: center;
-}
-
+/* ==========================================================================
+   Background
+   ========================================================================== */
+
+.background-video,
 .background-image {
   position: absolute;
   inset: 0;
+
   width: 100%;
   height: 100%;
+
   object-fit: cover;
+
   z-index: 0;
   display: none;
 }
+
+.background-video.active,
 .background-image.active {
   display: block;
 }
 
-/* =========================
-   Notes Widget
-   ========================= */
-
-.notes-widget {
-  position: absolute;
-
-  width: min(320px, 80vw);
-
-  padding: 14px;
-
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 14px;
-
-  background: rgba(20, 20, 20, 0.55);
-
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
-
-  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.25);
-
-  z-index: 4;
-}
-
-.notes-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-
-  margin-bottom: 12px;
-}
-
-.notes-header h3 {
-  margin: 0;
-
-  font-size: 16px;
-}
-
-.notes-header span {
-  display: block;
-
-  margin-top: 3px;
-
-  color: rgba(255, 255, 255, 0.45);
-
-  font-size: 11px;
-}
-
-.notes-add {
-  width: 30px;
-  height: 30px;
-
-  border: none;
-  border-radius: 8px;
-
-  background: rgba(255, 255, 255, 0.08);
-
-  color: white;
-
-  font-size: 20px;
-  line-height: 1;
-
-  cursor: pointer;
-
-  transition: 0.2s ease;
-}
-
-.notes-add:hover {
-  background: rgba(255, 255, 255, 0.14);
-}
-
-/* Note */
-
-.note-item {
-  position: relative;
-
-  padding: 10px;
-
-  margin-bottom: 8px;
-
-  border-radius: 10px;
-
-  background: rgba(255, 255, 255, 0.05);
-}
-
-.note-item:last-child {
-  margin-bottom: 0;
-}
-
-.note-item.pinned {
-  border: 1px solid rgba(255, 255, 255, 0.15);
-}
-
-.note-content {
-  display: flex;
-  align-items: flex-start;
-
-  gap: 8px;
-}
-
-.note-check {
-  margin-top: 3px;
-}
-
-.note-text {
-  flex: 1;
-
-  min-width: 0;
-
-  color: rgba(255, 255, 255, 0.88);
-
-  font-size: 13px;
-
-  line-height: 1.5;
-
-  word-break: break-word;
-}
-
-.note-text.completed {
-  color: rgba(255, 255, 255, 0.35);
-
-  text-decoration: line-through;
-}
-
-.note-actions {
-  display: flex;
-  gap: 6px;
-
-  margin-top: 8px;
-}
-
-.note-action {
-  height: 26px;
-
-  padding: 0 8px;
-
-  border: none;
-  border-radius: 6px;
-
-  background: rgba(255, 255, 255, 0.05);
-
-  color: rgba(255, 255, 255, 0.6);
-
-  cursor: pointer;
-
-  font-size: 11px;
-}
-
-.note-action:hover {
-  background: rgba(255, 255, 255, 0.1);
-
-  color: white;
-}
-
-.note-empty {
-  padding: 20px 10px;
-
-  color: rgba(255, 255, 255, 0.35);
-
-  font-size: 12px;
-
-  text-align: center;
-}
-
-/* =========================
-   Background Interaction
-   ========================= */
+/* Dims/blurs the wallpaper slightly on search focus, for readability */
 
 .background-dim {
   position: absolute;
@@ -948,25 +112,569 @@ body {
 }
 
 .background-dim.active {
-  background: rgba(0, 0, 0, 0.48);
+  background: rgba(0, 0, 0, 0.45);
 
-  backdrop-filter: blur(5px);
-  -webkit-backdrop-filter: blur(5px);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
 }
 
-/* =========================
-   Note Editor
-   ========================= */
+/* Soft gradient so text stays legible on any wallpaper */
+
+.overlay {
+  position: absolute;
+  inset: 0;
+
+  background: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.1) 0%,
+    rgba(0, 0, 0, 0.05) 40%,
+    rgba(0, 0, 0, 0.7) 100%
+  );
+
+  z-index: 1;
+}
+
+/* ==========================================================================
+   Widget base (generic position system — used by Notes; kept for future
+   customizable widgets)
+   ========================================================================== */
+
+.widget {
+  position: absolute;
+}
+
+.widget.hidden {
+  display: none;
+}
+
+.widget[data-position="top-center"] {
+  top: 6%;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.widget[data-position="top-left"] {
+  top: 5%;
+  left: 5%;
+}
+
+.widget[data-position="top-right"] {
+  top: 5%;
+  right: 5%;
+}
+
+.widget[data-position="bottom-center"] {
+  left: 50%;
+  bottom: 8%;
+  transform: translateX(-50%);
+}
+
+.widget[data-position="bottom-left"] {
+  left: 5%;
+  bottom: 8%;
+}
+
+.widget[data-position="bottom-right"] {
+  right: 5%;
+  bottom: 8%;
+}
+
+.widget[data-position="middle-left"] {
+  top: 50%;
+  left: 5%;
+  transform: translateY(-50%);
+}
+
+.widget[data-position="middle-right"] {
+  top: 50%;
+  right: 5%;
+  transform: translateY(-50%);
+}
+
+.widget[data-position="center"] {
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+/* ==========================================================================
+   Hero — Greeting + Clock + Date + Search, one centered column.
+   This container ignores the generic widget position system on purpose:
+   its children are always laid out top-to-bottom, so nothing below can
+   overlap the search bar regardless of viewport size.
+   ========================================================================== */
+
+.hero {
+  position: absolute;
+
+  top: 22%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+
+  z-index: 5;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-md);
+
+  width: min(560px, 92vw);
+
+  text-align: center;
+}
+
+/* Greeting — small, quiet label above the clock (no card, no blur) */
+
+.greeting {
+  position: absolute;
+
+  padding: 0;
+  margin: 0;
+}
+
+#greetingText ,.greeting h2 {
+  margin: 0;
+
+  font-size: 36px;
+  font-weight: 500;
+  font-style: italic;
+  letter-spacing: 0.2px;
+
+  color: var(--text-primary);
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
+}
+ 
+#greetingMessage ,.greeting p {
+  margin: 4px 0 0;
+
+  font-size: 13px;
+  color: var(--text-secondary);
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
+}
+
+/* Clock + Date */
+
+.clock-group {
+  position: relative;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+#clockGroup .clock-container,
+#clockGroup .date-widget {
+  position: relative;
+  inset: auto;
+  transform: none;
+}
+
+.clock-container h1 {
+  margin: 0;
+
+  font-size: clamp(56px, 8vw, 104px);
+  font-weight: 700;
+  letter-spacing: -1.5px;
+  line-height: 1;
+
+  color: var(--text-primary);
+  text-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+}
+
+.clock-container h1 span {
+  font-size: 0.34em;
+  font-weight: 500;
+  margin-left: 4px;
+  color: var(--text-secondary);
+}
+
+.date-widget {
+  margin: 0;
+}
+
+.date-widget p {
+  margin: 0;
+
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+
+  color: var(--text-secondary);
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
+}
+
+/* ==========================================================================
+   Search
+   ========================================================================== */
+
+.search-container {
+  position: relative;
+
+  width: 100%;
+
+  margin-top: var(--space-xl);
+  top: 70px;
+}
+
+.search-bar {
+  position: relative;
+
+  width: min(480px, 100%);
+  height: 50px;
+  margin: 0 auto;
+
+  display: flex;
+  align-items: center;
+
+  padding: 0 6px;
+
+  border: 0.25px solid var(--glass-border-soft);
+  border-radius: var(--radius-md);
+
+  background: rgba(20, 20, 20, 0.32);
+
+  backdrop-filter: var(--blur-md);
+  -webkit-backdrop-filter: var(--blur-md);
+
+  box-shadow: var(--shadow-soft);
+
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease;
+}
+
+.search-bar:focus-within {
+  border-color: var(--glass-border);
+  background: rgba(20, 20, 20, 0.48);
+}
+
+.engine-button {
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: none;
+  border-radius: var(--radius-md);
+
+  background: transparent;
+  color: var(--text-primary);
+
+  cursor: pointer;
+}
+
+.engine-button:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.engine-button img,
+.engine-option img {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+}
+
+#searchInput {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+
+  padding: 0 10px;
+
+  border: none;
+  outline: none;
+  background: transparent;
+
+  color: var(--text-primary);
+  font-size: 14px;
+  font-family: inherit;
+}
+
+#searchInput::placeholder {
+  color: var(--text-muted);
+}
+
+.search-button {
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+
+  border: none;
+  border-radius: var(--radius-md);
+
+  background: transparent;
+  color: var(--text-primary);
+
+  cursor: pointer;
+  font-size: 15px;
+}
+
+.search-button:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+/* Engine menu */
+
+.engine-menu {
+  position: absolute;
+
+  top: calc(100% + 8px);
+  left: 0;
+
+  width: 180px;
+  padding: 6px;
+
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+
+  background: rgba(22, 22, 22, 0.92);
+  backdrop-filter: var(--blur-lg);
+  -webkit-backdrop-filter: var(--blur-lg);
+
+  box-shadow: var(--shadow-strong);
+
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-6px);
+
+  transition:
+    opacity 0.18s ease,
+    transform 0.18s ease,
+    visibility 0.18s;
+}
+
+.engine-menu.active {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.engine-option {
+  width: 100%;
+  height: 40px;
+
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  padding: 0 10px;
+
+  border: none;
+  border-radius: var(--radius-sm);
+
+  background: transparent;
+  color: var(--text-secondary);
+
+  font-size: 13px;
+  font-family: inherit;
+  text-align: left;
+
+  cursor: pointer;
+}
+
+.engine-option:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-primary);
+}
+
+/* ==========================================================================
+   Notes widget (opt-in, off by default — bottom-right)
+   ========================================================================== */
+
+.notes-widget {
+  width: min(300px, 84vw);
+  max-height: 70vh;
+
+  display: flex;
+  flex-direction: column;
+
+  padding: var(--space-md);
+
+  border: 1px solid var(--glass-border-soft);
+  border-radius: var(--radius-xl);
+
+  background: var(--glass-bg-strong);
+  backdrop-filter: var(--blur-md);
+  -webkit-backdrop-filter: var(--blur-md);
+
+  box-shadow: var(--shadow-soft);
+
+  z-index: 4;
+}
+
+.notes-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  margin-bottom: var(--space-sm);
+}
+
+.notes-header h3 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.notes-header span {
+  display: block;
+  margin-top: 2px;
+
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.notes-add {
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+
+  border: none;
+  border-radius: var(--radius-sm);
+
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-primary);
+
+  font-size: 18px;
+  line-height: 1;
+
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.notes-add:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.notes-list {
+  overflow-y: auto;
+}
+
+.note-item {
+  position: relative;
+
+  padding: var(--space-sm);
+  margin-bottom: var(--space-xs);
+
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.045);
+}
+
+.note-item:last-child {
+  margin-bottom: 0;
+}
+
+.note-item.pinned {
+  border: 1px solid var(--glass-border);
+}
+
+/* Grid, not flex: keeps the checkbox as one left column and stacks
+   the title above the content in the right column, regardless of the
+   three items' order in the DOM. */
+
+.note-content {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  column-gap: 8px;
+}
+
+.note-check {
+  grid-column: 1;
+  grid-row: 1 / 3;
+
+  margin-top: 4px;
+  accent-color: var(--accent);
+}
+
+.note-title {
+  grid-column: 2;
+  grid-row: 1;
+  min-width: 0;
+
+  font-size: 13px;
+  font-weight: 600;
+
+  color: var(--text-primary);
+  word-break: break-word;
+}
+
+.note-title:empty {
+  display: none;
+}
+
+.note-title.completed {
+  color: var(--text-muted);
+  text-decoration: line-through;
+  font-weight: 500;
+}
+
+.note-text {
+  grid-column: 2;
+  grid-row: 2;
+  min-width: 0;
+
+  margin-top: 2px;
+
+  font-size: 12px;
+  line-height: 1.5;
+
+  color: var(--text-secondary);
+  word-break: break-word;
+}
+
+.note-text.completed {
+  color: var(--text-muted);
+  text-decoration: line-through;
+}
+
+.note-actions {
+  display: flex;
+  gap: 6px;
+
+  margin-top: var(--space-xs);
+}
+
+.note-action {
+  height: 24px;
+  padding: 0 8px;
+
+  border: none;
+  border-radius: 6px;
+
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-muted);
+
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.note-action:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-primary);
+}
+
+.note-empty {
+  padding: var(--space-lg) var(--space-sm);
+
+  color: var(--text-muted);
+  font-size: 12px;
+  text-align: center;
+}
+
+/* Note editor */
 
 .note-editor {
   display: none;
 
-  margin-top: 12px;
+  margin-top: var(--space-sm);
+  padding: var(--space-sm);
 
-  padding: 12px;
-
-  border-radius: 10px;
-
+  border-radius: var(--radius-md);
   background: rgba(0, 0, 0, 0.2);
 }
 
@@ -978,247 +686,445 @@ body {
 .note-editor textarea {
   width: 100%;
 
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 8px;
-
+  border: 1px solid var(--glass-border-soft);
+  border-radius: var(--radius-sm);
   outline: none;
 
   background: rgba(255, 255, 255, 0.05);
-
-  color: white;
+  color: var(--text-primary);
 
   font-family: inherit;
   font-size: 13px;
 }
 
 .note-editor input {
-  height: 36px;
-
+  height: 34px;
   padding: 0 10px;
-
-  margin-bottom: 8px;
+  margin-bottom: var(--space-xs);
 }
 
 .note-editor textarea {
-  min-height: 100px;
-
+  min-height: 90px;
   padding: 10px;
-
   resize: vertical;
 }
 
 .note-editor input::placeholder,
 .note-editor textarea::placeholder {
-  color: rgba(255, 255, 255, 0.35);
+  color: var(--text-muted);
 }
 
 .note-editor input:focus,
 .note-editor textarea:focus {
-  border-color: rgba(255, 255, 255, 0.2);
+  border-color: var(--glass-border);
 }
 
 .note-editor-actions {
   display: flex;
   justify-content: flex-end;
-
   gap: 8px;
 
-  margin-top: 8px;
+  margin-top: var(--space-xs);
 }
 
 .note-editor-button {
-  height: 32px;
-
+  height: 30px;
   padding: 0 12px;
 
   border: none;
-  border-radius: 7px;
-
-  cursor: pointer;
+  border-radius: var(--radius-sm);
 
   font-size: 12px;
+  cursor: pointer;
 }
 
 .note-editor-button.cancel {
   background: rgba(255, 255, 255, 0.06);
-
-  color: rgba(255, 255, 255, 0.65);
+  color: var(--text-secondary);
 }
 
 .note-editor-button.save {
-  background: #20c9b0;
-
-  color: #071411;
+  background: var(--accent);
+  color: var(--accent-contrast);
+  font-weight: 600;
 }
 
+/* ==========================================================================
+   Dashboard toggle
+   ========================================================================== */
 
-/* =========================
-   Widget Layout System
-   ========================= */
+.dashboard-toggle {
+  position: fixed;
 
-.widget {
-    position: absolute;
+  right: 0;
+  bottom: 5%;
+
+  width: 40px;
+  height: 40px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: none;
+  border-radius: var(--radius-md) 0 0 var(--radius-md);
+
+  background: rgba(20, 20, 20, 0.55);
+  backdrop-filter: var(--blur-sm);
+  -webkit-backdrop-filter: var(--blur-sm);
+
+  color: var(--text-primary);
+  font-size: 18px;
+
+  cursor: pointer;
+  z-index: 101;
+
+  transition:
+    right 0.35s var(--ease),
+    background 0.2s ease;
 }
 
-
-/* Top center */
-
-.widget[data-position="top-center"] {
-    top: 8%;
-    left: 50%;
-
-    transform: translateX(-50%);
+.dashboard-toggle .icon {
+  display: inline-block;
+  transition: transform 0.35s var(--ease);
 }
 
-
-/* Bottom left */
-
-.widget[data-position="bottom-left"] {
-    left: 5%;
-    bottom: 10%;
+.dashboard-toggle:hover {
+  background: rgba(40, 40, 40, 0.75);
 }
 
-
-/* Bottom center */
-
-.widget[data-position="bottom-center"] {
-    left: 50%;
-    bottom: 8%;
-
-    transform: translateX(-50%);
+.app.dashboard-open .dashboard-toggle {
+  right: min(360px, 90vw);
 }
 
-
-/* Bottom right */
-
-.widget[data-position="bottom-right"] {
-    right: 6%;
-    bottom: 8%;
+.app.dashboard-open .dashboard-toggle .icon {
+  transform: rotate(180deg);
 }
 
-/* Top left */
+/* ==========================================================================
+   Dashboard
+   ========================================================================== */
 
-.widget[data-position="top-left"] {
-    top: 5%;
-    left: 5%;
+.dashboard {
+  position: fixed;
+
+  top: 0;
+  right: 0;
+
+  width: min(360px, 90vw);
+  height: 100vh;
+
+  padding: var(--space-lg) var(--space-md);
+
+  background: var(--glass-bg-panel);
+  backdrop-filter: var(--blur-lg);
+  -webkit-backdrop-filter: var(--blur-lg);
+
+  border-left: 1px solid var(--glass-border-soft);
+  box-shadow: -15px 0 50px rgba(0, 0, 0, 0.3);
+
+  transform: translateX(100%);
+  transition: transform 0.35s var(--ease);
+
+  overflow-y: auto;
+
+  z-index: 100;
 }
 
-
-/* Top right */
-
-.widget[data-position="top-right"] {
-    top: 5%;
-    right: 5%;
+.dashboard.open {
+  transform: translateX(0);
 }
 
+.dashboard-tabs {
+  display: flex;
+  gap: 6px;
 
-/* Center */
-
-.widget[data-position="center"] {
-    top: 50%;
-    left: 50%;
-
-    transform: translate(
-        -50%,
-        -50%
-    );
+  padding-bottom: var(--space-sm);
+  border-bottom: 1px solid var(--glass-border-soft);
 }
 
+.dashboard-tab {
+  flex: 1;
 
-/* Middle left */
+  padding: 9px 6px;
 
-.widget[data-position="middle-left"] {
-    top: 50%;
-    left: 5%;
+  border: none;
+  border-radius: var(--radius-sm);
 
-    transform: translateY(-50%);
+  background: transparent;
+  color: var(--text-muted);
+
+  font-size: 12.5px;
+  font-family: inherit;
+
+  cursor: pointer;
+  transition: 0.2s ease;
 }
 
-
-/* Middle right */
-
-.widget[data-position="middle-right"] {
-    top: 50%;
-    right: 5%;
-
-    transform: translateY(-50%);
+.dashboard-tab:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text-primary);
 }
 
-/* =========================
-   Responsive Layout
-   ========================= */
+.dashboard-tab.active {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-primary);
+}
+
+.dashboard-content {
+  display: none;
+  padding-top: var(--space-md);
+}
+
+.dashboard-content.active {
+  display: block;
+}
+
+.dashboard-content h2 {
+  margin: 0 0 var(--space-md);
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.empty-state {
+  padding: var(--space-lg) var(--space-sm);
+
+  border: 1px dashed var(--glass-border-soft);
+  border-radius: var(--radius-lg);
+
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.empty-state p {
+  margin: 0 0 var(--space-2xs);
+  color: var(--text-primary);
+}
+
+.empty-state span {
+  font-size: 12px;
+}
+
+/* Widget settings */
+
+.widget-setting,
+.setting-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  min-height: 48px;
+  padding: 0 var(--space-sm);
+  margin-bottom: var(--space-xs);
+
+  border-radius: var(--radius-md);
+  background: var(--glass-bg);
+
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+/* Switch */
+
+.switch {
+  position: relative;
+  width: 40px;
+  height: 22px;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.switch input {
+  display: none;
+}
+
+.slider {
+  position: absolute;
+  inset: 0;
+
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.15);
+
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.slider::before {
+  content: "";
+  position: absolute;
+
+  width: 16px;
+  height: 16px;
+  left: 3px;
+  top: 3px;
+
+  border-radius: 50%;
+  background: white;
+
+  transition: 0.2s ease;
+}
+
+.switch input:checked + .slider {
+  background: var(--accent);
+}
+
+.switch input:checked + .slider::before {
+  transform: translateX(18px);
+}
+
+/* ==========================================================================
+   Wallpaper manager
+   ========================================================================== */
+
+.upload-wallpaper {
+  width: 100%;
+  height: 46px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  margin-bottom: var(--space-md);
+
+  border: 1px solid var(--glass-border-soft);
+  border-radius: var(--radius-md);
+
+  background: var(--glass-bg);
+  color: var(--text-primary);
+
+  font-size: 13px;
+  font-weight: 600;
+
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.upload-wallpaper:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: var(--glass-border);
+}
+
+.wallpaper-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.wallpaper-card {
+  padding: var(--space-xs);
+
+  border: 1px solid var(--glass-border-soft);
+  border-radius: var(--radius-md);
+
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.wallpaper-card.primary {
+  border-color: var(--accent);
+}
+
+.wallpaper-preview {
+  position: relative;
+
+  width: 100%;
+  height: 100px;
+
+  overflow: hidden;
+  border-radius: var(--radius-sm);
+
+  background: #111;
+}
+
+.wallpaper-preview img,
+.wallpaper-preview video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.wallpaper-info {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  margin-top: var(--space-xs);
+}
+
+.wallpaper-name {
+  min-width: 0;
+  overflow: hidden;
+
+  color: var(--text-primary);
+  font-size: 12.5px;
+
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.wallpaper-size {
+  margin-left: 8px;
+
+  color: var(--text-muted);
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.wallpaper-actions {
+  display: flex;
+  gap: 6px;
+
+  margin-top: var(--space-xs);
+}
+
+.wallpaper-action {
+  flex: 1;
+  height: 30px;
+
+  border: none;
+  border-radius: var(--radius-sm);
+
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text-secondary);
+
+  font-size: 11.5px;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.wallpaper-action:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.wallpaper-action.primary-button {
+  background: var(--accent);
+  color: var(--accent-contrast);
+  font-weight: 600;
+}
+
+.wallpaper-action.delete-button {
+  color: #ff8b8b;
+}
+
+/* ==========================================================================
+   Responsive
+   ========================================================================== */
 
 @media (max-width: 768px) {
+  .hero {
+    top: 40%;
+    gap: var(--space-sm);
+  }
 
-    .notes-widget {
-        right: 4%;
-        left: 4%;
+  .search-bar {
+    width: 100%;
+  }
 
-        width: auto;
-    }
+  .notes-widget {
+    right: 4%;
+    bottom: 5%;
+  }
 
-
-    .widget[data-position="bottom-left"] {
-        left: 4%;
-        bottom: 5%;
-    }
-
-
-    .widget[data-position="bottom-right"] {
-        right: 4%;
-        bottom: 5%;
-    }
-
-}
-
-/* =========================
-   Clock Group
-   ========================= */
-
-.clock-group {
-    position: absolute;
-
-    top: 10%;
-    left: 50%;
-
-    transform: translateX(-50%);
-
-    z-index: 2;
-
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 8px;
-}
-
-.clock-container,
-.date-widget {
-    position: relative;
-}
-
-.date-widget {
-    margin: 0;
-    text-align: center;
-    font-size: 18px;
-    font-weight: 500;
-    letter-spacing: 2px;
-    opacity: 0.85;
-    color: #f1f8f5;
-    text-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
-    text-transform: uppercase;
-}
-
-.date-widget p {
-    margin: 0;
-    text-align: center;
-}
-
-.clock-container h1 {
-    margin: 0;
-
-    font-size: clamp(56px, 7vw, 100px);
-    font-weight: 700;
-    letter-spacing: -1px;
-    color: #e8f5e9;
-    text-shadow: 0 4px 16px rgba(0, 0, 0, 0.6);
+  .dashboard-toggle {
+    bottom: 4%;
+  }
 }

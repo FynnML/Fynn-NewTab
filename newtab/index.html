@@ -13,7 +13,7 @@
   </head>
 
   <body>
-    <main class="app">
+    <main class="app" id="app">
       <!-- Dynamic Background -->
 
       <video class="background-video" id="backgroundVideo" autoplay muted loop playsinline></video>
@@ -21,105 +21,85 @@
       <div class="background-dim" id="backgroundDim"></div>
       <div class="overlay"></div>
 
-      <!-- Search -->
-      <section class="search-container" id="searchContainer">
-        <div class="search-bar">
-          <button class="engine-button" id="engineButton">
-            <img id="engineIcon" src="../assets/icons/brave.png" alt="Brave" />
-          </button>
-
-          <input
-            type="text"
-            id="searchInput"
-            placeholder="Search the Web"
-            autocomplete="off"
-          />
-
-          <button class="search-button" id="searchButton">🔍</button>
-
-          <!-- Search engine menu -->
-          <div class="engine-menu" id="engineMenu">
-            <button class="engine-option" data-engine="brave">
-              <img src="../assets/icons/brave.png" alt="Brave" />
-              <span>Brave</span>
-            </button>
-
-            <button class="engine-option" data-engine="google">
-              <img src="../assets/icons/google.png" alt="Google" />
-              <span>Google</span>
-            </button>
-          </div>
+      <!-- Hero: Greeting + Clock + Date + Search, one centered column -->
+      <div class="hero" id="heroGroup">
+        <div class="clock-group" id="clockGroup">
+          <section class="clock-container widget" data-widget="clock">
+            <h1 id="clock">01:26 <span>PM</span></h1>
+          </section>
+          <section class="date-widget widget" data-widget="date">
+            <p id="date">Thursday, September 17</p>
+          </section>
         </div>
-      </section>
 
-      <!-- Clock -->
-      <div class="clock-group" id="clockGroup">
-        <section class="clock-container widget" data-widget="clock">
-          <h1 id="clock">01:26 <span>PM</span></h1>
-        </section>
-        <section class="date-widget widget" data-widget="date">
-          <p id="date">Thursday, September 17</p>
-        </section>
-      </div>
+        <!-- Search -->
+        <section class="search-container" id="searchContainer">
+          <div class="search-bar">
+            <button class="engine-button" id="engineButton">
+              <img id="engineIcon" src="../assets/icons/brave.png" alt="Brave" />
+            </button>
 
-      <!-- Greeting -->
-      <section class="greeting widget" data-widget="greeting" data-position="bottom-left">
-        <h2 id="greetingText">Good Evening</h2>
-        <p id="greetingMessage">Quiet evening.</p>
-      </section>
+            <input
+              type="text"
+              id="searchInput"
+              placeholder="Search the Web"
+              autocomplete="off"
+            />
 
-      <!-- Notes -->
-      <div class="note-container widget" data-widget="notes" data-position="bottom-right">
-        <textarea id="noteText" placeholder="Enter notes here..."></textarea>
-      </div>
+            <button class="search-button" id="searchButton">🔍</button>
 
-      <!-- Dashboard button -->
-      <button class="dashboard-toggle" id="dashboardToggle">
-        <span class="icon">◀</span>
-      </button>
-    </main>
+            <!-- Search engine menu -->
+            <div class="engine-menu" id="engineMenu">
+              <button class="engine-option" data-engine="brave">
+                <img src="../assets/icons/brave.png" alt="Brave" />
+                <span>Brave</span>
+              </button>
 
-    <!-- Notes Widget -->
-    <section class="notes-widget widget" data-widget="notes">
-        <div class="notes-header">
-            <div>
-                <h3>Notes</h3>
-                <span id="notesCount">0 notes</span>
+              <button class="engine-option" data-engine="google">
+                <img src="../assets/icons/google.png" alt="Google" />
+                <span>Google</span>
+              </button>
             </div>
+          </div>
+        </section>
+      </div>
 
-            <button class="notes-add" id="addNoteButton" aria-label="Add note"  >+</button>
+      <section class="greeting widget" data-widget="greeting">
+        <h2 id="greetingText">Good Evening</h2>
+        <p id="greetingMessage">Quiet evening | Have a nice day  ✪ ω ✪</p>
+      </section>
+
+      <!-- Notes (optional widget, off by default) -->
+      <section class="notes-widget widget" data-widget="notes" data-position="bottom-right">
+        <div class="notes-header">
+          <div>
+            <h3>Notes</h3>
+            <span id="notesCount">0 notes</span>
+          </div>
+
+          <button class="notes-add" id="addNoteButton" aria-label="Add note">+</button>
         </div>
 
         <div class="notes-list" id="notesList"></div>
 
         <!-- Note editor -->
         <div class="note-editor" id="noteEditor">
-            <input type="text" id="noteTitle" placeholder="Note title" maxlength="80">
+          <input type="text" id="noteTitle" placeholder="Note title" maxlength="80">
 
-            <textarea id="noteContent" placeholder="Write something..." maxlength="2000"></textarea>
+          <textarea id="noteContent" placeholder="Write something..." maxlength="2000"></textarea>
 
-            <div class="note-editor-actions">
-                <button class="note-editor-button cancel" id="cancelNoteButton">Cancel</button>
-                <button class="note-editor-button save" id="saveNoteButton">Save</button>
-            </div>
+          <div class="note-editor-actions">
+            <button class="note-editor-button cancel" id="cancelNoteButton">Cancel</button>
+            <button class="note-editor-button save" id="saveNoteButton">Save</button>
+          </div>
         </div>
-        ></div>
+      </section>
 
-        <!-- Note editor -->
-        <div class="note-editor" id="noteEditor">
-            <input type="text" id="noteTitle" placeholder="Note title" maxlength="80">
-
-            <textarea id="noteContent" placeholder="Write something..." maxlength="2000"></textarea>
-
-            <div class="note-editor-actions">
-
-                <button class="note-editor-button cancel" id="cancelNoteButton">Cancel</button>
-
-                <button class="note-editor-button save" id="saveNoteButton">Save</button>
-
-            </div>
-        </div>
-    </section>
+      <!-- Dashboard button -->
+      <button class="dashboard-toggle" id="dashboardToggle">
+        <span class="icon">◀</span>
+      </button>
+    </main>
 
     <!-- Dashboard -->
     <aside class="dashboard" id="dashboard">
@@ -210,8 +190,6 @@
         </div>
       </section>
     </aside>
-
-    
 
     <script src="app.js"></script>
   </body>
