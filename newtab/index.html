@@ -6,6 +6,9 @@
 
     <title>Fynn New Tab</title>
 
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css" />
   </head>
 
@@ -13,19 +16,13 @@
     <main class="app">
       <!-- Dynamic Background -->
 
-      <video
-        class="background-video"
-        id="backgroundVideo"
-        autoplay
-        muted
-        loop
-        playsinline
-      ></video>
-
+      <video class="background-video" id="backgroundVideo" autoplay muted loop playsinline></video>
+      <img class="background-image" id="backgroundImage" alt="" />
+      <div class="background-dim" id="backgroundDim"></div>
       <div class="overlay"></div>
 
       <!-- Search -->
-      <section class="search-container">
+      <section class="search-container" id="searchContainer">
         <div class="search-bar">
           <button class="engine-button" id="engineButton">
             <img id="engineIcon" src="../assets/icons/brave.png" alt="Brave" />
@@ -56,22 +53,23 @@
       </section>
 
       <!-- Clock -->
-      <section class="clock-container widget" data-widget="clock">
-        <h1 id="clock">...</h1>
-      </section>
-
-      <p id="date" class="date-widget widget" data-widget="date">
-        Sunday, September 13
-      </p>
+      <div class="clock-group" id="clockGroup">
+        <section class="clock-container widget" data-widget="clock">
+          <h1 id="clock">01:26 <span>PM</span></h1>
+        </section>
+        <section class="date-widget widget" data-widget="date">
+          <p id="date">Thursday, September 17</p>
+        </section>
+      </div>
 
       <!-- Greeting -->
-      <section class="greeting widget" data-widget="greeting">
+      <section class="greeting widget" data-widget="greeting" data-position="bottom-left">
         <h2 id="greetingText">Good Evening</h2>
         <p id="greetingMessage">Quiet evening.</p>
       </section>
 
       <!-- Notes -->
-      <div class="note-container widget" data-widget="notes">
+      <div class="note-container widget" data-widget="notes" data-position="bottom-right">
         <textarea id="noteText" placeholder="Enter notes here..."></textarea>
       </div>
 
@@ -80,6 +78,48 @@
         <span class="icon">◀</span>
       </button>
     </main>
+
+    <!-- Notes Widget -->
+    <section class="notes-widget widget" data-widget="notes">
+        <div class="notes-header">
+            <div>
+                <h3>Notes</h3>
+                <span id="notesCount">0 notes</span>
+            </div>
+
+            <button class="notes-add" id="addNoteButton" aria-label="Add note"  >+</button>
+        </div>
+
+        <div class="notes-list" id="notesList"></div>
+
+        <!-- Note editor -->
+        <div class="note-editor" id="noteEditor">
+            <input type="text" id="noteTitle" placeholder="Note title" maxlength="80">
+
+            <textarea id="noteContent" placeholder="Write something..." maxlength="2000"></textarea>
+
+            <div class="note-editor-actions">
+                <button class="note-editor-button cancel" id="cancelNoteButton">Cancel</button>
+                <button class="note-editor-button save" id="saveNoteButton">Save</button>
+            </div>
+        </div>
+        ></div>
+
+        <!-- Note editor -->
+        <div class="note-editor" id="noteEditor">
+            <input type="text" id="noteTitle" placeholder="Note title" maxlength="80">
+
+            <textarea id="noteContent" placeholder="Write something..." maxlength="2000"></textarea>
+
+            <div class="note-editor-actions">
+
+                <button class="note-editor-button cancel" id="cancelNoteButton">Cancel</button>
+
+                <button class="note-editor-button save" id="saveNoteButton">Save</button>
+
+            </div>
+        </div>
+    </section>
 
     <!-- Dashboard -->
     <aside class="dashboard" id="dashboard">
@@ -170,6 +210,8 @@
         </div>
       </section>
     </aside>
+
+    
 
     <script src="app.js"></script>
   </body>

@@ -1,16 +1,108 @@
-/* =========================
-   Clock
-   ========================= */
+/* ==========================================================================
+   1. APP INITIALIZATION & DATABASE (IndexedDB)
+   ========================================================================== */
+const DB_NAME = "FynnNewTabDB";
+const DB_VERSION = 2;
+let db;
 
+function openDatabase() {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open(DB_NAME, DB_VERSION);
+
+    request.onupgradeneeded = (event) => {
+      const database = event.target.result;
+      if (!database.objectStoreNames.contains("wallpapers")) {
+        database.createObjectStore("wallpapers", { keyPath: "id" });
+      }
+      if (!database.objectStoreNames.contains("notes")) {
+        database.createObjectStore("notes", { keyPath: "id" });
+      }
+    };
+
+    request.onsuccess = () => {
+      db = request.result;
+      resolve(db);
+    };
+
+    request.onerror = () => {
+      reject(request.error);
+    };
+  });
+}
+
+async function initApp() {
+  try {
+    await openDatabase();
+    await initializeWallpaperSystem();
+    await initializeNotes();
+  } catch (error) {
+    console.error("Application initialization failed:", error);
+  }
+}
+
+/* ==========================================================================
+   2. WIDGETS SYSTEM
+   ========================================================================== */
+
+// --- 2.1 Settings & Visibility ---
+const WIDGET_SETTINGS_KEY = "fynn-widget-settings";
+const widgetToggles = document.querySelectorAll(".widget-toggle");
+
+function setWidgetVisibility(widgetName, visible) {
+  const widgets = document.querySelectorAll(
+    `[data-widget="${widgetName}"].widget`,
+  );
+  widgets.forEach((widget) => {
+    widget.classList.toggle("hidden", !visible);
+  });
+}
+
+function loadWidgetSettings() {
+  const saved = localStorage.getItem(WIDGET_SETTINGS_KEY);
+  if (!saved) return;
+
+  try {
+    const settings = JSON.parse(saved);
+    widgetToggles.forEach((toggle) => {
+      const widgetName = toggle.dataset.widget;
+      if (Object.prototype.hasOwnProperty.call(settings, widgetName)) {
+        toggle.checked = settings[widgetName];
+      }
+    });
+  } catch (error) {
+    console.error("Failed to load widget settings:", error);
+  }
+}
+
+function saveWidgetSettings() {
+  const settings = {};
+  widgetToggles.forEach((toggle) => {
+    settings[toggle.dataset.widget] = toggle.checked;
+  });
+  localStorage.setItem(WIDGET_SETTINGS_KEY, JSON.stringify(settings));
+}
+
+function initializeWidgets() {
+  loadWidgetSettings();
+
+  widgetToggles.forEach((toggle) => {
+    setWidgetVisibility(toggle.dataset.widget, toggle.checked);
+
+    toggle.addEventListener("change", () => {
+      setWidgetVisibility(toggle.dataset.widget, toggle.checked);
+      saveWidgetSettings();
+    });
+  });
+}
+
+// --- 2.2 Clock Widget ---
 function updateClock() {
   const now = new Date();
-
   const time = now.toLocaleTimeString("en-US", {
     hour: "2-digit",
     minute: "2-digit",
     hour12: true,
   });
-
   const date = now.toLocaleDateString("en-US", {
     weekday: "long",
     month: "long",
@@ -24,252 +116,223 @@ function updateClock() {
   document.querySelector("#date").textContent = date;
 }
 
-updateClock();
-
-setInterval(updateClock, 1000);
-
-/* =========================
-   Search
-   ========================= */
-
+// --- 2.3 Search Widget ---
 const engineButton = document.querySelector("#engineButton");
 const engineIcon = document.querySelector("#engineIcon");
 const engineMenu = document.querySelector("#engineMenu");
-
 const searchInput = document.querySelector("#searchInput");
 const searchButton = document.querySelector("#searchButton");
 const engineOptions = document.querySelectorAll(".engine-option");
 
 let currentEngine = "brave";
 
-/* Open / close engine menu */
-
 engineButton.addEventListener("click", (event) => {
   event.stopPropagation();
-
   engineMenu.classList.toggle("active");
 });
-
-/* Select search engine */
 
 engineOptions.forEach((option) => {
   option.addEventListener("click", () => {
     const engine = option.dataset.engine;
-
     currentEngine = engine;
 
     if (engine === "brave") {
       engineIcon.src = "../assets/icons/brave.png";
       engineIcon.alt = "Brave";
-
       searchInput.placeholder = "Search with Brave";
     }
 
     if (engine === "google") {
       engineIcon.src = "../assets/icons/google.png";
       engineIcon.alt = "Google";
-
       searchInput.placeholder = "Search with Google";
     }
 
     engineMenu.classList.remove("active");
-
     searchInput.focus();
   });
 });
 
-/* Search */
-
 function performSearch() {
   const query = searchInput.value.trim();
-
   if (!query) {
     searchInput.focus();
     return;
   }
 
   const encodedQuery = encodeURIComponent(query);
-
-  let url;
-
-  if (currentEngine === "brave") {
-    url = `https://search.brave.com/search?q=${encodedQuery}`;
-  }
-
-  if (currentEngine === "google") {
-    url = `https://www.google.com/search?q=${encodedQuery}`;
-  }
+  let url =
+    currentEngine === "brave"
+      ? `https://search.brave.com/search?q=${encodedQuery}`
+      : `https://www.google.com/search?q=${encodedQuery}`;
 
   window.location.href = url;
 }
 
-/* Search button */
-
 searchButton.addEventListener("click", performSearch);
-
-/* Enter key */
-
 searchInput.addEventListener("keydown", (event) => {
-  if (event.key === "Enter") {
-    performSearch();
-  }
+  if (event.key === "Enter") performSearch();
 });
-
-/* Close menu when clicking outside */
-
 document.addEventListener("click", () => {
   engineMenu.classList.remove("active");
 });
 
 /* =========================
-   Dashboard
+   Widget Layout
    ========================= */
 
+const defaultWidgetPositions = {
+    clock: "top-center",
+    date: "top-center",
+    greeting: "bottom-left",
+    notes: "bottom-right"
+};
+
+
+const WIDGET_LAYOUT_KEY = "fynn-widget-layout";
+
+
+function loadWidgetLayout() {
+    const saved = localStorage.getItem(WIDGET_LAYOUT_KEY);
+
+    if (!saved) {
+        return defaultWidgetPositions;
+    }
+
+
+    try {
+        return {
+            ...defaultWidgetPositions,
+            ...JSON.parse(saved)
+        };
+
+    } catch (error) {
+        console.error("Failed to load widget layout:", error);
+        return defaultWidgetPositions;
+    }
+}
+
+function applyWidgetLayout() {
+    const layout = loadWidgetLayout();
+
+    Object.entries(layout).forEach(
+        ([widgetName, position]) => {
+
+            const widgets =
+                document.querySelectorAll(
+                    `[data-widget="${widgetName}"]`
+                );
+
+
+            widgets.forEach((widget) => {
+                widget.dataset.position = position;
+            });
+        }
+    );
+}
+
+function saveWidgetLayout(layout) {
+    localStorage.setItem(WIDGET_LAYOUT_KEY, JSON.stringify(layout));
+}
+
+
+/* ==========================================================================
+   3. DASHBOARD SYSTEM
+   ========================================================================== */
 const dashboard = document.querySelector("#dashboard");
 const dashboardToggle = document.querySelector("#dashboardToggle");
-
 const dashboardTabs = document.querySelectorAll(".dashboard-tab");
-
 const dashboardContents = document.querySelectorAll(".dashboard-content");
-
-/* Open / close dashboard */
 
 dashboardToggle.addEventListener("click", () => {
   const isOpen = dashboard.classList.toggle("open");
-
   document.querySelector(".app").classList.toggle("dashboard-open", isOpen);
 });
-
-/* Dashboard tabs */
 
 dashboardTabs.forEach((tab) => {
   tab.addEventListener("click", () => {
     const target = tab.dataset.tab;
 
-    // Remove active tab
-    dashboardTabs.forEach((item) => {
-      item.classList.remove("active");
-    });
-
-    // Activate clicked tab
+    dashboardTabs.forEach((item) => item.classList.remove("active"));
     tab.classList.add("active");
 
-    // Hide all content
-    dashboardContents.forEach((content) => {
-      content.classList.remove("active");
-    });
-
-    // Show selected content
+    dashboardContents.forEach((content) => content.classList.remove("active"));
     document.querySelector(`#${target}`).classList.add("active");
   });
 });
 
 /* =========================
-   Wallpaper Database
+   Click Outside Dashboard
    ========================= */
 
-const DB_NAME = "FynnNewTabDB";
-const DB_VERSION = 1;
-const STORE_NAME = "wallpapers";
+document.addEventListener("click", (event) => {
+  const isOpen = dashboard.classList.contains("open");
+  if (!isOpen) return;
 
-let db;
+  const clickedInsideDashboard = dashboard.contains(event.target);
+  const clickedToggle = dashboardToggle.contains(event.target);
 
-/**
- * Open IndexedDB database.
- */
-function openDatabase() {
-  return new Promise((resolve, reject) => {
-    const request = indexedDB.open(DB_NAME, DB_VERSION);
+  if (!clickedInsideDashboard && !clickedToggle) {
+    dashboard.classList.remove("open");
+    document.querySelector(".app").classList.remove("dashboard-open");
+  }
+});
 
-    request.onupgradeneeded = (event) => {
-      const database = event.target.result;
+document.addEventListener("keydown", (event) => {
+  if (event.key !== "Escape") return;
 
-      if (!database.objectStoreNames.contains(STORE_NAME)) {
-        database.createObjectStore(STORE_NAME, {
-          keyPath: "id",
-        });
-      }
-    };
+  if (!dashboard.classList.contains("open")) {
+    return;
+  }
 
-    request.onsuccess = () => {
-      db = request.result;
+  dashboard.classList.remove("open");
+  document.querySelector(".app").classList.remove("dashboard-open");
+});
 
-      resolve(db);
-    };
+/* ==========================================================================
+   4. WALLPAPER SYSTEM
+   ========================================================================== */
+const WALLPAPER_STORE = "wallpapers";
+const wallpaperInput = document.querySelector("#wallpaperInput");
+const wallpaperList = document.querySelector("#wallpaperList");
+const backgroundVideo = document.querySelector("#backgroundVideo");
+const backgroundImage = document.querySelector("#backgroundImage");
+const staticBackground = document.querySelector(".background");
 
-    request.onerror = () => {
-      reject(request.error);
-    };
-  });
-}
+let currentWallpaperUrl = null;
 
-/**
- * Save a wallpaper to IndexedDB.
- */
+// --- DB Operations ---
 function saveWallpaper(wallpaper) {
   return new Promise((resolve, reject) => {
-    const transaction = db.transaction(STORE_NAME, "readwrite");
-
-    const store = transaction.objectStore(STORE_NAME);
-
+    const transaction = db.transaction(WALLPAPER_STORE, "readwrite");
+    const store = transaction.objectStore(WALLPAPER_STORE);
     const request = store.put(wallpaper);
-
-    request.onsuccess = () => {
-      resolve();
-    };
-
-    request.onerror = () => {
-      reject(request.error);
-    };
+    request.onsuccess = () => resolve();
+    request.onerror = () => reject(request.error);
   });
 }
 
-/**
- * Get all wallpapers.
- */
 function getWallpapers() {
   return new Promise((resolve, reject) => {
-    const transaction = db.transaction(STORE_NAME, "readonly");
-
-    const store = transaction.objectStore(STORE_NAME);
-
+    const transaction = db.transaction(WALLPAPER_STORE, "readonly");
+    const store = transaction.objectStore(WALLPAPER_STORE);
     const request = store.getAll();
-
-    request.onsuccess = () => {
-      resolve(request.result);
-    };
-
-    request.onerror = () => {
-      reject(request.error);
-    };
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
   });
 }
 
-/**
- * Delete wallpaper.
- */
 function deleteWallpaper(id) {
   return new Promise((resolve, reject) => {
-    const transaction = db.transaction(STORE_NAME, "readwrite");
-
-    const store = transaction.objectStore(STORE_NAME);
-
+    const transaction = db.transaction(WALLPAPER_STORE, "readwrite");
+    const store = transaction.objectStore(WALLPAPER_STORE);
     const request = store.delete(id);
-
-    request.onsuccess = () => {
-      resolve();
-    };
-
-    request.onerror = () => {
-      reject(request.error);
-    };
+    request.onsuccess = () => resolve();
+    request.onerror = () => reject(request.error);
   });
 }
 
-/* =========================
-   Wallpaper Upload
-   ========================= */
-
+// --- Upload & Processing ---
 function extractVideoThumbnail(file) {
   return new Promise((resolve) => {
     const video = document.createElement("video");
@@ -287,7 +350,6 @@ function extractVideoThumbnail(file) {
       canvas.height = video.videoHeight;
       const ctx = canvas.getContext("2d");
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-
       canvas.toBlob(
         (blob) => {
           URL.revokeObjectURL(video.src);
@@ -307,14 +369,9 @@ function extractVideoThumbnail(file) {
   });
 }
 
-const wallpaperInput = document.querySelector("#wallpaperInput");
-
 wallpaperInput.addEventListener("change", async (event) => {
   const file = event.target.files[0];
-
-  if (!file) {
-    return;
-  }
+  if (!file) return;
 
   if (!file.type.startsWith("video/") && !file.type.startsWith("image/")) {
     alert("Please select a valid image or video.");
@@ -346,27 +403,26 @@ wallpaperInput.addEventListener("change", async (event) => {
   wallpaperInput.value = "";
 });
 
-/* =========================
-   Render Wallpapers
-   ========================= */
-
-const wallpaperList = document.querySelector("#wallpaperList");
+// --- UI Rendering ---
+function formatFileSize(bytes) {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  if (bytes < 1024 * 1024 * 1024)
+    return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
+  return `${(bytes / 1024 / 1024 / 1024).toFixed(1)} GB`;
+}
 
 async function renderWallpapers() {
   const wallpapers = await getWallpapers();
-
   wallpaperList.innerHTML = "";
 
   if (wallpapers.length === 0) {
     wallpaperList.innerHTML = `
-            <div class="empty-state">
-                <p>No wallpapers yet.</p>
-                <span>
-                    Upload an MP4 or image to get started.
-                </span>
-            </div>
-        `;
-
+      <div class="empty-state">
+        <p>No wallpapers yet.</p>
+        <span>Upload an MP4 or image to get started.</span>
+      </div>
+    `;
     return;
   }
 
@@ -382,242 +438,368 @@ async function renderWallpapers() {
 
     const preview =
       wallpaper.type.startsWith("video/") && !wallpaper.thumbnailBlob
-        ? `
-                    <video
-                        src="${url}"
-                        muted
-                        loop
-                        autoplay
-                        playsinline
-                    ></video>
-                `
-        : `
-                    <img
-                        src="${previewUrl}"
-                        alt="${wallpaper.name}"
-                    >
-                `;
+        ? `<video src="${url}" muted loop autoplay playsinline></video>`
+        : `<img src="${previewUrl}" alt="${wallpaper.name}">`;
 
     card.innerHTML = `
-
-            <div class="wallpaper-preview">
-                ${preview}
-            </div>
-
-            <div class="wallpaper-info">
-
-                <span class="wallpaper-name">
-                    ${wallpaper.primary ? "Primary" : wallpaper.name}
-                </span>
-
-                <span class="wallpaper-size">
-                    ${formatFileSize(wallpaper.size)}
-                </span>
-
-            </div>
-
-            <div class="wallpaper-actions">
-
-                <button
-                    class="wallpaper-action primary-button"
-                    data-primary="${wallpaper.id}"
-                >
-                    ${wallpaper.primary ? "Active" : "Set Primary"}
-                </button>
-
-                <button
-                    class="wallpaper-action delete-button"
-                    data-delete="${wallpaper.id}"
-                >
-                    Delete
-                </button>
-
-            </div>
-
-        `;
-
+      <div class="wallpaper-preview">${preview}</div>
+      <div class="wallpaper-info">
+        <span class="wallpaper-name">${wallpaper.primary ? "Primary" : wallpaper.name}</span>
+        <span class="wallpaper-size">${formatFileSize(wallpaper.size)}</span>
+      </div>
+      <div class="wallpaper-actions">
+        <button class="wallpaper-action primary-button" data-primary="${wallpaper.id}">
+          ${wallpaper.primary ? "Active" : "Set Primary"}
+        </button>
+        <button class="wallpaper-action delete-button" data-delete="${wallpaper.id}">Delete</button>
+      </div>
+    `;
     wallpaperList.appendChild(card);
   });
-
   attachWallpaperActions();
 }
 
-function formatFileSize(bytes) {
-  if (bytes < 1024) {
-    return `${bytes} B`;
+function attachWallpaperActions() {
+  document.querySelectorAll("[data-primary]").forEach((button) => {
+    button.addEventListener("click", () =>
+      setPrimaryWallpaper(button.dataset.primary),
+    );
+  });
+  document.querySelectorAll("[data-delete]").forEach((button) => {
+    button.addEventListener("click", () =>
+      removeWallpaper(button.dataset.delete),
+    );
+  });
+}
+
+// --- State Management ---
+async function applyPrimaryWallpaper() {
+  const wallpapers = await getWallpapers();
+  const primary = wallpapers.find((wallpaper) => wallpaper.primary);
+
+  if (currentWallpaperUrl) {
+    URL.revokeObjectURL(currentWallpaperUrl);
+    currentWallpaperUrl = null;
   }
 
-  if (bytes < 1024 * 1024) {
-    return `${(bytes / 1024).toFixed(1)} KB`;
+  backgroundVideo.pause();
+  backgroundVideo.removeAttribute("src");
+  backgroundVideo.load();
+  backgroundVideo.classList.remove("active");
+  backgroundImage.classList.remove("active");
+
+  if (!primary) {
+    if (staticBackground) staticBackground.style.display = "block";
+    return;
   }
 
-  if (bytes < 1024 * 1024 * 1024) {
-    return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
-  }
+  if (staticBackground) staticBackground.style.display = "none";
+  currentWallpaperUrl = URL.createObjectURL(primary.blob);
 
-  return `${(bytes / 1024 / 1024 / 1024).toFixed(1)} GB`;
+  if (primary.type.startsWith("video/")) {
+    backgroundVideo.src = currentWallpaperUrl;
+    backgroundVideo.classList.add("active");
+    backgroundVideo.play().catch(() => {});
+  } else {
+    backgroundImage.src = currentWallpaperUrl;
+    backgroundImage.classList.add("active");
+  }
 }
 
 async function setPrimaryWallpaper(id) {
   const wallpapers = await getWallpapers();
-
   for (const wallpaper of wallpapers) {
     wallpaper.primary = wallpaper.id === id;
-
     await saveWallpaper(wallpaper);
   }
-
   await applyPrimaryWallpaper();
-
   await renderWallpapers();
 }
 
 async function removeWallpaper(id) {
   await deleteWallpaper(id);
-
   await applyPrimaryWallpaper();
-
   await renderWallpapers();
 }
 
-function attachWallpaperActions() {
-  document.querySelectorAll("[data-primary]").forEach((button) => {
-    button.addEventListener("click", () => {
-      setPrimaryWallpaper(button.dataset.primary);
-    });
-  });
+async function initializeWallpaperSystem() {
+  await renderWallpapers();
+  await applyPrimaryWallpaper();
+  console.log("Wallpaper system initialized.");
+}
 
-  document.querySelectorAll("[data-delete]").forEach((button) => {
-    button.addEventListener("click", () => {
-      removeWallpaper(button.dataset.delete);
-    });
+/* ==========================================================================
+   5. NOTES SYSTEM
+   ========================================================================== */
+const NOTES_STORE = "notes";
+const notesList = document.querySelector("#notesList");
+const notesCount = document.querySelector("#notesCount");
+const addNoteButton = document.querySelector("#addNoteButton");
+
+// Note editor elements
+const noteEditor = document.querySelector("#noteEditor");
+const noteTitle = document.querySelector("#noteTitle");
+const noteContent = document.querySelector("#noteContent");
+const saveNoteButton = document.querySelector("#saveNoteButton");
+const cancelNoteButton = document.querySelector("#cancelNoteButton");
+let editingNoteId = null;
+
+// --- DB Operations ---
+function getNotes() {
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction(NOTES_STORE, "readonly");
+    const store = transaction.objectStore(NOTES_STORE);
+    const request = store.getAll();
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
   });
 }
 
-/* =========================
-   Apply Primary Wallpaper
-   ========================= */
+function saveNote(note) {
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction(NOTES_STORE, "readwrite");
+    const store = transaction.objectStore(NOTES_STORE);
+    const request = store.put(note);
+    request.onsuccess = () => resolve();
+    request.onerror = () => reject(request.error);
+  });
+}
 
-const backgroundVideo = document.querySelector("#backgroundVideo");
+function deleteNote(id) {
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction(NOTES_STORE, "readwrite");
+    const store = transaction.objectStore(NOTES_STORE);
+    const request = store.delete(id);
+    request.onsuccess = () => resolve();
+    request.onerror = () => reject(request.error);
+  });
+}
 
-const staticBackground = document.querySelector(".background");
+// --- UI Rendering ---
+function escapeHTML(value) {
+  const element = document.createElement("div");
+  element.textContent = value;
+  return element.innerHTML;
+}
 
-async function applyPrimaryWallpaper() {
-  const wallpapers = await getWallpapers();
+async function renderNotes() {
+  const notes = await getNotes();
+  notes.sort((a, b) => {
+    if (a.pinned !== b.pinned) return b.pinned - a.pinned;
+    return b.updatedAt - a.updatedAt;
+  });
 
-  const primary = wallpapers.find((wallpaper) => wallpaper.primary);
+  notesList.innerHTML = "";
+  notesCount.textContent = `${notes.length} ${notes.length === 1 ? "note" : "notes"}`;
 
-  if (!primary) {
-    backgroundVideo.classList.remove("active");
-
-    staticBackground.style.display = "block";
-
+  if (notes.length === 0) {
+    notesList.innerHTML = `<div class="note-empty">No notes yet.</div>`;
     return;
   }
 
-  if (primary.type.startsWith("video/")) {
-    const url = URL.createObjectURL(primary.blob);
+  notes.forEach((note) => {
+    const item = document.createElement("div");
+    item.className = "note-item";
+    if (note.pinned) item.classList.add("pinned");
 
-    backgroundVideo.src = url;
+    item.innerHTML = `
+  <div class="note-content">
+    <input type="checkbox" class="note-check" data-complete="${note.id}" ${note.completed ? "checked" : ""}>
+    <div class="note-title ${note.completed ? "completed" : ""}">${escapeHTML(note.title)}</div>
+    <div class="note-text ${note.completed ? "completed" : ""}">${escapeHTML(note.content)}</div>
+  </div>
+  <div class="note-actions">
+    <button class="note-action" data-pin="${note.id}">${note.pinned ? "Unpin" : "Pin"}</button>
+    <button class="note-action" data-edit="${note.id}">Edit</button>
+    <button class="note-action" data-delete-note="${note.id}">Delete</button>
+  </div>
+`;
+    notesList.appendChild(item);
+  });
 
-    backgroundVideo.classList.add("active");
-
-    staticBackground.style.display = "none";
-
-    backgroundVideo.play().catch(() => {});
-  }
+  attachNoteActions();
 }
 
-/* =========================
-   Initialize Wallpaper System
-   ========================= */
-
-async function initializeWallpaperSystem() {
-  try {
-    await openDatabase();
-
-    await renderWallpapers();
-
-    await applyPrimaryWallpaper();
-
-    console.log("Wallpaper system initialized.");
-  } catch (error) {
-    console.error("Failed to initialize wallpaper system:", error);
-  }
-}
-
-/* =========================
-   Widget System
-   ========================= */
-
-const widgetToggles = document.querySelectorAll(".widget-toggle");
-
-function setWidgetVisibility(widgetName, visible) {
-  const widgets = document.querySelectorAll(
-    `[data-widget="${widgetName}"].widget`,
-  );
-
-  widgets.forEach((widget) => {
-    widget.classList.toggle("hidden", !visible);
+function attachNoteActions() {
+  document.querySelectorAll("[data-edit]").forEach((button) => {
+    button.addEventListener("click", () => editNote(button.dataset.edit));
+  });
+  document.querySelectorAll("[data-pin]").forEach((button) => {
+    button.addEventListener("click", () => toggleNotePin(button.dataset.pin));
+  });
+  document.querySelectorAll("[data-complete]").forEach((checkbox) => {
+    checkbox.addEventListener("change", () =>
+      toggleNoteCompleted(checkbox.dataset.complete),
+    );
+  });
+  document.querySelectorAll("[data-delete-note]").forEach((button) => {
+    button.addEventListener("click", () =>
+      removeNote(button.dataset.deleteNote),
+    );
   });
 }
 
-widgetToggles.forEach((toggle) => {
-  toggle.addEventListener("change", () => {
-    const widgetName = toggle.dataset.widget;
-    const visible = toggle.checked;
-
-    setWidgetVisibility(widgetName, visible);
-    saveWidgetSettings();
-  });
+// --- State Management ---
+// Open editor to add new note
+addNoteButton.addEventListener("click", () => {
+  editingNoteId = null;
+  noteTitle.value = "";
+  noteContent.value = "";
+  noteEditor.classList.add("active");
+  noteTitle.focus();
 });
 
+// Save note (new or edit)
+saveNoteButton.addEventListener("click", async () => {
+  const title = noteTitle.value.trim();
+  const content = noteContent.value.trim();
+  if (!title && !content) return;
+
+  const now = Date.now();
+
+  if (editingNoteId) {
+    const notes = await getNotes();
+    const note = notes.find((item) => item.id === editingNoteId);
+    if (!note) return;
+    note.title = title;
+    note.content = content;
+    note.updatedAt = now;
+    await saveNote(note);
+  } else {
+    const note = {
+      id: crypto.randomUUID(),
+      title,
+      content,
+      completed: false,
+      pinned: false,
+      createdAt: now,
+      updatedAt: now,
+    };
+    await saveNote(note);
+  }
+
+  closeNoteEditor();
+  await renderNotes();
+});
+
+// Cancel editor
+cancelNoteButton.addEventListener("click", () => {
+  closeNoteEditor();
+});
+
+function closeNoteEditor() {
+  editingNoteId = null;
+  noteTitle.value = "";
+  noteContent.value = "";
+  noteEditor.classList.remove("active");
+}
+
+async function editNote(id) {
+  const notes = await getNotes();
+  const note = notes.find((item) => item.id === id);
+  if (!note) return;
+
+  editingNoteId = id;
+  noteTitle.value = note.title || "";
+  noteContent.value = note.content || "";
+  noteEditor.classList.add("active");
+  noteTitle.focus();
+}
+
+async function toggleNotePin(id) {
+  const notes = await getNotes();
+  const note = notes.find((item) => item.id === id);
+  if (!note) return;
+
+  note.pinned = !note.pinned;
+  note.updatedAt = Date.now();
+  await saveNote(note);
+  await renderNotes();
+}
+
+async function toggleNoteCompleted(id) {
+  const notes = await getNotes();
+  const note = notes.find((item) => item.id === id);
+  if (!note) return;
+
+  note.completed = !note.completed;
+  note.updatedAt = Date.now();
+  await saveNote(note);
+  await renderNotes();
+}
+
+async function removeNote(id) {
+  const confirmed = confirm("Delete this note?");
+  if (!confirmed) return;
+
+  await deleteNote(id);
+  await renderNotes();
+}
+
+async function initializeNotes() {
+  await renderNotes();
+  console.log("Notes system initialized.");
+}
+
+/* ==========================================================================
+   6. START APPLICATION
+   ========================================================================== */
+updateClock();
+setInterval(updateClock, 1000);
+initializeWidgets();
+initApp();
+applyWidgetLayout();
+
+const searchContainer = document.querySelector("#searchContainer");
+
+const backgroundDim = document.querySelector("#backgroundDim");
+
 /* =========================
-   Widget Settings Storage
+   Search Hover Background
    ========================= */
 
-const WIDGET_SETTINGS_KEY = "fynn-widget-settings";
+searchContainer.addEventListener("mouseenter", () => {
+  backgroundDim.classList.add("active");
+});
 
-function loadWidgetSettings() {
-  const saved = localStorage.getItem(WIDGET_SETTINGS_KEY);
-
-  if (!saved) {
-    return;
+searchContainer.addEventListener("mouseleave", () => {
+  /*
+   * Keep the dim effect while
+   * the search input is focused.
+   */
+  if (document.activeElement !== searchInput) {
+    backgroundDim.classList.remove("active");
   }
+});
 
-  try {
-    const settings = JSON.parse(saved);
+searchInput.addEventListener("focus", () => {
+  backgroundDim.classList.add("active");
+});
 
-    widgetToggles.forEach((toggle) => {
-      const widgetName = toggle.dataset.widget;
+searchInput.addEventListener("blur", () => {
+  backgroundDim.classList.remove("active");
+});
 
-      if (Object.prototype.hasOwnProperty.call(settings, widgetName)) {
-        toggle.checked = settings[widgetName];
-      }
-    });
-  } catch (error) {
-    console.error("Failed to load widget settings:", error);
-  }
+
+function setWidgetPosition(
+    widgetName,
+    position
+) {
+
+    const layout =
+        loadWidgetLayout();
+
+
+    layout[widgetName] =
+        position;
+
+
+    localStorage.setItem(
+        WIDGET_LAYOUT_KEY,
+        JSON.stringify(layout)
+    );
+
+
+    applyWidgetLayout();
+
 }
-
-function saveWidgetSettings() {
-  const settings = {};
-
-  widgetToggles.forEach((toggle) => {
-    settings[toggle.dataset.widget] = toggle.checked;
-  });
-
-  localStorage.setItem(WIDGET_SETTINGS_KEY, JSON.stringify(settings));
-}
-
-function initializeWidgets() {
-  loadWidgetSettings();
-
-  widgetToggles.forEach((toggle) => {
-    setWidgetVisibility(toggle.dataset.widget, toggle.checked);
-  });
-}
-
-initializeWidgets();
-
-initializeWallpaperSystem();
