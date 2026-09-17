@@ -221,8 +221,9 @@ body {
 
 /* ==========================================================================
    Hero — Clock + Date + Search, one centered column.
-   Uses full-viewport flex to create a stable, predictable vertical
-   composition. Children ignore the generic widget position system.
+   This container ignores the generic widget position system on purpose:
+   its children are always laid out top-to-bottom, so nothing below can
+   overlap the search bar regardless of viewport size.
    ========================================================================== */
 
 .hero {
@@ -1399,25 +1400,5 @@ body {
 
   .dashboard-toggle {
     bottom: 4%;
-  }
-}
-
-@media (max-width: 480px) {
-  .hero {
-    padding-bottom: 4vh;
-  }
-
-  .search-container {
-    width: 92vw;
-  }
-
-  .clock-container h1 {
-    letter-spacing: -1.5px;
-  }
-
-  .notes-widget {
-    width: 90vw;
-    right: 5%;
-    bottom: 5%;
   }
 }
