@@ -474,16 +474,18 @@ wallpaperInput.addEventListener("change", async (event) => {
     await navigator.storage.persist();
   }
 
-  const wallpaper = {
-    id: crypto.randomUUID(),
-    name: file.name,
-    type: file.type,
-    size: file.size,
-    blob: file,
-    thumbnailBlob: thumbnailBlob,
-    primary: false,
-    createdAt: Date.now(),
-  };
+const wallpaper = {
+  id: crypto.randomUUID(),
+  name: file.name,
+  type: file.type,
+  size: file.size,
+  blob: file,
+  thumbnailBlob: thumbnailBlob,
+
+  mode: "default",
+
+  createdAt: Date.now(),
+};
 
   await saveWallpaper(wallpaper);
   await renderWallpapers();
@@ -560,9 +562,30 @@ function attachWallpaperActions() {
 }
 
 // --- State Management ---
-async function applyPrimaryWallpaper() {
+async function applyActiveWallpaper() {
+
+  const WALLPAPER_MODES = {
+  DEFAULT: "default",
+  PRIMARY: "primary",
+  DAY: "day",
+  NIGHT: "night",
+  };
+
+  function getActiveWallpaper(wallpapers) {
+  const primary = wallpapers.find(
+    (wallpaper) =>
+      getWallpaperMode(wallpaper) === WALLPAPER_MODES.PRIMARY,
+  );
+
+  if (primary) {
+    return primary;
+  }
+
+  return wallpapers[0] || null;
+}
+
   const wallpapers = await getWallpapers();
-  const primary = wallpapers.find((wallpaper) => wallpaper.primary);
+  const primary = getActiveWallpaper(wallpapers);
 
   if (currentWallpaperUrl) {
     URL.revokeObjectURL(currentWallpaperUrl);
@@ -599,19 +622,19 @@ async function setPrimaryWallpaper(id) {
     wallpaper.primary = wallpaper.id === id;
     await saveWallpaper(wallpaper);
   }
-  await applyPrimaryWallpaper();
+  await applyActiveWallpaper();
   await renderWallpapers();
 }
 
 async function removeWallpaper(id) {
   await deleteWallpaper(id);
-  await applyPrimaryWallpaper();
+  await applyActiveWallpaper();
   await renderWallpapers();
 }
 
 async function initializeWallpaperSystem() {
   await renderWallpapers();
-  await applyPrimaryWallpaper();
+  await applyActiveWallpaper();
   console.log("Wallpaper system initialized.");
 }
 
@@ -990,3 +1013,14 @@ function isSearchFocusEffectEnabled() {
     ) === "true"
   );
 }
+
+
+function getWallpaperMode(wallpaper) {
+  if (wallpaper.mode) {
+    return wallpaper.mode;
+  }
+
+  return wallpaper.primary ? "primary" : "default";
+}
+
+getWallpaperMode(wallpaper)
