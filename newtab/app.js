@@ -399,6 +399,16 @@ function getWallpaperMode(wallpaper) {
     : WALLPAPER_MODES.DEFAULT;
 }
 
+function getScheduledWallpaperMode(date = new Date()) {
+  const hour = date.getHours();
+
+  if (hour >= 6 && hour < 18) {
+    return WALLPAPER_MODES.DAY;
+  }
+
+  return WALLPAPER_MODES.NIGHT;
+}
+
 function getActiveWallpaper(wallpapers) {
   const primary = wallpapers.find(
     (wallpaper) =>
@@ -407,6 +417,17 @@ function getActiveWallpaper(wallpapers) {
 
   if (primary) {
     return primary;
+  }
+
+  const scheduledMode = getScheduledWallpaperMode();
+
+  const scheduledWallpaper = wallpapers.find(
+    (wallpaper) =>
+      getWallpaperMode(wallpaper) === scheduledMode,
+  );
+
+  if (scheduledWallpaper) {
+    return scheduledWallpaper;
   }
 
   const defaultWallpaper = wallpapers.find(
@@ -424,6 +445,8 @@ const backgroundImage = document.querySelector("#backgroundImage");
 const staticBackground = document.querySelector(".background");
 
 let currentWallpaperUrl = null;
+let activeWallpaperId = null;
+let wallpaperScheduleTimer = null;
 
 // --- DB Operations ---
 function saveWallpaper(wallpaper) {
@@ -641,6 +664,13 @@ function attachWallpaperActions() {
 async function applyActiveWallpaper() {
   const wallpapers = await getWallpapers();
   const activeWallpaper = getActiveWallpaper(wallpapers);
+  const nextWallpaperId = activeWallpaper?.id || null;
+
+  if (nextWallpaperId === activeWallpaperId) {
+    return;
+  }
+
+  activeWallpaperId = nextWallpaperId;
 
   if (currentWallpaperUrl) {
     URL.revokeObjectURL(currentWallpaperUrl);
@@ -672,6 +702,18 @@ async function applyActiveWallpaper() {
     backgroundImage.src = currentWallpaperUrl;
     backgroundImage.classList.add("active");
   }
+}
+
+function startWallpaperScheduler() {
+  if (wallpaperScheduleTimer) {
+    clearInterval(wallpaperScheduleTimer);
+  }
+
+  wallpaperScheduleTimer = setInterval(() => {
+    applyActiveWallpaper().catch((error) => {
+      console.error("Wallpaper scheduler failed:", error);
+    });
+  }, 60 * 1000);
 }
 
 async function setWallpaperMode(id, mode) {
@@ -741,6 +783,8 @@ async function removeWallpaper(id) {
 async function initializeWallpaperSystem() {
   await renderWallpapers();
   await applyActiveWallpaper();
+  startWallpaperScheduler();
+
   console.log("Wallpaper system initialized.");
 }
 
