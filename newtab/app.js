@@ -194,6 +194,7 @@ const defaultSettings = {
 
 const VALID_SEARCH_ENGINES = ["brave", "google"];
 const VALID_TIME_FORMATS = ["12h", "24h"];
+const VALID_BOOLEAN_VALUES = ["true", "false"];
 
 function loadSetting(key, fallback, validator = () => true) {
   const value = localStorage.getItem(key);
@@ -1076,6 +1077,7 @@ function isSearchFocusEffectEnabled() {
     loadSetting(
       SEARCH_FOCUS_EFFECT_KEY,
       String(defaultSettings.searchFocusEffect),
+      (value) => VALID_BOOLEAN_VALUES.includes(value),
     ) === "true"
   );
 }
@@ -1091,11 +1093,13 @@ function initializeSettings() {
   searchEngineSetting.value = loadSetting(
     SEARCH_ENGINE_KEY,
     defaultSettings.searchEngine,
+    (value) => VALID_SEARCH_ENGINES.includes(value),
   );
 
   timeFormatSetting.value = loadSetting(
     TIME_FORMAT_KEY,
     defaultSettings.timeFormat,
+    (value) => VALID_TIME_FORMATS.includes(value),
   );
 
   searchFocusEffectSetting.checked = isSearchFocusEffectEnabled();
