@@ -687,6 +687,7 @@ async function applyActiveWallpaper() {
     URL.revokeObjectURL(currentWallpaperUrl);
     currentWallpaperUrl = null;
   }
+
   backgroundVideo.pause();
   backgroundVideo.removeAttribute("src");
   backgroundVideo.load();
@@ -695,12 +696,17 @@ async function applyActiveWallpaper() {
   backgroundImage.removeAttribute("src");
   backgroundImage.classList.remove("active");
 
-  if (currentWallpaperUrl) {
-    URL.revokeObjectURL(currentWallpaperUrl);
-    currentWallpaperUrl = null;
+  if (!activeWallpaper) {
+    if (staticBackground) {
+      staticBackground.style.display = "block";
+    }
+
+    return;
   }
 
-  if (staticBackground) staticBackground.style.display = "none";
+  if (staticBackground) {
+    staticBackground.style.display = "none";
+  }
 
   currentWallpaperUrl = URL.createObjectURL(
     activeWallpaper.blob,
