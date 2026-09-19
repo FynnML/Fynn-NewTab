@@ -15,7 +15,7 @@
   --accent-contrast: #0a0a0a;
 
   /* --- Surface hierarchy (4 levels) --- */
-  --surface-base: rgba(0, 0, 0, 0.25);
+  --surface-base: rgba(0, 0, 0, 0.42);
   --surface-glass: rgba(255, 255, 255, 0.05);
   --surface-elevated: rgba(18, 18, 18, 0.6);
   --surface-interactive: rgba(255, 255, 255, 0.07);
@@ -86,6 +86,49 @@ body {
   width: 100%;
   height: 100vh;
   overflow: hidden;
+}
+
+/* ==========================================================================
+   Brand — Fynn logo (top-left)
+   ========================================================================== */
+
+/* Block: fixed anchor in the top-left corner */
+.brand-logo {
+  position: fixed;
+  top: 24px;
+  left: 28px;
+  z-index: 20;
+
+  display: inline-flex;
+
+  border-radius: 8px;
+  outline: none;
+}
+
+/* Element: the image only handles size and hover feedback */
+.brand-logo__image {
+  display: block;
+  height: 34px;
+  width: auto;
+
+  opacity: 0.92;
+  user-select: none;
+  -webkit-user-drag: none;
+
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
+}
+
+.brand-logo:hover .brand-logo__image {
+  opacity: 1;
+  transform: scale(1.03);
+}
+
+/* Keyboard focus ring */
+.brand-logo:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.7);
+  outline-offset: 6px;
 }
 
 /* ==========================================================================
@@ -311,7 +354,6 @@ body {
   text-transform: uppercase;
 
   color: var(--text-secondary);
-  opacity: 0.7;
   text-shadow: var(--shadow-text);
 }
 
@@ -321,6 +363,7 @@ body {
 
 .greeting {
   position: absolute;
+  z-index: 3;
   padding: 0;
   margin: 0;
 }
@@ -391,12 +434,12 @@ body {
 
 .search-bar:hover {
   border-color: rgba(255, 255, 255, 0.1);
-  background: rgba(0, 0, 0, 0.32);
+  background: rgba(0, 0, 0, 0.48);
 }
 
 .search-bar:focus-within {
   border-color: rgba(255, 255, 255, 0.18);
-  background: rgba(0, 0, 0, 0.4);
+  background: rgba(0, 0, 0, 0.52);
   box-shadow: var(--shadow-soft), 0 0 0 1px rgba(255, 255, 255, 0.04);
 }
 
@@ -1491,14 +1534,16 @@ body {
    Animations — subtle entrance & transitions
    ========================================================================== */
 
+/* Uses the individual `translate` property (not `transform`) so the entrance
+   animation never overrides the `transform` used by .widget[data-position]. */
 @keyframes fadeInUp {
   from {
     opacity: 0;
-    transform: translateY(12px);
+    translate: 0 12px;
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    translate: 0 0;
   }
 }
 
@@ -1563,55 +1608,13 @@ body {
   }
 }
 
-/* Thẻ <a> giữ vị trí cố định ở góc trên trái */
-.fynn-logo-link {
-  position: fixed;
-  top: 24px;
-  left: 28px;
-  z-index: 20;
-  display: inline-flex;
-  border-radius: 8px;
-  outline: none;
-}
-
-/* Ảnh logo chỉ lo kích thước và hiệu ứng */
-.fynn-logo {
-  display: block;
-  height: 34px;
-  width: auto;
-  opacity: 0.92;
-  user-select: none;
-  -webkit-user-drag: none;
-  transition: opacity 0.2s ease, transform 0.2s ease;
-}
-
-.fynn-logo-link:hover .fynn-logo {
-  opacity: 1;
-  transform: scale(1.03);
-}
-
-/* Viền focus khi điều hướng bằng bàn phím */
-.fynn-logo-link:focus-visible {
-  outline: 2px solid rgba(255, 255, 255, 0.7);
-  outline-offset: 6px;
-}
-
 @media (max-width: 640px) {
-  .fynn-logo-link {
+  .brand-logo {
     top: 16px;
     left: 16px;
   }
 
-  .fynn-logo {
+  .brand-logo__image {
     height: 26px;
   }
-}
-
-@keyframes fadeInUp {
-  from { opacity: 0; translate: 0 12px; }
-  to   { opacity: 1; translate: 0 0; }
-}
-
-.greeting {
-  z-index: 3;
 }
