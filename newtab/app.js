@@ -1,4 +1,17 @@
 /* ==========================================================================
+   0. HELPERS
+   ========================================================================== */
+
+function escapeHTML(value) {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+/* ==========================================================================
    1. APP INITIALIZATION & DATABASE (IndexedDB)
    ========================================================================== */
 const DB_NAME = "FynnNewTabDB";
@@ -32,11 +45,16 @@ function openDatabase() {
 
 async function initApp() {
   try {
-    await openDatabase();
-
+    /*
+     * Widgets, layout and settings only need LocalStorage, so they run
+     * BEFORE the IndexedDB await. This prevents hidden widgets from
+     * flashing on screen while the database is still opening.
+     */
     initializeWidgets();
     applyWidgetLayout();
     initializeSettings();
+
+    await openDatabase();
 
     await initializeWallpaperSystem();
     await initializeNotes();
@@ -117,23 +135,18 @@ function initializeWidgets() {
   widgetToggles.forEach((toggle) => {
     const widgetName = toggle.dataset.widget;
 
-    toggle.checked =
-      Object.prototype.hasOwnProperty.call(settings, widgetName)
-        ? settings[widgetName]
-        : true;
+    toggle.checked = Object.prototype.hasOwnProperty.call(
+      settings,
+      widgetName,
+    )
+      ? settings[widgetName]
+      : (defaultWidgetSettings[widgetName] ?? true);
 
     setWidgetVisibility(widgetName, toggle.checked);
 
     toggle.addEventListener("change", () => {
       setWidgetVisibility(widgetName, toggle.checked);
-
-      const currentSettings = loadWidgetSettings();
-      currentSettings[widgetName] = toggle.checked;
-
-      localStorage.setItem(
-        WIDGET_SETTINGS_KEY,
-        JSON.stringify(currentSettings),
-      );
+      saveWidgetSettings();
     });
   });
 }
@@ -159,14 +172,7 @@ function updateClock() {
   document.querySelector("#date").textContent = date;
 }
 
-/* ==========================================================================
-   2.3 SETTINGS SYSTEM
-   (moved above the Search Widget section — it was previously declared
-   further down the file, but the Search Widget code below needs these
-   constants immediately, which caused:
-   "Uncaught ReferenceError: Cannot access 'SEARCH_ENGINE_KEY' before initialization")
-   ========================================================================== */
-
+// --- 2.3 General Settings (constants & storage helpers) ---
 const SEARCH_ENGINE_KEY = "fynn-search-engine";
 const TIME_FORMAT_KEY = "fynn-time-format";
 const SEARCH_FOCUS_EFFECT_KEY = "fynn-search-focus-effect";
@@ -186,10 +192,7 @@ function saveSetting(key, value) {
   localStorage.setItem(key, value);
 }
 
-let timeFormat = loadSetting(
-  TIME_FORMAT_KEY,
-  defaultSettings.timeFormat,
-);
+let timeFormat = loadSetting(TIME_FORMAT_KEY, defaultSettings.timeFormat);
 
 // --- 2.4 Search Widget ---
 const engineButton = document.querySelector("#engineButton");
@@ -203,6 +206,10 @@ let currentEngine = loadSetting(
   SEARCH_ENGINE_KEY,
   defaultSettings.searchEngine,
 );
+
+// Clean inline SVG icon instead of an emoji
+searchButton.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>`;
+searchButton.setAttribute("aria-label", "Search");
 
 function applySearchEngine(engine) {
   currentEngine = engine;
@@ -245,7 +252,7 @@ function performSearch() {
   }
 
   const encodedQuery = encodeURIComponent(query);
-  let url =
+  const url =
     currentEngine === "brave"
       ? `https://search.brave.com/search?q=${encodedQuery}`
       : `https://www.google.com/search?q=${encodedQuery}`;
@@ -261,64 +268,67 @@ document.addEventListener("click", () => {
   engineMenu.classList.remove("active");
 });
 
-/* =========================
-   Widget Layout
-   ========================= */
-
-const defaultWidgetPositions = {
-    clock: "top-center",
-    date: "top-center",
-    greeting: "bottom-left",
-    notes: "bottom-right"
-};
-
-
+// --- 2.5 Widget Layout ---
 const WIDGET_LAYOUT_KEY = "fynn-widget-layout";
 
+/*
+ * Only Greeting and Notes are movable.
+ * Clock + Date live inside the hero flex column (see style.css),
+ * so they intentionally ignore the position system.
+ */
+const defaultWidgetPositions = {
+  greeting: "bottom-left",
+  notes: "bottom-right",
+};
 
 function loadWidgetLayout() {
-    const saved = localStorage.getItem(WIDGET_LAYOUT_KEY);
+  const saved = localStorage.getItem(WIDGET_LAYOUT_KEY);
 
-    if (!saved) {
-        return defaultWidgetPositions;
-    }
+  // Always return a COPY so callers can never mutate the defaults.
+  if (!saved) {
+    return { ...defaultWidgetPositions };
+  }
 
+  try {
+    const parsed = JSON.parse(saved);
 
-    try {
-        return {
-            ...defaultWidgetPositions,
-            ...JSON.parse(saved)
-        };
-
-    } catch (error) {
-        console.error("Failed to load widget layout:", error);
-        return defaultWidgetPositions;
-    }
-}
-
-function applyWidgetLayout() {
-    const layout = loadWidgetLayout();
-
-    Object.entries(layout).forEach(
-        ([widgetName, position]) => {
-
-            const widgets =
-                document.querySelectorAll(
-                    `[data-widget="${widgetName}"]`
-                );
-
-
-            widgets.forEach((widget) => {
-                widget.dataset.position = position;
-            });
-        }
-    );
+    return {
+      ...defaultWidgetPositions,
+      ...parsed,
+    };
+  } catch (error) {
+    console.error("Failed to load widget layout:", error);
+    return { ...defaultWidgetPositions };
+  }
 }
 
 function saveWidgetLayout(layout) {
-    localStorage.setItem(WIDGET_LAYOUT_KEY, JSON.stringify(layout));
+  localStorage.setItem(WIDGET_LAYOUT_KEY, JSON.stringify(layout));
 }
 
+function applyWidgetLayout() {
+  const layout = loadWidgetLayout();
+
+  Object.entries(layout).forEach(([widgetName, position]) => {
+    /*
+     * ".widget" is required: the dashboard checkboxes also use
+     * data-widget, and they must not receive data-position.
+     */
+    document
+      .querySelectorAll(`.widget[data-widget="${widgetName}"]`)
+      .forEach((widget) => {
+        widget.dataset.position = position;
+      });
+  });
+}
+
+function setWidgetPosition(widgetName, position) {
+  const layout = loadWidgetLayout();
+  layout[widgetName] = position;
+
+  saveWidgetLayout(layout);
+  applyWidgetLayout();
+}
 
 /* ==========================================================================
    3. DASHBOARD SYSTEM
@@ -327,6 +337,11 @@ const dashboard = document.querySelector("#dashboard");
 const dashboardToggle = document.querySelector("#dashboardToggle");
 const dashboardTabs = document.querySelectorAll(".dashboard-tab");
 const dashboardContents = document.querySelectorAll(".dashboard-content");
+
+function setDashboardOpen(isOpen) {
+  dashboard.classList.toggle("open", isOpen);
+  document.querySelector(".app").classList.toggle("dashboard-open", isOpen);
+}
 
 dashboardToggle.addEventListener("click", () => {
   const isOpen = !dashboard.classList.contains("open");
@@ -345,10 +360,7 @@ dashboardTabs.forEach((tab) => {
   });
 });
 
-/* =========================
-   Click Outside Dashboard
-   ========================= */
-
+// Click outside the dashboard closes it
 document.addEventListener("click", (event) => {
   const isOpen = dashboard.classList.contains("open");
   if (!isOpen) return;
@@ -367,14 +379,6 @@ document.addEventListener("keydown", (event) => {
 
   setDashboardOpen(false);
 });
-
-function setDashboardOpen(isOpen) {
-  dashboard.classList.toggle("open", isOpen);
-  document.querySelector(".app").classList.toggle(
-    "dashboard-open",
-    isOpen,
-  );
-}
 
 /* ==========================================================================
    4. WALLPAPER SYSTEM
@@ -411,8 +415,7 @@ function getScheduledWallpaperMode(date = new Date()) {
 
 function getActiveWallpaper(wallpapers) {
   const primary = wallpapers.find(
-    (wallpaper) =>
-      getWallpaperMode(wallpaper) === WALLPAPER_MODES.PRIMARY,
+    (wallpaper) => getWallpaperMode(wallpaper) === WALLPAPER_MODES.PRIMARY,
   );
 
   if (primary) {
@@ -422,8 +425,7 @@ function getActiveWallpaper(wallpapers) {
   const scheduledMode = getScheduledWallpaperMode();
 
   const scheduledWallpaper = wallpapers.find(
-    (wallpaper) =>
-      getWallpaperMode(wallpaper) === scheduledMode,
+    (wallpaper) => getWallpaperMode(wallpaper) === scheduledMode,
   );
 
   if (scheduledWallpaper) {
@@ -431,8 +433,7 @@ function getActiveWallpaper(wallpapers) {
   }
 
   const defaultWallpaper = wallpapers.find(
-    (wallpaper) =>
-      getWallpaperMode(wallpaper) === WALLPAPER_MODES.DEFAULT,
+    (wallpaper) => getWallpaperMode(wallpaper) === WALLPAPER_MODES.DEFAULT,
   );
 
   return defaultWallpaper || null;
@@ -591,13 +592,12 @@ async function renderWallpapers() {
   wallpapers.forEach((wallpaper) => {
     const currentMode = getWallpaperMode(wallpaper);
     const isPrimary = currentMode === WALLPAPER_MODES.PRIMARY;
+    const safeName = escapeHTML(wallpaper.name);
 
     const url = URL.createObjectURL(wallpaper.blob);
     wallpaperPreviewUrls.add(url);
     const card = document.createElement("div");
-    card.className = `wallpaper-card ${
-      isPrimary ? "primary" : ""
-    }`;
+    card.className = `wallpaper-card ${isPrimary ? "primary" : ""}`;
 
     let previewUrl = url;
     if (wallpaper.thumbnailBlob) {
@@ -608,13 +608,13 @@ async function renderWallpapers() {
     const preview =
       wallpaper.type.startsWith("video/") && !wallpaper.thumbnailBlob
         ? `<video src="${url}" muted loop autoplay playsinline></video>`
-        : `<img src="${previewUrl}" alt="${wallpaper.name}">`;
+        : `<img src="${previewUrl}" alt="${safeName}">`;
 
     card.innerHTML = `
       <div class="wallpaper-preview">${preview}</div>
 
       <div class="wallpaper-info">
-        <span class="wallpaper-name">${wallpaper.name}</span>
+        <span class="wallpaper-name">${safeName}</span>
         <span class="wallpaper-size">${formatFileSize(wallpaper.size)}</span>
       </div>
 
@@ -623,7 +623,7 @@ async function renderWallpapers() {
           ${currentMode.toUpperCase()}
         </span>
 
-        <select class="wallpaper-mode-select" data-mode="${wallpaper.id}" aria-label="Wallpaper mode" >
+        <select class="wallpaper-mode-select" data-mode="${wallpaper.id}" aria-label="Wallpaper mode">
           <option value="${WALLPAPER_MODES.DEFAULT}"
             ${currentMode === WALLPAPER_MODES.DEFAULT ? "selected" : ""}>
             Default
@@ -660,10 +660,7 @@ async function renderWallpapers() {
 function attachWallpaperActions() {
   document.querySelectorAll("[data-mode]").forEach((select) => {
     select.addEventListener("change", () => {
-      setWallpaperMode(
-        select.dataset.mode,
-        select.value,
-      );
+      setWallpaperMode(select.dataset.mode, select.value);
     });
   });
   document.querySelectorAll("[data-delete]").forEach((button) => {
@@ -710,9 +707,7 @@ async function applyActiveWallpaper() {
     staticBackground.style.display = "none";
   }
 
-  currentWallpaperUrl = URL.createObjectURL(
-    activeWallpaper.blob,
-  );
+  currentWallpaperUrl = URL.createObjectURL(activeWallpaper.blob);
 
   if (activeWallpaper.type.startsWith("video/")) {
     backgroundVideo.src = currentWallpaperUrl;
@@ -747,8 +742,9 @@ async function setWallpaperMode(id, mode) {
       wallpaper.primary = mode === WALLPAPER_MODES.PRIMARY;
     } else if (
       currentMode === WALLPAPER_MODES.PRIMARY &&
-      mode !== WALLPAPER_MODES.PRIMARY
+      mode === WALLPAPER_MODES.PRIMARY
     ) {
+      // Only one wallpaper can be primary at a time
       wallpaper.mode = WALLPAPER_MODES.DEFAULT;
       wallpaper.primary = false;
     }
@@ -846,12 +842,6 @@ function deleteNote(id) {
 }
 
 // --- UI Rendering ---
-function escapeHTML(value) {
-  const element = document.createElement("div");
-  element.textContent = value;
-  return element.innerHTML;
-}
-
 async function renderNotes() {
   const notes = await getNotes();
   notes.sort((a, b) => {
@@ -873,17 +863,17 @@ async function renderNotes() {
     if (note.pinned) item.classList.add("pinned");
 
     item.innerHTML = `
-  <div class="note-content">
-    <input type="checkbox" class="note-check" data-complete="${note.id}" ${note.completed ? "checked" : ""}>
-    <div class="note-title ${note.completed ? "completed" : ""}">${escapeHTML(note.title)}</div>
-    <div class="note-text ${note.completed ? "completed" : ""}">${escapeHTML(note.content)}</div>
-  </div>
-  <div class="note-actions">
-    <button class="note-action" data-pin="${note.id}">${note.pinned ? "Unpin" : "Pin"}</button>
-    <button class="note-action" data-edit="${note.id}">Edit</button>
-    <button class="note-action" data-delete-note="${note.id}">Delete</button>
-  </div>
-`;
+      <div class="note-content">
+        <input type="checkbox" class="note-check" data-complete="${note.id}" ${note.completed ? "checked" : ""}>
+        <div class="note-title ${note.completed ? "completed" : ""}">${escapeHTML(note.title)}</div>
+        <div class="note-text ${note.completed ? "completed" : ""}">${escapeHTML(note.content)}</div>
+      </div>
+      <div class="note-actions">
+        <button class="note-action" data-pin="${note.id}">${note.pinned ? "Unpin" : "Pin"}</button>
+        <button class="note-action" data-edit="${note.id}">Edit</button>
+        <button class="note-action" data-delete-note="${note.id}">Delete</button>
+      </div>
+    `;
     notesList.appendChild(item);
   });
 
@@ -1012,90 +1002,24 @@ async function initializeNotes() {
 }
 
 /* ==========================================================================
-   6. START APPLICATION
+   6. SETTINGS PANEL
    ========================================================================== */
-updateClock();
-setInterval(updateClock, 1000);
-initApp();
-
-/* --- Replace emoji search icon with clean inline SVG --- */
-searchButton.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>`;
-searchButton.setAttribute("aria-label", "Search");
-
-const searchContainer = document.querySelector("#searchContainer");
-
-const backgroundDim = document.querySelector("#backgroundDim");
-
-/* =========================
-   Search Hover Background
-   ========================= */
-
-searchContainer.addEventListener("mouseenter", () => {
-  if (!isSearchFocusEffectEnabled()) return;
-
-  backgroundDim.classList.add("active");
-});
-
-searchContainer.addEventListener("mouseleave", () => {
-  /*
-   * Keep the dim effect while
-   * the search input is focused.
-   */
-  if (document.activeElement !== searchInput) {
-    backgroundDim.classList.remove("active");
-  }
-});
-
-searchInput.addEventListener("focus", () => {
-  if (!isSearchFocusEffectEnabled()) return;
-
-  backgroundDim.classList.add("active");
-});
-
-searchInput.addEventListener("blur", () => {
-  backgroundDim.classList.remove("active");
-});
-
-
-function setWidgetPosition(
-    widgetName,
-    position
-) {
-
-    const layout =
-        loadWidgetLayout();
-
-
-    layout[widgetName] =
-        position;
-
-
-    localStorage.setItem(
-        WIDGET_LAYOUT_KEY,
-        JSON.stringify(layout)
-    );
-
-
-    applyWidgetLayout();
-
+function isSearchFocusEffectEnabled() {
+  return (
+    loadSetting(
+      SEARCH_FOCUS_EFFECT_KEY,
+      String(defaultSettings.searchFocusEffect),
+    ) === "true"
+  );
 }
 
 function initializeSettings() {
-  const searchEngineSetting = document.querySelector(
-    "#searchEngineSetting",
-  );
-
-  const timeFormatSetting = document.querySelector(
-    "#timeFormatSetting",
-  );
-
+  const searchEngineSetting = document.querySelector("#searchEngineSetting");
+  const timeFormatSetting = document.querySelector("#timeFormatSetting");
   const searchFocusEffectSetting = document.querySelector(
     "#searchFocusEffectSetting",
   );
-
-  const resetSettingsButton = document.querySelector(
-    "#resetSettingsButton",
-  );
+  const resetSettingsButton = document.querySelector("#resetSettingsButton");
 
   searchEngineSetting.value = loadSetting(
     SEARCH_ENGINE_KEY,
@@ -1107,11 +1031,7 @@ function initializeSettings() {
     defaultSettings.timeFormat,
   );
 
-  searchFocusEffectSetting.checked =
-    loadSetting(
-      SEARCH_FOCUS_EFFECT_KEY,
-      String(defaultSettings.searchFocusEffect),
-    ) === "true";
+  searchFocusEffectSetting.checked = isSearchFocusEffectEnabled();
 
   searchEngineSetting.addEventListener("change", () => {
     const engine = searchEngineSetting.value;
@@ -1136,9 +1056,7 @@ function initializeSettings() {
   });
 
   resetSettingsButton.addEventListener("click", () => {
-    const confirmed = confirm(
-      "Reset Fynn NewTab settings?",
-    );
+    const confirmed = confirm("Reset Fynn NewTab settings?");
 
     if (!confirmed) return;
 
@@ -1150,6 +1068,9 @@ function initializeSettings() {
     // Reset widget settings
     localStorage.removeItem(WIDGET_SETTINGS_KEY);
 
+    // Reset widget layout
+    localStorage.removeItem(WIDGET_LAYOUT_KEY);
+
     // Apply default general settings
     applySearchEngine(defaultSettings.searchEngine);
 
@@ -1158,33 +1079,60 @@ function initializeSettings() {
 
     searchEngineSetting.value = defaultSettings.searchEngine;
     timeFormatSetting.value = defaultSettings.timeFormat;
-    searchFocusEffectSetting.checked =
-      defaultSettings.searchFocusEffect;
+    searchFocusEffectSetting.checked = defaultSettings.searchFocusEffect;
 
     // Apply default widget settings
     widgetToggles.forEach((toggle) => {
       const widgetName = toggle.dataset.widget;
-      const visible =
-        defaultWidgetSettings[widgetName] ?? true;
+      const visible = defaultWidgetSettings[widgetName] ?? true;
 
       toggle.checked = visible;
       setWidgetVisibility(widgetName, visible);
     });
+
+    // Apply default widget layout
+    applyWidgetLayout();
   });
 
   applySearchEngine(
-    loadSetting(
-      SEARCH_ENGINE_KEY,
-      defaultSettings.searchEngine,
-    ),
+    loadSetting(SEARCH_ENGINE_KEY, defaultSettings.searchEngine),
   );
 }
 
-function isSearchFocusEffectEnabled() {
-  return (
-    loadSetting(
-      SEARCH_FOCUS_EFFECT_KEY,
-      String(defaultSettings.searchFocusEffect),
-    ) === "true"
-  );
-}
+/* ==========================================================================
+   7. SEARCH FOCUS EFFECT (dim/blur wallpaper on hover & focus)
+   ========================================================================== */
+const searchContainer = document.querySelector("#searchContainer");
+const backgroundDim = document.querySelector("#backgroundDim");
+
+searchContainer.addEventListener("mouseenter", () => {
+  if (!isSearchFocusEffectEnabled()) return;
+
+  backgroundDim.classList.add("active");
+});
+
+searchContainer.addEventListener("mouseleave", () => {
+  // Keep the dim effect while the search input is focused.
+  if (document.activeElement !== searchInput) {
+    backgroundDim.classList.remove("active");
+  }
+});
+
+searchInput.addEventListener("focus", () => {
+  if (!isSearchFocusEffectEnabled()) return;
+
+  backgroundDim.classList.add("active");
+});
+
+searchInput.addEventListener("blur", () => {
+  backgroundDim.classList.remove("active");
+});
+
+/* ==========================================================================
+   8. START APPLICATION
+   (Must stay at the very end of the file, so every const/let above is
+   initialized before any code that uses it runs.)
+   ========================================================================== */
+updateClock();
+setInterval(updateClock, 1000);
+initApp();
