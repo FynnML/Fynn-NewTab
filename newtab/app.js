@@ -111,10 +111,19 @@ function loadWidgetSettings() {
   try {
     const parsed = JSON.parse(saved);
 
-    return {
-      ...defaultWidgetSettings,
-      ...parsed,
-    };
+    if (!parsed || typeof parsed !== "object") {
+      return { ...defaultWidgetSettings };
+    }
+
+    const settings = { ...defaultWidgetSettings };
+
+    Object.keys(defaultWidgetSettings).forEach((widgetName) => {
+      if (typeof parsed[widgetName] === "boolean") {
+        settings[widgetName] = parsed[widgetName];
+      }
+    });
+
+    return settings;
   } catch (error) {
     console.error("Failed to load widget settings:", error);
     return { ...defaultWidgetSettings };
@@ -183,16 +192,24 @@ const defaultSettings = {
   searchFocusEffect: true,
 };
 
-function loadSetting(key, fallback) {
+const VALID_SEARCH_ENGINES = ["brave", "google"];
+const VALID_TIME_FORMATS = ["12h", "24h"];
+
+function loadSetting(key, fallback, validator = () => true) {
   const value = localStorage.getItem(key);
-  return value ?? fallback;
+
+  if (value !== null && validator(value)) {
+    return value;
+  }
+
+  return fallback;
 }
 
-function saveSetting(key, value) {
-  localStorage.setItem(key, value);
-}
-
-let timeFormat = loadSetting(TIME_FORMAT_KEY, defaultSettings.timeFormat);
+let timeFormat = loadSetting(
+  TIME_FORMAT_KEY,
+  defaultSettings.timeFormat,
+  (value) => VALID_TIME_FORMATS.includes(value),
+);
 
 // --- 2.4 Search Widget ---
 const engineButton = document.querySelector("#engineButton");
@@ -205,6 +222,7 @@ const engineOptions = document.querySelectorAll(".engine-option");
 let currentEngine = loadSetting(
   SEARCH_ENGINE_KEY,
   defaultSettings.searchEngine,
+  (value) => VALID_SEARCH_ENGINES.includes(value),
 );
 
 // Clean inline SVG icon instead of an emoji
@@ -276,6 +294,17 @@ const WIDGET_LAYOUT_KEY = "fynn-widget-layout";
  * Clock + Date live inside the hero flex column (see style.css),
  * so they intentionally ignore the position system.
  */
+
+const VALID_WIDGET_POSITIONS = [
+  "top-center",
+  "top-left",
+  "top-right",
+  "bottom-center",
+  "bottom-left",
+  "bottom-right",
+  "middle-left",
+];
+
 const defaultWidgetPositions = {
   greeting: "bottom-left",
   notes: "bottom-right",
@@ -284,7 +313,6 @@ const defaultWidgetPositions = {
 function loadWidgetLayout() {
   const saved = localStorage.getItem(WIDGET_LAYOUT_KEY);
 
-  // Always return a COPY so callers can never mutate the defaults.
   if (!saved) {
     return { ...defaultWidgetPositions };
   }
@@ -292,10 +320,21 @@ function loadWidgetLayout() {
   try {
     const parsed = JSON.parse(saved);
 
-    return {
-      ...defaultWidgetPositions,
-      ...parsed,
-    };
+    if (!parsed || typeof parsed !== "object") {
+      return { ...defaultWidgetPositions };
+    }
+
+    const layout = { ...defaultWidgetPositions };
+
+    Object.keys(defaultWidgetPositions).forEach((widgetName) => {
+      const position = parsed[widgetName];
+
+      if (VALID_WIDGET_POSITIONS.includes(position)) {
+        layout[widgetName] = position;
+      }
+    });
+
+    return layout;
   } catch (error) {
     console.error("Failed to load widget layout:", error);
     return { ...defaultWidgetPositions };
