@@ -205,6 +205,10 @@ function loadSetting(key, fallback, validator = () => true) {
   return fallback;
 }
 
+function saveSetting(key, value) {
+  localStorage.setItem(key, value);
+}
+
 let timeFormat = loadSetting(
   TIME_FORMAT_KEY,
   defaultSettings.timeFormat,
