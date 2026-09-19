@@ -967,24 +967,32 @@ async function renderNotes() {
 }
 
 function attachNoteActions() {
-  button.addEventListener("click", () => {
-    editNote(button.dataset.edit).catch((error) => {
-      handleAsyncError("Note edit failed", error);
+  document.querySelectorAll("[data-edit]").forEach((button) => {
+    button.addEventListener("click", () => {
+      editNote(button.dataset.edit).catch((error) => {
+        handleAsyncError("Note edit failed", error);
+      });
     });
   });
-  button.addEventListener("click", () => {
-    toggleNotePin(button.dataset.pin).catch((error) => {
-      handleAsyncError("Note pin update failed", error);
+  document.querySelectorAll("[data-pin]").forEach((button) => {
+    button.addEventListener("click", () => {
+      toggleNotePin(button.dataset.pin).catch((error) => {
+        handleAsyncError("Note pin update failed", error);
+      });
     });
   });
-  checkbox.addEventListener("change", () => {
-    toggleNoteCompleted(checkbox.dataset.complete).catch((error) => {
-      handleAsyncError("Note completion update failed", error);
+  document.querySelectorAll("[data-complete]").forEach((checkbox) => {
+    checkbox.addEventListener("change", () => {
+      toggleNoteCompleted(checkbox.dataset.complete).catch((error) => {
+        handleAsyncError("Note completion update failed", error);
+      });
     });
   });
-  button.addEventListener("click", () => {
-    removeNote(button.dataset.deleteNote).catch((error) => {
-      handleAsyncError("Note deletion failed", error);
+  document.querySelectorAll("[data-delete-note]").forEach((button) => {
+    button.addEventListener("click", () => {
+      removeNote(button.dataset.deleteNote).catch((error) => {
+        handleAsyncError("Note deletion failed", error);
+      });
     });
   });
 }
