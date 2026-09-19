@@ -1263,6 +1263,64 @@ body {
   margin-top: var(--space-xs);
 }
 
+.wallpaper-mode-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+
+  margin-top: var(--space-xs);
+}
+
+.wallpaper-mode-label {
+  padding: 4px 7px;
+
+  border: 1px solid var(--glass-border-soft);
+  border-radius: 6px;
+
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-dim);
+
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.6px;
+}
+
+.wallpaper-mode-select {
+  min-width: 92px;
+  height: 28px;
+  padding: 0 8px;
+
+  border: 1px solid var(--glass-border-soft);
+  border-radius: var(--radius-sm);
+
+  outline: none;
+
+  background: var(--surface-glass);
+  color: var(--text-secondary);
+
+  font-size: 11px;
+  font-family: inherit;
+
+  cursor: pointer;
+  transition:
+    background var(--transition-fast),
+    border-color var(--transition-fast),
+    color var(--transition-fast);
+}
+
+.wallpaper-mode-select:hover,
+.wallpaper-mode-select:focus {
+  background: var(--surface-interactive);
+  border-color: var(--glass-border);
+  color: var(--text-primary);
+}
+
+.wallpaper-mode-select option {
+  background: #151515;
+  color: #ffffff;
+}
+
 .wallpaper-name {
   min-width: 0;
   overflow: hidden;

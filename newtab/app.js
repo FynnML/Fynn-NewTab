@@ -572,17 +572,48 @@ async function renderWallpapers() {
         ? `<video src="${url}" muted loop autoplay playsinline></video>`
         : `<img src="${previewUrl}" alt="${wallpaper.name}">`;
 
+const currentMode = getWallpaperMode(wallpaper);
+
     card.innerHTML = `
       <div class="wallpaper-preview">${preview}</div>
+
       <div class="wallpaper-info">
-        <span class="wallpaper-name">${isPrimary ? "Primary" : wallpaper.name}</span>
+        <span class="wallpaper-name">${wallpaper.name}</span>
         <span class="wallpaper-size">${formatFileSize(wallpaper.size)}</span>
       </div>
+
+      <div class="wallpaper-mode-row">
+        <span class="wallpaper-mode-label">
+          ${currentMode.toUpperCase()}
+        </span>
+
+        <select class="wallpaper-mode-select" data-mode="${wallpaper.id}" aria-label="Wallpaper mode" >
+          <option value="${WALLPAPER_MODES.DEFAULT}"
+            ${currentMode === WALLPAPER_MODES.DEFAULT ? "selected" : ""}>
+            Default
+          </option>
+
+          <option value="${WALLPAPER_MODES.PRIMARY}"
+            ${currentMode === WALLPAPER_MODES.PRIMARY ? "selected" : ""}>
+            Primary
+          </option>
+
+          <option value="${WALLPAPER_MODES.DAY}"
+            ${currentMode === WALLPAPER_MODES.DAY ? "selected" : ""}>
+            Day
+          </option>
+
+          <option value="${WALLPAPER_MODES.NIGHT}"
+            ${currentMode === WALLPAPER_MODES.NIGHT ? "selected" : ""}>
+            Night
+          </option>
+        </select>
+      </div>
+
       <div class="wallpaper-actions">
-        <button class="wallpaper-action primary-button" data-primary="${wallpaper.id}">
-          ${isPrimary ? "Active" : "Set Primary"}
+        <button class="wallpaper-action delete-button" data-delete="${wallpaper.id}">
+          Delete
         </button>
-        <button class="wallpaper-action delete-button" data-delete="${wallpaper.id}">Delete</button>
       </div>
     `;
     wallpaperList.appendChild(card);
@@ -591,10 +622,13 @@ async function renderWallpapers() {
 }
 
 function attachWallpaperActions() {
-  document.querySelectorAll("[data-primary]").forEach((button) => {
-    button.addEventListener("click", () =>
-      setPrimaryWallpaper(button.dataset.primary),
-    );
+  document.querySelectorAll("[data-mode]").forEach((select) => {
+    select.addEventListener("change", () => {
+      setWallpaperMode(
+        select.dataset.mode,
+        select.value,
+      );
+    });
   });
   document.querySelectorAll("[data-delete]").forEach((button) => {
     button.addEventListener("click", () =>
@@ -638,6 +672,40 @@ async function applyActiveWallpaper() {
     backgroundImage.src = currentWallpaperUrl;
     backgroundImage.classList.add("active");
   }
+}
+
+async function setWallpaperMode(id, mode) {
+  const wallpapers = await getWallpapers();
+
+  for (const wallpaper of wallpapers) {
+    const currentMode = getWallpaperMode(wallpaper);
+
+    if (wallpaper.id === id) {
+      wallpaper.mode = mode;
+      wallpaper.primary = mode === WALLPAPER_MODES.PRIMARY;
+    } else if (
+      mode === WALLPAPER_MODES.PRIMARY &&
+      currentMode === WALLPAPER_MODES.PRIMARY
+    ) {
+      wallpaper.mode = WALLPAPER_MODES.DEFAULT;
+      wallpaper.primary = false;
+    } else if (
+      mode === WALLPAPER_MODES.DAY &&
+      currentMode === WALLPAPER_MODES.DAY
+    ) {
+      wallpaper.mode = WALLPAPER_MODES.DEFAULT;
+    } else if (
+      mode === WALLPAPER_MODES.NIGHT &&
+      currentMode === WALLPAPER_MODES.NIGHT
+    ) {
+      wallpaper.mode = WALLPAPER_MODES.DEFAULT;
+    }
+
+    await saveWallpaper(wallpaper);
+  }
+
+  await applyActiveWallpaper();
+  await renderWallpapers();
 }
 
 async function setPrimaryWallpaper(id) {
