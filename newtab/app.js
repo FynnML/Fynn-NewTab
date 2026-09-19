@@ -366,6 +366,19 @@ function applyWidgetLayout() {
 }
 
 function setWidgetPosition(widgetName, position) {
+  if (!Object.prototype.hasOwnProperty.call(
+    defaultWidgetPositions,
+    widgetName,
+  )) {
+    console.warn(`Invalid widget: ${widgetName}`);
+    return;
+  }
+
+  if (!VALID_WIDGET_POSITIONS.includes(position)) {
+    console.warn(`Invalid widget position: ${position}`);
+    return;
+  }
+
   const layout = loadWidgetLayout();
   layout[widgetName] = position;
 
@@ -435,12 +448,18 @@ const WALLPAPER_MODES = {
   NIGHT: "night",
 };
 
+const VALID_WALLPAPER_MODES = Object.values(WALLPAPER_MODES);
+
 // --- Helpers ---
 function getWallpaperMode(wallpaper) {
-  if (wallpaper.mode) {
+  if (
+    wallpaper.mode &&
+    VALID_WALLPAPER_MODES.includes(wallpaper.mode)
+  ) {
     return wallpaper.mode;
   }
 
+  // Backward compatibility for old wallpaper records.
   return wallpaper.primary
     ? WALLPAPER_MODES.PRIMARY
     : WALLPAPER_MODES.DEFAULT;
@@ -775,6 +794,11 @@ function startWallpaperScheduler() {
 }
 
 async function setWallpaperMode(id, mode) {
+  if (!VALID_WALLPAPER_MODES.includes(mode)) {
+    console.warn(`Invalid wallpaper mode: ${mode}`);
+    return;
+  }
+
   const wallpapers = await getWallpapers();
 
   for (const wallpaper of wallpapers) {
