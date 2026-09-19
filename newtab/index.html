@@ -39,16 +39,11 @@
         <!-- Search -->
         <section class="search-container" id="searchContainer" data-widget="search">
           <div class="search-bar">
-            <button class="engine-button" id="engineButton">
+            <button type="button" class="engine-button" id="engineButton" aria-label="Choose search engine" aria-controls="engineMenu" aria-expanded="false">
               <img id="engineIcon" src="../assets/icons/brave.png" alt="Brave" />
             </button>
 
-            <input
-              type="text"
-              id="searchInput"
-              placeholder="Search the Web"
-              autocomplete="off"
-            />
+            <input type="text" id="searchInput" placeholder="Search the Web" autocomplete="off"/>
 
             <button class="search-button" id="searchButton"></button>
 
@@ -100,7 +95,7 @@
       </section>
 
       <!-- Dashboard button -->
-      <button class="dashboard-toggle" id="dashboardToggle">
+      <button type="button" class="dashboard-toggle" id="dashboardToggle" aria-label="Open dashboard" aria-controls="dashboard" aria-expanded="false" >
         <span class="icon">◀</span>
       </button>
     </main>
@@ -109,13 +104,17 @@
     <aside class="dashboard" id="dashboard">
       <div class="dashboard-header">
         <div class="dashboard-tabs">
-          <button class="dashboard-tab active" data-tab="wallpapers">
+          <button type="button" class="dashboard-tab active" data-tab="wallpapers" aria-controls="wallpapers" aria-selected="true">
             Wallpapers
           </button>
 
-          <button class="dashboard-tab" data-tab="widgets">Widgets</button>
+          <button type="button" class="dashboard-tab" data-tab="widgets" aria-controls="widgets" aria-selected="false" >
+            Widgets
+          </button>
 
-          <button class="dashboard-tab" data-tab="settings">Settings</button>
+          <button type="button" class="dashboard-tab" data-tab="settings" aria-controls="settings" aria-selected="false" >
+            Settings
+          </button>
         </div>
       </div>
 

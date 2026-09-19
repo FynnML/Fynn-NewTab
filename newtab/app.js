@@ -256,7 +256,10 @@ function applySearchEngine(engine) {
 
 engineButton.addEventListener("click", (event) => {
   event.stopPropagation();
-  engineMenu.classList.toggle("active");
+
+  const isOpen = engineMenu.classList.toggle("active");
+
+  engineButton.setAttribute("aria-expanded", String(isOpen));
 });
 
 engineOptions.forEach((option) => {
@@ -267,6 +270,7 @@ engineOptions.forEach((option) => {
     saveSetting(SEARCH_ENGINE_KEY, engine);
 
     engineMenu.classList.remove("active");
+    engineButton.setAttribute("aria-expanded", "false");
     searchInput.focus();
   });
 });
@@ -402,6 +406,12 @@ const dashboardContents = document.querySelectorAll(".dashboard-content");
 function setDashboardOpen(isOpen) {
   dashboard.classList.toggle("open", isOpen);
   document.querySelector(".app").classList.toggle("dashboard-open", isOpen);
+
+  dashboardToggle.setAttribute("aria-expanded", String(isOpen));
+  dashboardToggle.setAttribute(
+    "aria-label",
+    isOpen ? "Close dashboard" : "Open dashboard",
+  );
 }
 
 dashboardToggle.addEventListener("click", () => {
@@ -413,10 +423,18 @@ dashboardTabs.forEach((tab) => {
   tab.addEventListener("click", () => {
     const target = tab.dataset.tab;
 
-    dashboardTabs.forEach((item) => item.classList.remove("active"));
-    tab.classList.add("active");
+    dashboardTabs.forEach((item) => {
+      item.classList.remove("active");
+      item.setAttribute("aria-selected", "false");
+    });
 
-    dashboardContents.forEach((content) => content.classList.remove("active"));
+    tab.classList.add("active");
+    tab.setAttribute("aria-selected", "true");
+
+    dashboardContents.forEach((content) => {
+      content.classList.remove("active");
+    });
+
     document.querySelector(`#${target}`).classList.add("active");
   });
 });
@@ -436,9 +454,18 @@ document.addEventListener("click", (event) => {
 
 document.addEventListener("keydown", (event) => {
   if (event.key !== "Escape") return;
-  if (!dashboard.classList.contains("open")) return;
 
-  setDashboardOpen(false);
+  if (engineMenu.classList.contains("active")) {
+    engineMenu.classList.remove("active");
+    engineButton.setAttribute("aria-expanded", "false");
+    engineButton.focus();
+    return;
+  }
+
+  if (dashboard.classList.contains("open")) {
+    setDashboardOpen(false);
+    dashboardToggle.focus();
+  }
 });
 
 /* ==========================================================================
