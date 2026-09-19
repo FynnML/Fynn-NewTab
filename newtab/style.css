@@ -1562,3 +1562,47 @@ body {
     bottom: 4%;
   }
 }
+
+/* Thẻ <a> giữ vị trí cố định ở góc trên trái */
+.fynn-logo-link {
+  position: fixed;
+  top: 24px;
+  left: 28px;
+  z-index: 20;
+  display: inline-flex;
+  border-radius: 8px;
+  outline: none;
+}
+
+/* Ảnh logo chỉ lo kích thước và hiệu ứng */
+.fynn-logo {
+  display: block;
+  height: 34px;
+  width: auto;
+  opacity: 0.92;
+  user-select: none;
+  -webkit-user-drag: none;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.fynn-logo-link:hover .fynn-logo {
+  opacity: 1;
+  transform: scale(1.03);
+}
+
+/* Viền focus khi điều hướng bằng bàn phím */
+.fynn-logo-link:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.7);
+  outline-offset: 6px;
+}
+
+@media (max-width: 640px) {
+  .fynn-logo-link {
+    top: 16px;
+    left: 16px;
+  }
+
+  .fynn-logo {
+    height: 26px;
+  }
+}

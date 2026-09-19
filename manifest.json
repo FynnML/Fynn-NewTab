@@ -6,5 +6,13 @@
     "chrome_url_overrides": {
         "newtab": "newtab/index.html"
     },
-    "permissions": ["unlimitedStorage"]
+    "permissions": ["unlimitedStorage"],
+    "icons": {
+    "16": "assets/images/fynn-icon.png",
+    "48": "assets/images/fynn-icon.png",
+    "128": "assets/images/fynn-icon.png"
+    },
+    "action": {
+    "default_icon": "assets/images/fynn-icon.png"
+    }
 }

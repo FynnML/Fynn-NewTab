@@ -447,6 +447,15 @@ const staticBackground = document.querySelector(".background");
 let currentWallpaperUrl = null;
 let activeWallpaperId = null;
 let wallpaperScheduleTimer = null;
+const wallpaperPreviewUrls = new Set();
+
+function revokeWallpaperPreviewUrls() {
+  for (const url of wallpaperPreviewUrls) {
+    URL.revokeObjectURL(url);
+  }
+
+  wallpaperPreviewUrls.clear();
+}
 
 // --- DB Operations ---
 function saveWallpaper(wallpaper) {
@@ -563,6 +572,8 @@ function formatFileSize(bytes) {
 
 async function renderWallpapers() {
   const wallpapers = await getWallpapers();
+
+  revokeWallpaperPreviewUrls();
   wallpaperList.innerHTML = "";
 
   if (wallpapers.length === 0) {
@@ -576,10 +587,11 @@ async function renderWallpapers() {
   }
 
   wallpapers.forEach((wallpaper) => {
-    const isPrimary =
-      getWallpaperMode(wallpaper) === WALLPAPER_MODES.PRIMARY;
+    const currentMode = getWallpaperMode(wallpaper);
+    const isPrimary = currentMode === WALLPAPER_MODES.PRIMARY;
 
     const url = URL.createObjectURL(wallpaper.blob);
+    wallpaperPreviewUrls.add(url);
     const card = document.createElement("div");
     card.className = `wallpaper-card ${
       isPrimary ? "primary" : ""
@@ -588,14 +600,13 @@ async function renderWallpapers() {
     let previewUrl = url;
     if (wallpaper.thumbnailBlob) {
       previewUrl = URL.createObjectURL(wallpaper.thumbnailBlob);
+      wallpaperPreviewUrls.add(previewUrl);
     }
 
     const preview =
       wallpaper.type.startsWith("video/") && !wallpaper.thumbnailBlob
         ? `<video src="${url}" muted loop autoplay playsinline></video>`
         : `<img src="${previewUrl}" alt="${wallpaper.name}">`;
-
-const currentMode = getWallpaperMode(wallpaper);
 
     card.innerHTML = `
       <div class="wallpaper-preview">${preview}</div>
@@ -676,16 +687,17 @@ async function applyActiveWallpaper() {
     URL.revokeObjectURL(currentWallpaperUrl);
     currentWallpaperUrl = null;
   }
-
   backgroundVideo.pause();
   backgroundVideo.removeAttribute("src");
   backgroundVideo.load();
   backgroundVideo.classList.remove("active");
+
+  backgroundImage.removeAttribute("src");
   backgroundImage.classList.remove("active");
 
-  if (!activeWallpaper) {
-    if (staticBackground) staticBackground.style.display = "block";
-    return;
+  if (currentWallpaperUrl) {
+    URL.revokeObjectURL(currentWallpaperUrl);
+    currentWallpaperUrl = null;
   }
 
   if (staticBackground) staticBackground.style.display = "none";
