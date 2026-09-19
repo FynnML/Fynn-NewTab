@@ -557,7 +557,9 @@ wallpaperInput.addEventListener("change", async (event) => {
   };
 
   await saveWallpaper(wallpaper);
+  await applyActiveWallpaper();
   await renderWallpapers();
+
   wallpaperInput.value = "";
 });
 
