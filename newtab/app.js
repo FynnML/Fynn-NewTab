@@ -380,6 +380,43 @@ function setDashboardOpen(isOpen) {
    4. WALLPAPER SYSTEM
    ========================================================================== */
 const WALLPAPER_STORE = "wallpapers";
+
+const WALLPAPER_MODES = {
+  DEFAULT: "default",
+  PRIMARY: "primary",
+  DAY: "day",
+  NIGHT: "night",
+};
+
+// --- Helpers ---
+function getWallpaperMode(wallpaper) {
+  if (wallpaper.mode) {
+    return wallpaper.mode;
+  }
+
+  return wallpaper.primary
+    ? WALLPAPER_MODES.PRIMARY
+    : WALLPAPER_MODES.DEFAULT;
+}
+
+function getActiveWallpaper(wallpapers) {
+  const primary = wallpapers.find(
+    (wallpaper) =>
+      getWallpaperMode(wallpaper) === WALLPAPER_MODES.PRIMARY,
+  );
+
+  if (primary) {
+    return primary;
+  }
+
+  const defaultWallpaper = wallpapers.find(
+    (wallpaper) =>
+      getWallpaperMode(wallpaper) === WALLPAPER_MODES.DEFAULT,
+  );
+
+  return defaultWallpaper || null;
+}
+
 const wallpaperInput = document.querySelector("#wallpaperInput");
 const wallpaperList = document.querySelector("#wallpaperList");
 const backgroundVideo = document.querySelector("#backgroundVideo");
@@ -474,18 +511,18 @@ wallpaperInput.addEventListener("change", async (event) => {
     await navigator.storage.persist();
   }
 
-const wallpaper = {
-  id: crypto.randomUUID(),
-  name: file.name,
-  type: file.type,
-  size: file.size,
-  blob: file,
-  thumbnailBlob: thumbnailBlob,
+  const wallpaper = {
+    id: crypto.randomUUID(),
+    name: file.name,
+    type: file.type,
+    size: file.size,
+    blob: file,
+    thumbnailBlob: thumbnailBlob,
 
-  mode: "default",
+    mode: WALLPAPER_MODES.DEFAULT,
 
-  createdAt: Date.now(),
-};
+    createdAt: Date.now(),
+  };
 
   await saveWallpaper(wallpaper);
   await renderWallpapers();
@@ -516,9 +553,14 @@ async function renderWallpapers() {
   }
 
   wallpapers.forEach((wallpaper) => {
+    const isPrimary =
+      getWallpaperMode(wallpaper) === WALLPAPER_MODES.PRIMARY;
+
     const url = URL.createObjectURL(wallpaper.blob);
     const card = document.createElement("div");
-    card.className = `wallpaper-card ${wallpaper.primary ? "primary" : ""}`;
+    card.className = `wallpaper-card ${
+      isPrimary ? "primary" : ""
+    }`;
 
     let previewUrl = url;
     if (wallpaper.thumbnailBlob) {
@@ -533,12 +575,12 @@ async function renderWallpapers() {
     card.innerHTML = `
       <div class="wallpaper-preview">${preview}</div>
       <div class="wallpaper-info">
-        <span class="wallpaper-name">${wallpaper.primary ? "Primary" : wallpaper.name}</span>
+        <span class="wallpaper-name">${isPrimary ? "Primary" : wallpaper.name}</span>
         <span class="wallpaper-size">${formatFileSize(wallpaper.size)}</span>
       </div>
       <div class="wallpaper-actions">
         <button class="wallpaper-action primary-button" data-primary="${wallpaper.id}">
-          ${wallpaper.primary ? "Active" : "Set Primary"}
+          ${isPrimary ? "Active" : "Set Primary"}
         </button>
         <button class="wallpaper-action delete-button" data-delete="${wallpaper.id}">Delete</button>
       </div>
@@ -563,29 +605,8 @@ function attachWallpaperActions() {
 
 // --- State Management ---
 async function applyActiveWallpaper() {
-
-  const WALLPAPER_MODES = {
-  DEFAULT: "default",
-  PRIMARY: "primary",
-  DAY: "day",
-  NIGHT: "night",
-  };
-
-  function getActiveWallpaper(wallpapers) {
-  const primary = wallpapers.find(
-    (wallpaper) =>
-      getWallpaperMode(wallpaper) === WALLPAPER_MODES.PRIMARY,
-  );
-
-  if (primary) {
-    return primary;
-  }
-
-  return wallpapers[0] || null;
-}
-
   const wallpapers = await getWallpapers();
-  const primary = getActiveWallpaper(wallpapers);
+  const activeWallpaper = getActiveWallpaper(wallpapers);
 
   if (currentWallpaperUrl) {
     URL.revokeObjectURL(currentWallpaperUrl);
@@ -598,15 +619,18 @@ async function applyActiveWallpaper() {
   backgroundVideo.classList.remove("active");
   backgroundImage.classList.remove("active");
 
-  if (!primary) {
+  if (!activeWallpaper) {
     if (staticBackground) staticBackground.style.display = "block";
     return;
   }
 
   if (staticBackground) staticBackground.style.display = "none";
-  currentWallpaperUrl = URL.createObjectURL(primary.blob);
 
-  if (primary.type.startsWith("video/")) {
+  currentWallpaperUrl = URL.createObjectURL(
+    activeWallpaper.blob,
+  );
+
+  if (activeWallpaper.type.startsWith("video/")) {
     backgroundVideo.src = currentWallpaperUrl;
     backgroundVideo.classList.add("active");
     backgroundVideo.play().catch(() => {});
@@ -618,10 +642,24 @@ async function applyActiveWallpaper() {
 
 async function setPrimaryWallpaper(id) {
   const wallpapers = await getWallpapers();
+
   for (const wallpaper of wallpapers) {
-    wallpaper.primary = wallpaper.id === id;
+    const currentMode = getWallpaperMode(wallpaper);
+
+    if (wallpaper.id === id) {
+      wallpaper.mode = WALLPAPER_MODES.PRIMARY;
+      wallpaper.primary = true;
+    } else {
+      wallpaper.primary = false;
+
+      if (currentMode === WALLPAPER_MODES.PRIMARY) {
+        wallpaper.mode = WALLPAPER_MODES.DEFAULT;
+      }
+    }
+
     await saveWallpaper(wallpaper);
   }
+
   await applyActiveWallpaper();
   await renderWallpapers();
 }
@@ -1013,14 +1051,3 @@ function isSearchFocusEffectEnabled() {
     ) === "true"
   );
 }
-
-
-function getWallpaperMode(wallpaper) {
-  if (wallpaper.mode) {
-    return wallpaper.mode;
-  }
-
-  return wallpaper.primary ? "primary" : "default";
-}
-
-getWallpaperMode(wallpaper)
