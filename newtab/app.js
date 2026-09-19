@@ -726,21 +726,11 @@ async function setWallpaperMode(id, mode) {
       wallpaper.mode = mode;
       wallpaper.primary = mode === WALLPAPER_MODES.PRIMARY;
     } else if (
-      mode === WALLPAPER_MODES.PRIMARY &&
-      currentMode === WALLPAPER_MODES.PRIMARY
+      currentMode === WALLPAPER_MODES.PRIMARY &&
+      mode !== WALLPAPER_MODES.PRIMARY
     ) {
       wallpaper.mode = WALLPAPER_MODES.DEFAULT;
       wallpaper.primary = false;
-    } else if (
-      mode === WALLPAPER_MODES.DAY &&
-      currentMode === WALLPAPER_MODES.DAY
-    ) {
-      wallpaper.mode = WALLPAPER_MODES.DEFAULT;
-    } else if (
-      mode === WALLPAPER_MODES.NIGHT &&
-      currentMode === WALLPAPER_MODES.NIGHT
-    ) {
-      wallpaper.mode = WALLPAPER_MODES.DEFAULT;
     }
 
     await saveWallpaper(wallpaper);
