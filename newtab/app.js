@@ -11,6 +11,10 @@ function escapeHTML(value) {
     .replace(/'/g, "&#39;");
 }
 
+function handleAsyncError(context, error) {
+  console.error(`${context}:`, error);
+}
+
 /* ==========================================================================
    1. APP INITIALIZATION & DATABASE (IndexedDB)
    ========================================================================== */
@@ -590,41 +594,48 @@ function extractVideoThumbnail(file) {
 }
 
 wallpaperInput.addEventListener("change", async (event) => {
-  const file = event.target.files[0];
-  if (!file) return;
+  try {
+    const file = event.target.files[0];
+    if (!file) return;
 
-  if (!file.type.startsWith("video/") && !file.type.startsWith("image/")) {
-    alert("Please select a valid image or video.");
-    return;
+    if (
+      !file.type.startsWith("video/") &&
+      !file.type.startsWith("image/")
+    ) {
+      alert("Please select a valid image or video.");
+      return;
+    }
+
+    let thumbnailBlob = null;
+
+    if (file.type.startsWith("video/")) {
+      thumbnailBlob = await extractVideoThumbnail(file);
+    }
+
+    if (navigator.storage && navigator.storage.persist) {
+      await navigator.storage.persist();
+    }
+
+    const wallpaper = {
+      id: crypto.randomUUID(),
+      name: file.name,
+      type: file.type,
+      size: file.size,
+      blob: file,
+      thumbnailBlob,
+      mode: WALLPAPER_MODES.DEFAULT,
+      createdAt: Date.now(),
+    };
+
+    await saveWallpaper(wallpaper);
+    await applyActiveWallpaper();
+    await renderWallpapers();
+
+    wallpaperInput.value = "";
+  } catch (error) {
+    handleAsyncError("Wallpaper upload failed", error);
+    alert("Failed to save wallpaper.");
   }
-
-  let thumbnailBlob = null;
-  if (file.type.startsWith("video/")) {
-    thumbnailBlob = await extractVideoThumbnail(file);
-  }
-
-  if (navigator.storage && navigator.storage.persist) {
-    await navigator.storage.persist();
-  }
-
-  const wallpaper = {
-    id: crypto.randomUUID(),
-    name: file.name,
-    type: file.type,
-    size: file.size,
-    blob: file,
-    thumbnailBlob: thumbnailBlob,
-
-    mode: WALLPAPER_MODES.DEFAULT,
-
-    createdAt: Date.now(),
-  };
-
-  await saveWallpaper(wallpaper);
-  await applyActiveWallpaper();
-  await renderWallpapers();
-
-  wallpaperInput.value = "";
 });
 
 // --- UI Rendering ---
@@ -723,13 +734,20 @@ async function renderWallpapers() {
 function attachWallpaperActions() {
   document.querySelectorAll("[data-mode]").forEach((select) => {
     select.addEventListener("change", () => {
-      setWallpaperMode(select.dataset.mode, select.value);
+      setWallpaperMode(
+        select.dataset.mode,
+        select.value,
+      ).catch((error) => {
+        handleAsyncError("Wallpaper mode update failed", error);
+      });
     });
   });
   document.querySelectorAll("[data-delete]").forEach((button) => {
-    button.addEventListener("click", () =>
-      removeWallpaper(button.dataset.delete),
-    );
+    button.addEventListener("click", () => {
+      removeWallpaper(button.dataset.delete).catch((error) => {
+        handleAsyncError("Wallpaper deletion failed", error);
+      });
+    });
   });
 }
 
@@ -949,21 +967,25 @@ async function renderNotes() {
 }
 
 function attachNoteActions() {
-  document.querySelectorAll("[data-edit]").forEach((button) => {
-    button.addEventListener("click", () => editNote(button.dataset.edit));
+  button.addEventListener("click", () => {
+    editNote(button.dataset.edit).catch((error) => {
+      handleAsyncError("Note edit failed", error);
+    });
   });
-  document.querySelectorAll("[data-pin]").forEach((button) => {
-    button.addEventListener("click", () => toggleNotePin(button.dataset.pin));
+  button.addEventListener("click", () => {
+    toggleNotePin(button.dataset.pin).catch((error) => {
+      handleAsyncError("Note pin update failed", error);
+    });
   });
-  document.querySelectorAll("[data-complete]").forEach((checkbox) => {
-    checkbox.addEventListener("change", () =>
-      toggleNoteCompleted(checkbox.dataset.complete),
-    );
+  checkbox.addEventListener("change", () => {
+    toggleNoteCompleted(checkbox.dataset.complete).catch((error) => {
+      handleAsyncError("Note completion update failed", error);
+    });
   });
-  document.querySelectorAll("[data-delete-note]").forEach((button) => {
-    button.addEventListener("click", () =>
-      removeNote(button.dataset.deleteNote),
-    );
+  button.addEventListener("click", () => {
+    removeNote(button.dataset.deleteNote).catch((error) => {
+      handleAsyncError("Note deletion failed", error);
+    });
   });
 }
 
@@ -979,6 +1001,7 @@ addNoteButton.addEventListener("click", () => {
 
 // Save note (new or edit)
 saveNoteButton.addEventListener("click", async () => {
+  try {
   const title = noteTitle.value.trim();
   const content = noteContent.value.trim();
   if (!title && !content) return;
@@ -1007,7 +1030,11 @@ saveNoteButton.addEventListener("click", async () => {
   }
 
   closeNoteEditor();
-  await renderNotes();
+    await renderNotes();
+  } catch (error) {
+    handleAsyncError("Note save failed", error);
+    alert("Failed to save note.");
+  }
 });
 
 // Cancel editor
