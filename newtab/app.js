@@ -1142,10 +1142,15 @@ function initializeSettings() {
 
     if (!confirmed) return;
 
+    // Reset general settings
     localStorage.removeItem(SEARCH_ENGINE_KEY);
     localStorage.removeItem(TIME_FORMAT_KEY);
     localStorage.removeItem(SEARCH_FOCUS_EFFECT_KEY);
 
+    // Reset widget settings
+    localStorage.removeItem(WIDGET_SETTINGS_KEY);
+
+    // Apply default general settings
     applySearchEngine(defaultSettings.searchEngine);
 
     timeFormat = defaultSettings.timeFormat;
@@ -1155,6 +1160,16 @@ function initializeSettings() {
     timeFormatSetting.value = defaultSettings.timeFormat;
     searchFocusEffectSetting.checked =
       defaultSettings.searchFocusEffect;
+
+    // Apply default widget settings
+    widgetToggles.forEach((toggle) => {
+      const widgetName = toggle.dataset.widget;
+      const visible =
+        defaultWidgetSettings[widgetName] ?? true;
+
+      toggle.checked = visible;
+      setWidgetVisibility(widgetName, visible);
+    });
   });
 
   applySearchEngine(
