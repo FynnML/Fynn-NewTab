@@ -110,4 +110,3 @@ Replace `assets/wallpapers/default.mp4` with your own vi reasonably sized MP4 ke
 The code is released under the [MIT License](LICENSE).
 
 The bundled [Inter](https://rsms.me/inter/) font is © The Inter Project Authors and is licensed under the [SIL Open Font License 1.1](assets/fonts/OFL.txt).
-

@@ -553,7 +553,6 @@ const wallpaperInput = document.querySelector("#wallpaperInput");
 const wallpaperList = document.querySelector("#wallpaperList");
 const backgroundVideo = document.querySelector("#backgroundVideo");
 const backgroundImage = document.querySelector("#backgroundImage");
-const staticBackground = document.querySelector(".background");
 
 let currentWallpaperUrl = null;
 let activeWallpaperId = null;
@@ -835,18 +834,15 @@ async function applyActiveWallpaper() {
   backgroundImage.classList.remove("active");
 
   if (!activeWallpaper) {
-    if (staticBackground) {
-      staticBackground.style.display = "block";
-    }
 
-    backgroundImage.src = DEFAULT_WALLPAPER_SRC;
-    backgroundImage.classList.add("active");
+    backgroundVideo.src = DEFAULT_WALLPAPER_SRC;
+    backgroundVideo.classList.add("active");
+
+    backgroundVideo.play().catch((error) => {
+      handleAsyncError("Built-in wallpaper playback failed", error);
+    });
 
     return;
-  }
-
-  if (staticBackground) {
-    staticBackground.style.display = "none";
   }
 
   currentWallpaperUrl = URL.createObjectURL(activeWallpaper.blob);
@@ -1312,3 +1308,4 @@ searchInput.addEventListener("blur", () => {
 updateClock();
 setInterval(updateClock, 1000);
 initApp();
+
