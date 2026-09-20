@@ -479,6 +479,16 @@ document.addEventListener("keydown", (event) => {
    ========================================================================== */
 const WALLPAPER_STORE = "wallpapers";
 
+/*
+ * Built-in fallback wallpaper, shown whenever no custom wallpaper applies:
+ * first run, or after every custom wallpaper has been deleted.
+ * It lives in assets/, not in IndexedDB, so it can't be deleted from the
+ * dashboard and never competes with uploads when picking the active one.
+ * If the file is missing, the plain dark background is used instead.
+ */
+const DEFAULT_WALLPAPER_SRC = "../assets/wallpapers/default.mp4";
+const BUILTIN_WALLPAPER_ID = "__builtin-default__";
+
 const WALLPAPER_MODES = {
   DEFAULT: "default",
   PRIMARY: "primary",
@@ -691,8 +701,8 @@ async function renderWallpapers() {
   if (wallpapers.length === 0) {
     wallpaperList.innerHTML = `
       <div class="empty-state">
-        <p>No wallpapers yet.</p>
-        <span>Upload an MP4 or image to get started.</span>
+        <p>No custom wallpapers yet.</p>
+        <span>Upload an MP4 or image to replace the default.</span>
       </div>
     `;
     return;
@@ -786,11 +796,19 @@ function attachWallpaperActions() {
   });
 }
 
+// Bundled default missing or unreadable → keep the plain dark background.
+backgroundImage.addEventListener("error", () => {
+  if (activeWallpaperId !== BUILTIN_WALLPAPER_ID) return;
+
+  backgroundImage.classList.remove("active");
+  backgroundImage.removeAttribute("src");
+});
+
 // --- State Management ---
 async function applyActiveWallpaper() {
   const wallpapers = await getWallpapers();
   const activeWallpaper = getActiveWallpaper(wallpapers);
-  const nextWallpaperId = activeWallpaper?.id || null;
+  const nextWallpaperId = activeWallpaper?.id || BUILTIN_WALLPAPER_ID;
 
   if (nextWallpaperId === activeWallpaperId) {
     return;
@@ -815,6 +833,9 @@ async function applyActiveWallpaper() {
     if (staticBackground) {
       staticBackground.style.display = "block";
     }
+
+    backgroundImage.src = DEFAULT_WALLPAPER_SRC;
+    backgroundImage.classList.add("active");
 
     return;
   }
