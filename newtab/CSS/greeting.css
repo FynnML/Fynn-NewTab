@@ -1,0 +1,41 @@
+/* greeting.css — chỉnh font/màu cho hợp với giao diện hiện có của Fynn New Tab */
+
+#greeting,
+.greeting {
+  font-size: clamp(1.5rem, 3vw, 2.25rem);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: #f0f0f0;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.45); /* dễ đọc trên video/ảnh nền */
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+#greeting.is-changing,
+.greeting.is-changing {
+  opacity: 0;
+  transform: translateY(6px);
+}
+
+.greeting__icon {
+  display: inline-block;
+  margin-right: 0.15em;
+}
+
+/* Tuỳ chọn: đổi sắc thái theo buổi */
+#greeting[data-period="morning"]   { --greeting-accent: #ffd59a; }
+#greeting[data-period="noon"]      { --greeting-accent: #fff2a8; }
+#greeting[data-period="afternoon"] { --greeting-accent: #ffc38a; }
+#greeting[data-period="evening"]   { --greeting-accent: #b8a7ff; }
+#greeting[data-period="night"],
+#greeting[data-period="late"]      { --greeting-accent: #9fb8ff; }
+
+@media (prefers-reduced-motion: reduce) {
+  #greeting,
+  .greeting {
+    transition: none;
+  }
+  #greeting.is-changing,
+  .greeting.is-changing {
+    transform: none;
+  }
+}

@@ -5,22 +5,46 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
     <title>Fynn New Tab</title>
-    
-    <link rel="icon" type="image/png" href="../assets/images/fynn-icon.png">
+
+    <link rel="icon" type="image/png" href="../assets/images/fynn-icon.png" />
     <!-- Inter is self-hosted (see fonts.css); preload the main file to avoid a font flash -->
-    <link rel="preload" href="../assets/fonts/inter-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
-    <link rel="stylesheet" href="fonts.css" />
-    <link rel="stylesheet" href="style.css" />
+    <link
+      rel="preload"
+      href="../assets/fonts/inter-latin-wght-normal.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link rel="stylesheet" href="CSS/fonts.css" />
+    <link rel="stylesheet" href="CSS/greeting.css" />
+    <link rel="stylesheet" href="CSS/style.css" />
   </head>
 
   <body>
-    <a class="brand-logo" href="https://github.com/FynnML" target="_blank" rel="noopener noreferrer" aria-label="Fynn New Tab trên GitHub">
-      <img class="brand-logo__image" src="../assets/images/fynn-logo.png" alt="Fynn" />
+    <a
+      class="brand-logo"
+      href="https://github.com/FynnML"
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label="Fynn New Tab trên GitHub"
+    >
+      <img
+        class="brand-logo__image"
+        src="../assets/images/fynn-logo.png"
+        alt="Fynn"
+      />
     </a>
     <main class="app" id="app">
       <!-- Dynamic Background -->
 
-      <video class="background-video" id="backgroundVideo" autoplay muted loop playsinline></video>
+      <video
+        class="background-video"
+        id="backgroundVideo"
+        autoplay
+        muted
+        loop
+        playsinline
+      ></video>
       <img class="background-image" id="backgroundImage" alt="" />
       <div class="background-dim" id="backgroundDim"></div>
       <div class="overlay"></div>
@@ -29,7 +53,7 @@
       <div class="hero" id="heroGroup">
         <div class="clock-group" id="clockGroup">
           <section class="clock-container widget" data-widget="clock">
-            <h1 id="clock">01:26 <span>PM</span></h1>
+            <h1 id="clock">00:00 <span>PM</span></h1>
           </section>
           <section class="date-widget widget" data-widget="date">
             <p id="date">Thursday, September 17</p>
@@ -37,13 +61,33 @@
         </div>
 
         <!-- Search -->
-        <section class="search-container" id="searchContainer" data-widget="search">
+        <section
+          class="search-container"
+          id="searchContainer"
+          data-widget="search"
+        >
           <div class="search-bar">
-            <button type="button" class="engine-button" id="engineButton" aria-label="Choose search engine" aria-controls="engineMenu" aria-expanded="false">
-              <img id="engineIcon" src="../assets/icons/brave.png" alt="Brave" />
+            <button
+              type="button"
+              class="engine-button"
+              id="engineButton"
+              aria-label="Choose search engine"
+              aria-controls="engineMenu"
+              aria-expanded="false"
+            >
+              <img
+                id="engineIcon"
+                src="../assets/icons/brave.png"
+                alt="Brave"
+              />
             </button>
 
-            <input type="text" id="searchInput" placeholder="Search the Web" autocomplete="off"/>
+            <input
+              type="text"
+              id="searchInput"
+              placeholder="Search the Web"
+              autocomplete="off"
+            />
 
             <button class="search-button" id="searchButton"></button>
 
@@ -63,39 +107,65 @@
         </section>
       </div>
 
-      <section class="greeting widget" data-widget="greeting">
-        <h2 id="greetingText">Good Evening</h2>
-        <p id="greetingMessage">Quiet evening | Have a nice day  ✪ ω ✪</p>
+      <section class="greeting widget" id="greeting" data-widget="greeting">
+        <h3 id="greetingText">Good Evening</h3>
+        <p id="greetingMessage">Quiet evening | Have a nice day ✪ ω ✪</p>
       </section>
 
       <!-- Notes (optional widget, off by default) -->
-      <section class="notes-widget widget hidden" data-widget="notes" data-position="bottom-right">
+      <section
+        class="notes-widget widget hidden"
+        data-widget="notes"
+        data-position="bottom-right"
+      >
         <div class="notes-header">
           <div>
             <h3>Notes</h3>
             <span id="notesCount">0 notes</span>
           </div>
 
-          <button class="notes-add" id="addNoteButton" aria-label="Add note">+</button>
+          <button class="notes-add" id="addNoteButton" aria-label="Add note">
+            +
+          </button>
         </div>
 
         <div class="notes-list" id="notesList"></div>
 
         <!-- Note editor -->
         <div class="note-editor" id="noteEditor">
-          <input type="text" id="noteTitle" placeholder="Note title" maxlength="80">
+          <input
+            type="text"
+            id="noteTitle"
+            placeholder="Note title"
+            maxlength="80"
+          />
 
-          <textarea id="noteContent" placeholder="Write something..." maxlength="2000"></textarea>
+          <textarea
+            id="noteContent"
+            placeholder="Write something..."
+            maxlength="2000"
+          ></textarea>
 
           <div class="note-editor-actions">
-            <button class="note-editor-button cancel" id="cancelNoteButton">Cancel</button>
-            <button class="note-editor-button save" id="saveNoteButton">Save</button>
+            <button class="note-editor-button cancel" id="cancelNoteButton">
+              Cancel
+            </button>
+            <button class="note-editor-button save" id="saveNoteButton">
+              Save
+            </button>
           </div>
         </div>
       </section>
 
       <!-- Dashboard button -->
-      <button type="button" class="dashboard-toggle" id="dashboardToggle" aria-label="Open dashboard" aria-controls="dashboard" aria-expanded="false" >
+      <button
+        type="button"
+        class="dashboard-toggle"
+        id="dashboardToggle"
+        aria-label="Open dashboard"
+        aria-controls="dashboard"
+        aria-expanded="false"
+      >
         <span class="icon">◀</span>
       </button>
     </main>
@@ -104,15 +174,33 @@
     <aside class="dashboard" id="dashboard">
       <div class="dashboard-header">
         <div class="dashboard-tabs">
-          <button type="button" class="dashboard-tab active" data-tab="wallpapers" aria-controls="wallpapers" aria-selected="true">
+          <button
+            type="button"
+            class="dashboard-tab active"
+            data-tab="wallpapers"
+            aria-controls="wallpapers"
+            aria-selected="true"
+          >
             Wallpapers
           </button>
 
-          <button type="button" class="dashboard-tab" data-tab="widgets" aria-controls="widgets" aria-selected="false" >
+          <button
+            type="button"
+            class="dashboard-tab"
+            data-tab="widgets"
+            aria-controls="widgets"
+            aria-selected="false"
+          >
             Widgets
           </button>
 
-          <button type="button" class="dashboard-tab" data-tab="settings" aria-controls="settings" aria-selected="false" >
+          <button
+            type="button"
+            class="dashboard-tab"
+            data-tab="settings"
+            aria-controls="settings"
+            aria-selected="false"
+          >
             Settings
           </button>
         </div>
@@ -196,7 +284,6 @@
             <span class="slider"></span>
           </label>
         </div>
-
       </section>
 
       <!-- Settings -->
@@ -245,10 +332,7 @@
             </div>
 
             <label class="switch">
-              <input
-                type="checkbox"
-                id="searchFocusEffectSetting"
-              />
+              <input type="checkbox" id="searchFocusEffectSetting" />
               <span class="slider"></span>
             </label>
           </div>
@@ -268,6 +352,6 @@
       </section>
     </aside>
 
-    <script src="app.js"></script>
+    <script type="module" src="JS/app.js"></script>
   </body>
 </html>
