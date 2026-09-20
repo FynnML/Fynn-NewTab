@@ -56,7 +56,7 @@ The first rule that matches wins:
 1. **Primary**, if one is set.
 2. The **Day** or **Night** wallpaper that matches the current time.
 3. A **Default** wallpaper.
-4. The **built-in wallpaper** that ships with the extension (`assets/wallpapers/default.jpg`).
+4. The **built-in wallpaper** that ships with the extension (`assets/wallpapers/default.mp4`).
 
 So *Primary* means "always this one", while *Day/Night* means "follow the clock".
 
@@ -103,10 +103,11 @@ Fynn-NewTab/
 
 ## Changing the built-in wallpaper
 
-Replace `assets/wallpapers/default.jpg` with your own image. A compressed JPEG or WebP under a few hundred KB keeps the extension small. To use a different file name or format, update `DEFAULT_WALLPAPER_SRC` at the top of the wallpaper section in `newtab/app.js`. If the file is missing, the page falls back to a plain dark background.
+Replace `assets/wallpapers/default.mp4` with your own vi reasonably sized MP4 keeps the extension small and startup fast. To use a different file name or format, update `DEFAULT_WALLPAPER_SRC` at the top of the wallpaper section in `newtab/app.js`. If the file is missing, the page falls back to a plain dark background.
 
 ## License
 
 The code is released under the [MIT License](LICENSE).
 
 The bundled [Inter](https://rsms.me/inter/) font is © The Inter Project Authors and is licensed under the [SIL Open Font License 1.1](assets/fonts/OFL.txt).
+

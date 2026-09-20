@@ -797,11 +797,16 @@ function attachWallpaperActions() {
 }
 
 // Bundled default missing or unreadable → keep the plain dark background.
-backgroundImage.addEventListener("error", () => {
+backgroundVideo.addEventListener("error", () => {
   if (activeWallpaperId !== BUILTIN_WALLPAPER_ID) return;
 
-  backgroundImage.classList.remove("active");
-  backgroundImage.removeAttribute("src");
+  handleAsyncError(
+    "Built-in wallpaper failed to load",
+    backgroundVideo.error,
+  );
+
+  backgroundVideo.classList.remove("active");
+  backgroundVideo.removeAttribute("src");
 });
 
 // --- State Management ---
