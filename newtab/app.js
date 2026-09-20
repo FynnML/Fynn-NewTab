@@ -38,6 +38,12 @@ function openDatabase() {
 
     request.onsuccess = () => {
       db = request.result;
+
+      db.onversionchange = () => {
+        db.close();
+        console.warn("IndexedDB version changed. Database connection closed.");
+      };
+
       resolve(db);
     };
 
@@ -63,7 +69,7 @@ async function initApp() {
     await initializeWallpaperSystem();
     await initializeNotes();
   } catch (error) {
-    console.error("Application initialization failed:", error);
+    handleAsyncError("Application initialization failed", error);
   }
 }
 
@@ -604,6 +610,7 @@ function extractVideoThumbnail(file) {
       canvas.toBlob(
         (blob) => {
           URL.revokeObjectURL(video.src);
+          video.remove();
           resolve(blob);
         },
         "image/jpeg",
@@ -613,6 +620,7 @@ function extractVideoThumbnail(file) {
 
     video.onerror = () => {
       URL.revokeObjectURL(video.src);
+      video.remove();
       resolve(null);
     };
 
@@ -834,7 +842,7 @@ function startWallpaperScheduler() {
 
   wallpaperScheduleTimer = setInterval(() => {
     applyActiveWallpaper().catch((error) => {
-      console.error("Wallpaper scheduler failed:", error);
+      handleAsyncError("Wallpaper scheduler failed", error);
     });
   }, 60 * 1000);
 }
@@ -895,6 +903,11 @@ async function setPrimaryWallpaper(id) {
 
 async function removeWallpaper(id) {
   await deleteWallpaper(id);
+
+  if (activeWallpaperId === id) {
+    activeWallpaperId = null;
+  }
+
   await applyActiveWallpaper();
   await renderWallpapers();
 }
@@ -1228,7 +1241,11 @@ function initializeSettings() {
   });
 
   applySearchEngine(
-    loadSetting(SEARCH_ENGINE_KEY, defaultSettings.searchEngine),
+    loadSetting(
+      SEARCH_ENGINE_KEY,
+      defaultSettings.searchEngine,
+      (value) => VALID_SEARCH_ENGINES.includes(value),
+    ),
   );
 }
 
