@@ -146,16 +146,23 @@ function msUntilNextPeriod(now = new Date()) {
 
 /**
  * Gắn lời chào vào một phần tử và tự cập nhật khi đổi buổi.
+ * `el` là section bọc ngoài (dùng để toggle class/data-period cho CSS);
+ * chữ thật sự được ghi vào `#greetingText` bên trong nó.
  *
  * @param {Object}      opts
  * @param {HTMLElement} opts.el
- * @param {boolean}     [opts.icon]
  *
  * @returns {{ destroy(): void }}
  */
-export function initGreeting({ el, icon = true } = {}) {
+export function initGreeting({ el } = {}) {
   if (!el) {
     throw new Error('initGreeting: thiếu phần tử `el`');
+  }
+
+  const textEl = el.querySelector('#greetingText');
+
+  if (!textEl) {
+    throw new Error('initGreeting: không tìm thấy `#greetingText` bên trong `el`');
   }
 
   let timer = null;
@@ -179,18 +186,7 @@ export function initGreeting({ el, icon = true } = {}) {
     const text = currentGreeting;
 
     const apply = () => {
-      el.textContent = '';
-
-      if (icon) {
-        const i = document.createElement('span');
-        i.className = 'greeting__icon';
-        i.setAttribute('aria-hidden', 'true');
-        i.textContent = period.icon;
-
-        el.append(i, ' ');
-      }
-
-      el.append(document.createTextNode(text));
+      textEl.textContent = text;
       el.dataset.period = period.id;
       el.classList.remove('is-changing');
     };
