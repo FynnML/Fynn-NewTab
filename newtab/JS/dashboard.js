@@ -181,11 +181,8 @@ function initWidgetToggles() {
   });
 }
 
-// --- 2.2 Layout ---
-
 function resetWidgets() {
   localStorage.removeItem(WIDGET_SETTINGS_KEY);
-  localStorage.removeItem(WIDGET_LAYOUT_KEY);
 
   widgetToggles.forEach((toggle) => {
     const widgetName = toggle.dataset.widget;

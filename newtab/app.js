@@ -23,7 +23,6 @@ async function start() {
     // LocalStorage-only features first (no waiting on IndexedDB).
     initGreeting({
       el: document.getElementById("greeting"),
-      name: "Fynn", // bỏ trống nếu chỉ muốn "Chào buổi sáng"
       icon: true, // icon theo buổi (🌅 ☀️ 🌤️ 🌆 🌙)
     });
 

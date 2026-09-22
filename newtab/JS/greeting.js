@@ -4,7 +4,7 @@
  *
  * Cách dùng:
  *   import { initGreeting } from './greeting.js';
- *   initGreeting({ el: document.getElementById('greeting'), name: 'Fynn' });
+ *   initGreeting({ el: document.getElementById('greeting') });
  */
 
 // Mốc giờ bắt đầu của từng buổi (theo giờ 24h)
@@ -124,36 +124,13 @@ function getRandomGreeting(periodId) {
   return pick;
 }
 
-// ---------------------------------------------------------------------------
-// Ghép tên vào câu chào
-// ---------------------------------------------------------------------------
-
-/**
- * Thêm tên vào câu chào. Nếu câu kết thúc bằng dấu câu (? ! . …)
- * thì tên được chèn TRƯỚC dấu đó:
- *   "Vẫn còn thức sao?"  → "Vẫn còn thức sao, Fynn?"
- *   "Chào buổi sáng"     → "Chào buổi sáng, Fynn"
- */
-function withName(text, name) {
-  const trimmed = String(name || '').trim();
-  if (!trimmed) return text;
-
-  const m = text.match(/^(.*?)([?!.…]+)$/);
-  return m ? `${m[1]}, ${trimmed}${m[2]}` : `${text}, ${trimmed}`;
-}
-
 /**
  * Tạo câu chào hoàn chỉnh.
  * `customText` cho phép truyền sẵn một câu (để giữ nguyên câu đã chọn).
  */
-export function getGreetingText(
-  date = new Date(),
-  name = '',
-  customText = null
-) {
+export function getGreetingText(date = new Date(), customText = null) {
   const period = getPeriod(date);
-  const text = customText || getRandomGreeting(period.id);
-  return withName(text, name);
+  return customText || getRandomGreeting(period.id);
 }
 
 /** Số ms còn lại đến mốc đổi buổi kế tiếp. */
@@ -172,17 +149,15 @@ function msUntilNextPeriod(now = new Date()) {
  *
  * @param {Object}      opts
  * @param {HTMLElement} opts.el
- * @param {string}      [opts.name]
  * @param {boolean}     [opts.icon]
  *
- * @returns {{ setName(name: string): void, destroy(): void }}
+ * @returns {{ destroy(): void }}
  */
-export function initGreeting({ el, name = '', icon = true } = {}) {
+export function initGreeting({ el, icon = true } = {}) {
   if (!el) {
     throw new Error('initGreeting: thiếu phần tử `el`');
   }
 
-  let currentName = name;
   let timer = null;
   let swapTimer = null;
   let lastId = null;
@@ -201,7 +176,7 @@ export function initGreeting({ el, name = '', icon = true } = {}) {
       currentGreeting = getRandomGreeting(period.id);
     }
 
-    const text = getGreetingText(now, currentName, currentGreeting);
+    const text = currentGreeting;
 
     const apply = () => {
       el.textContent = '';
@@ -258,11 +233,6 @@ export function initGreeting({ el, name = '', icon = true } = {}) {
   schedule();
 
   return {
-    setName(next) {
-      currentName = next;
-      render(false);
-    },
-
     destroy() {
       clearTimeout(timer);
       clearTimeout(swapTimer);
