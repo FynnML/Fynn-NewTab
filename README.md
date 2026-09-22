@@ -90,20 +90,36 @@ Fynn-NewTab/
 ├─ newtab/
 │  ├─ index.html
 │  ├─ style.css
-│  ├─ fonts.css          # @font-face for the bundled Inter font
-│  └─ app.js
+│  ├─ app.js             # entry point — imports and starts every feature module
+│  ├─ CSS/
+│  │  ├─ variables.css
+│  │  ├─ fonts.css       # @font-face for the bundled Inter font
+│  │  ├─ layout.css
+│  │  ├─ components.css
+│  │  ├─ dashboard.css
+│  │  ├─ greeting.css
+│  │  ├─ notes.css
+│  │  └─ wallpaper.css
+│  └─ JS/
+│     ├─ clock.js
+│     ├─ dashboard.js
+│     ├─ db.js
+│     ├─ greeting.js
+│     ├─ notes.js
+│     ├─ search.js
+│     └─ wallpaper.js
 ├─ assets/
 │  ├─ fonts/             # Inter (self-hosted) + its OFL license
 │  ├─ icons/             # search engine icons
 │  ├─ images/            # Fynn logo and extension icon
-│  └─ wallpapers/        # built-in default wallpaper (default.jpg)
+│  └─ wallpapers/        # built-in default wallpaper (default.mp4)
 └─ docs/
    └─ screenshots/
 ```
 
 ## Changing the built-in wallpaper
 
-Replace `assets/wallpapers/default.mp4` with your own vi reasonably sized MP4 keeps the extension small and startup fast. To use a different file name or format, update `DEFAULT_WALLPAPER_SRC` at the top of the wallpaper section in `newtab/app.js`. If the file is missing, the page falls back to a plain dark background.
+Replace `assets/wallpapers/default.mp4` with your own — a reasonably sized MP4 keeps the extension small and startup fast. To use a different file name or format, update `DEFAULT_WALLPAPER_SRC` near the top of `newtab/JS/wallpaper.js`. If the file is missing, the page falls back to a plain dark background.
 
 ## License
 
