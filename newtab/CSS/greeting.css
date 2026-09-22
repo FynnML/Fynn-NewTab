@@ -1,12 +1,36 @@
 /* greeting.css — chỉnh font/màu cho hợp với giao diện hiện có của Fynn New Tab */
 
+.greeting {
+  position: absolute;
+  left: 5%;
+  bottom: 8%;
+
+  z-index: 3;
+  padding: 0;
+  margin: 0;
+}
+
+#greetingText,
+.greeting h5 {
+  margin: 0;
+
+  font-size: clamp(22px, 2.8vw, 32px);
+  font-weight: 500;
+  font-style: italic;
+  letter-spacing: 0.3px;
+
+  color: var(--text-primary);
+  opacity: 0.85;
+  text-shadow: var(--shadow-text);
+}
+
 #greeting,
 .greeting {
   font-size: clamp(1.5rem, 3vw, 2.25rem);
   font-weight: 600;
   letter-spacing: 0.01em;
   color: #f0f0f0;
-  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.45); /* dễ đọc trên video/ảnh nền */
+  text-shadow: var(--shadow-text);
   transition: opacity 0.25s ease, transform 0.25s ease;
 }
 
@@ -19,15 +43,8 @@
 .greeting__icon {
   display: inline-block;
   margin-right: 0.15em;
+    color: var(--greeting-accent);
 }
-
-/* Tuỳ chọn: đổi sắc thái theo buổi */
-#greeting[data-period="morning"]   { --greeting-accent: #ffd59a; }
-#greeting[data-period="noon"]      { --greeting-accent: #fff2a8; }
-#greeting[data-period="afternoon"] { --greeting-accent: #ffc38a; }
-#greeting[data-period="evening"]   { --greeting-accent: #b8a7ff; }
-#greeting[data-period="night"],
-#greeting[data-period="late"]      { --greeting-accent: #9fb8ff; }
 
 @media (prefers-reduced-motion: reduce) {
   #greeting,
@@ -39,3 +56,12 @@
     transform: none;
   }
 }
+
+/* Tuỳ chọn: đổi sắc thái theo buổi */
+#greeting[data-period="morning"]   { --greeting-accent: #ffd59a; }
+#greeting[data-period="noon"]      { --greeting-accent: #fff2a8; }
+#greeting[data-period="afternoon"] { --greeting-accent: #ffc38a; }
+#greeting[data-period="evening"]   { --greeting-accent: #b8a7ff; }
+#greeting[data-period="night"],
+#greeting[data-period="late"]      { --greeting-accent: #9fb8ff; }
+

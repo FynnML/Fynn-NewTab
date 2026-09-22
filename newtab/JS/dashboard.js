@@ -95,7 +95,6 @@ function initPanel() {
    ========================================================================== */
 
 const WIDGET_SETTINGS_KEY = "fynn-widget-settings";
-const WIDGET_LAYOUT_KEY = "fynn-widget-layout";
 
 const widgetToggles = document.querySelectorAll(".widget-toggle");
 
@@ -184,95 +183,6 @@ function initWidgetToggles() {
 
 // --- 2.2 Layout ---
 
-/*
- * Only Greeting and Notes are movable.
- * Clock + Date live inside the hero flex column (see style.css),
- * so they intentionally ignore the position system.
- */
-const VALID_WIDGET_POSITIONS = [
-  "top-center",
-  "top-left",
-  "top-right",
-  "bottom-center",
-  "bottom-left",
-  "bottom-right",
-  "middle-left",
-];
-
-const defaultWidgetPositions = {
-  greeting: "bottom-left",
-  notes: "bottom-right",
-};
-
-function loadWidgetLayout() {
-  const saved = localStorage.getItem(WIDGET_LAYOUT_KEY);
-
-  if (!saved) {
-    return { ...defaultWidgetPositions };
-  }
-
-  try {
-    const parsed = JSON.parse(saved);
-
-    if (!parsed || typeof parsed !== "object") {
-      return { ...defaultWidgetPositions };
-    }
-
-    const layout = { ...defaultWidgetPositions };
-
-    Object.keys(defaultWidgetPositions).forEach((widgetName) => {
-      const position = parsed[widgetName];
-
-      if (VALID_WIDGET_POSITIONS.includes(position)) {
-        layout[widgetName] = position;
-      }
-    });
-
-    return layout;
-  } catch (error) {
-    console.error("Failed to load widget layout:", error);
-    return { ...defaultWidgetPositions };
-  }
-}
-
-function saveWidgetLayout(layout) {
-  localStorage.setItem(WIDGET_LAYOUT_KEY, JSON.stringify(layout));
-}
-
-function applyWidgetLayout() {
-  const layout = loadWidgetLayout();
-
-  Object.entries(layout).forEach(([widgetName, position]) => {
-    /*
-     * ".widget" is required: the dashboard checkboxes also use
-     * data-widget, and they must not receive data-position.
-     */
-    document
-      .querySelectorAll(`.widget[data-widget="${widgetName}"]`)
-      .forEach((widget) => {
-        widget.dataset.position = position;
-      });
-  });
-}
-
-export function setWidgetPosition(widgetName, position) {
-  if (!Object.prototype.hasOwnProperty.call(defaultWidgetPositions, widgetName)) {
-    console.warn(`Invalid widget: ${widgetName}`);
-    return;
-  }
-
-  if (!VALID_WIDGET_POSITIONS.includes(position)) {
-    console.warn(`Invalid widget position: ${position}`);
-    return;
-  }
-
-  const layout = loadWidgetLayout();
-  layout[widgetName] = position;
-
-  saveWidgetLayout(layout);
-  applyWidgetLayout();
-}
-
 function resetWidgets() {
   localStorage.removeItem(WIDGET_SETTINGS_KEY);
   localStorage.removeItem(WIDGET_LAYOUT_KEY);
@@ -284,8 +194,6 @@ function resetWidgets() {
     toggle.checked = visible;
     setWidgetVisibility(widgetName, visible);
   });
-
-  applyWidgetLayout();
 }
 
 /* ==========================================================================
@@ -345,7 +253,6 @@ function initSettings() {
  */
 export function initDashboard() {
   initWidgetToggles();
-  applyWidgetLayout();
   initSettings();
   initPanel();
 }

@@ -1,0 +1,288 @@
+/* ==========================================================================
+   Wallpaper — background elements + wallpaper manager in dashboard
+   ========================================================================== */
+
+/* ==========================================================================
+   Background — wallpaper is the main character
+   ========================================================================== */
+
+.background-video,
+.background-image {
+  position: absolute;
+  inset: 0;
+
+  width: 100%;
+  height: 100%;
+
+  object-fit: cover;
+
+  z-index: 0;
+  display: none;
+}
+
+.background-video.active,
+.background-image.active {
+  display: block;
+}
+
+/* Dims/blurs the wallpaper slightly on search focus, for readability */
+
+.background-dim {
+  position: absolute;
+  inset: 0;
+
+  background: rgba(0, 0, 0, 0);
+
+  backdrop-filter: blur(0);
+  -webkit-backdrop-filter: blur(0);
+
+  pointer-events: none;
+
+  z-index: 1;
+
+  transition:
+    background 0.4s var(--ease),
+    backdrop-filter 0.4s var(--ease),
+    -webkit-backdrop-filter 0.4s var(--ease);
+}
+
+.background-dim.active {
+  background: rgba(0, 0, 0, 0.4);
+
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+/* Soft gradient so text stays legible on any wallpaper */
+
+.overlay {
+  position: absolute;
+  inset: 0;
+
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0.08) 0%,
+    rgba(0, 0, 0, 0.02) 35%,
+    rgba(0, 0, 0, 0.12) 65%,
+    rgba(0, 0, 0, 0.55) 100%
+  );
+
+  z-index: 1;
+}
+
+/* ==========================================================================
+   Wallpaper manager (in dashboard)
+   ========================================================================== */
+
+.upload-wallpaper {
+  width: 100%;
+  height: 44px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  margin-bottom: var(--space-md);
+
+  border: 1px dashed var(--glass-border-soft);
+  border-radius: var(--radius-md);
+
+  background: var(--surface-glass);
+  color: var(--text-secondary);
+
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.2px;
+
+  cursor: pointer;
+  transition:
+    background var(--transition-fast),
+    border-color var(--transition-fast),
+    color var(--transition-fast);
+}
+
+.upload-wallpaper:hover {
+  background: var(--surface-interactive);
+  border-color: var(--glass-border);
+  color: var(--text-primary);
+}
+
+.wallpaper-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.wallpaper-card {
+  padding: var(--space-xs);
+
+  border: 1px solid var(--glass-border-soft);
+  border-radius: var(--radius-md);
+
+  background: var(--surface-glass);
+
+  transition:
+    border-color var(--transition-fast),
+    background var(--transition-fast);
+}
+
+.wallpaper-card:hover {
+  background: var(--surface-interactive);
+}
+
+.wallpaper-card.primary {
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.wallpaper-preview {
+  position: relative;
+
+  width: 100%;
+  height: 100px;
+
+  overflow: hidden;
+  border-radius: var(--radius-sm);
+
+  background: #0a0a0a;
+}
+
+.wallpaper-preview img,
+.wallpaper-preview video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.wallpaper-info {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  margin-top: var(--space-xs);
+}
+
+.wallpaper-mode-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+
+  margin-top: var(--space-xs);
+}
+
+.wallpaper-mode-label {
+  padding: 4px 7px;
+
+  border: 1px solid var(--glass-border-soft);
+  border-radius: 6px;
+
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-dim);
+
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.6px;
+}
+
+.wallpaper-mode-select {
+  min-width: 92px;
+  height: 28px;
+  padding: 0 8px;
+
+  border: 1px solid var(--glass-border-soft);
+  border-radius: var(--radius-sm);
+
+  outline: none;
+
+  background: var(--surface-glass);
+  color: var(--text-secondary);
+
+  font-size: 11px;
+  font-family: inherit;
+
+  cursor: pointer;
+  transition:
+    background var(--transition-fast),
+    border-color var(--transition-fast),
+    color var(--transition-fast);
+}
+
+.wallpaper-mode-select:hover,
+.wallpaper-mode-select:focus {
+  background: var(--surface-interactive);
+  border-color: var(--glass-border);
+  color: var(--text-primary);
+}
+
+.wallpaper-mode-select option {
+  background: #151515;
+  color: #ffffff;
+}
+
+.wallpaper-name {
+  min-width: 0;
+  overflow: hidden;
+
+  color: var(--text-primary);
+  font-size: 12px;
+
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.wallpaper-size {
+  margin-left: 8px;
+
+  color: var(--text-dim);
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.wallpaper-actions {
+  display: flex;
+  gap: 6px;
+
+  margin-top: var(--space-xs);
+}
+
+.wallpaper-action {
+  flex: 1;
+  height: 28px;
+
+  border: none;
+  border-radius: var(--radius-sm);
+
+  background: var(--surface-glass);
+  color: var(--text-secondary);
+
+  font-size: 11px;
+  font-family: inherit;
+  cursor: pointer;
+
+  transition:
+    background var(--transition-fast),
+    color var(--transition-fast);
+}
+
+.wallpaper-action:hover {
+  background: var(--surface-interactive);
+  color: var(--text-primary);
+}
+
+.wallpaper-action.primary-button {
+  background: var(--accent);
+  color: var(--accent-contrast);
+  font-weight: 600;
+}
+
+.wallpaper-action.primary-button:hover {
+  opacity: 0.85;
+}
+
+.wallpaper-action.delete-button {
+  color: #e87070;
+}
+
+.wallpaper-action.delete-button:hover {
+  background: rgba(232, 112, 112, 0.1);
+}

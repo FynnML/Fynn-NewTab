@@ -15,9 +15,7 @@
       type="font/woff2"
       crossorigin
     />
-    <link rel="stylesheet" href="CSS/fonts.css" />
-    <link rel="stylesheet" href="CSS/greeting.css" />
-    <link rel="stylesheet" href="CSS/style.css" />
+    <link rel="stylesheet" href="./style.css" />
   </head>
 
   <body>
@@ -56,7 +54,7 @@
             <h1 id="clock">00:00 <span>PM</span></h1>
           </section>
           <section class="date-widget widget" data-widget="date">
-            <p id="date">Thursday, September 17</p>
+            <p id="date">---, --- 00</p>
           </section>
         </div>
 
@@ -108,15 +106,13 @@
       </div>
 
       <section class="greeting widget" id="greeting" data-widget="greeting">
-        <h3 id="greetingText">Good Evening</h3>
-        <p id="greetingMessage">Quiet evening | Have a nice day ✪ ω ✪</p>
+        <h5 id="greetingText">Error Greeting </h5>
       </section>
 
       <!-- Notes (optional widget, off by default) -->
       <section
         class="notes-widget widget hidden"
         data-widget="notes"
-        data-position="bottom-right"
       >
         <div class="notes-header">
           <div>
@@ -352,6 +348,6 @@
       </section>
     </aside>
 
-    <script type="module" src="JS/app.js"></script>
+    <script type="module" src="app.js"></script>
   </body>
 </html>

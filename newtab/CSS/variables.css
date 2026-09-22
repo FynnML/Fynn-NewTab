@@ -1,0 +1,58 @@
+/* ==========================================================================
+   Design tokens
+   ========================================================================== */
+
+:root {
+  /* --- Typography --- */
+  --text-primary: #f0f0f0;
+  --text-secondary: rgba(240, 240, 240, 0.65);
+  --text-muted: rgba(240, 240, 240, 0.4);
+  --text-dim: rgba(240, 240, 240, 0.25);
+
+  /* --- Accent — neutral monochrome, wallpaper-friendly --- */
+  --accent: rgba(255, 255, 255, 0.88);
+  --accent-subtle: rgba(255, 255, 255, 0.12);
+  --accent-contrast: #0a0a0a;
+
+  /* --- Surface hierarchy (4 levels) --- */
+  --surface-base: rgba(0, 0, 0, 0.42);
+  --surface-glass: rgba(255, 255, 255, 0.05);
+  --surface-elevated: rgba(18, 18, 18, 0.6);
+  --surface-interactive: rgba(255, 255, 255, 0.07);
+
+  /* --- Glass --- */
+  --glass-bg: rgba(255, 255, 255, 0.05);
+  --glass-bg-strong: rgba(14, 14, 14, 0.58);
+  --glass-bg-panel: rgba(10, 10, 10, 0.8);
+  --glass-border: rgba(255, 255, 255, 0.12);
+  --glass-border-soft: rgba(255, 255, 255, 0.06);
+
+  /* --- Blur --- */
+  --blur-sm: blur(12px);
+  --blur-md: blur(20px);
+  --blur-lg: blur(32px);
+
+  /* --- Radius --- */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+
+  /* --- Spacing --- */
+  --space-2xs: 4px;
+  --space-xs: 8px;
+  --space-sm: 12px;
+  --space-md: 18px;
+  --space-lg: 28px;
+  --space-xl: 40px;
+
+  /* --- Shadows --- */
+  --shadow-soft: 0 8px 32px rgba(0, 0, 0, 0.2);
+  --shadow-strong: 0 16px 48px rgba(0, 0, 0, 0.35);
+  --shadow-text: 0 2px 12px rgba(0, 0, 0, 0.5);
+
+  /* --- Motion --- */
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --transition-fast: 0.15s ease;
+  --transition-normal: 0.25s ease;
+}

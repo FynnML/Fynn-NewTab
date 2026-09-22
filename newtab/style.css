@@ -1,0 +1,15 @@
+/* ==========================================================================
+   style.css — Entry point
+   --------------------------------------------------------------------------
+   File này chỉ gom tất cả CSS modules lại.
+   Không viết rules trực tiếp ở đây — thêm vào file module tương ứng.
+   ========================================================================== */
+
+@import "./CSS/fonts.css";
+@import "./CSS/variables.css";
+@import "./CSS/layout.css";
+@import "./CSS/components.css";
+@import "./CSS/dashboard.css";
+@import "./CSS/wallpaper.css";
+@import "./CSS/notes.css";
+@import "./CSS/greeting.css";

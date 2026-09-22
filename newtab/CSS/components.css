@@ -1,0 +1,272 @@
+/* ==========================================================================
+   Components — Brand logo, Search bar
+   ========================================================================== */
+
+/* ==========================================================================
+   Brand — Fynn logo (top-left)
+   ========================================================================== */
+
+/* Block: fixed anchor in the top-left corner */
+.brand-logo {
+  position: fixed;
+  top: 24px;
+  left: 28px;
+  z-index: 20;
+
+  display: inline-flex;
+
+  border-radius: 8px;
+  outline: none;
+}
+
+/* Element: the image only handles size and hover feedback */
+.brand-logo__image {
+  display: block;
+  height: 34px;
+  width: auto;
+
+  opacity: 0.92;
+  user-select: none;
+  -webkit-user-drag: none;
+
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
+}
+
+.brand-logo:hover .brand-logo__image {
+  opacity: 1;
+  transform: scale(1.03);
+}
+
+/* Keyboard focus ring */
+.brand-logo:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.7);
+  outline-offset: 6px;
+}
+
+/* ==========================================================================
+   Search — premium glass bar
+   ========================================================================== */
+
+.search-container {
+  position: relative;
+  width: min(480px, 88vw);
+  margin-top: clamp(24px, 4vh, 48px);
+}
+
+.search-bar {
+  position: relative;
+
+  width: 100%;
+  height: 48px;
+  margin: 0 auto;
+
+  display: flex;
+  align-items: center;
+
+  padding: 0 6px;
+
+  border: 1px solid var(--glass-border-soft);
+  border-radius: var(--radius-lg);
+
+  background: var(--surface-base);
+
+  backdrop-filter: var(--blur-md);
+  -webkit-backdrop-filter: var(--blur-md);
+
+  box-shadow: var(--shadow-soft);
+
+  transition:
+    border-color 0.3s var(--ease),
+    background 0.3s var(--ease),
+    box-shadow 0.3s var(--ease);
+}
+
+.search-bar:hover {
+  border-color: rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.48);
+}
+
+.search-bar:focus-within {
+  border-color: rgba(255, 255, 255, 0.18);
+  background: rgba(0, 0, 0, 0.52);
+  box-shadow: var(--shadow-soft), 0 0 0 1px rgba(255, 255, 255, 0.04);
+}
+
+/* Engine button */
+
+.engine-button {
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: none;
+  border-radius: var(--radius-md);
+
+  background: transparent;
+  color: var(--text-primary);
+
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+.engine-button:hover {
+  background: var(--surface-interactive);
+}
+
+.engine-button img,
+.engine-option img {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+}
+
+/* Search input */
+
+#searchInput {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+
+  padding: 0 10px;
+
+  border: none;
+  outline: none;
+  background: transparent;
+
+  color: var(--text-primary);
+  font-size: 14px;
+  font-family: inherit;
+  letter-spacing: 0.1px;
+}
+
+#searchInput::placeholder {
+  color: var(--text-muted);
+  font-weight: 400;
+}
+
+/* Search button — styled for inline SVG icon */
+
+.search-button {
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: none;
+  border-radius: var(--radius-md);
+
+  background: transparent;
+  color: var(--text-muted);
+
+  cursor: pointer;
+  transition:
+    background var(--transition-fast),
+    color var(--transition-fast);
+}
+
+.search-button:hover {
+  background: var(--surface-interactive);
+  color: var(--text-primary);
+}
+
+.search-button svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* Engine menu */
+
+.engine-menu {
+  position: absolute;
+
+  top: calc(100% + 8px);
+  left: 0;
+
+  width: 180px;
+  padding: 6px;
+
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+
+  background: var(--glass-bg-panel);
+  backdrop-filter: var(--blur-lg);
+  -webkit-backdrop-filter: var(--blur-lg);
+
+  box-shadow: var(--shadow-strong);
+
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-6px);
+
+  transition:
+    opacity 0.2s var(--ease),
+    transform 0.2s var(--ease),
+    visibility 0.2s;
+}
+
+.engine-menu.active {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.engine-option {
+  width: 100%;
+  height: 38px;
+
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  padding: 0 10px;
+
+  border: none;
+  border-radius: var(--radius-sm);
+
+  background: transparent;
+  color: var(--text-secondary);
+
+  font-size: 13px;
+  font-family: inherit;
+  text-align: left;
+
+  cursor: pointer;
+  transition:
+    background var(--transition-fast),
+    color var(--transition-fast);
+}
+
+.engine-option:hover {
+  background: var(--surface-interactive);
+  color: var(--text-primary);
+}
+
+/* ==========================================================================
+   Responsive — components
+   ========================================================================== */
+
+@media (max-width: 768px) {
+  .search-container {
+    width: min(420px, 90vw);
+  }
+}
+
+@media (max-width: 640px) {
+  .brand-logo {
+    top: 16px;
+    left: 16px;
+  }
+
+  .brand-logo__image {
+    height: 26px;
+  }
+}

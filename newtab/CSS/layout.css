@@ -1,0 +1,203 @@
+/* ==========================================================================
+   Layout — Reset, base, widget system, hero, animations, a11y, responsive
+   ========================================================================== */
+
+/* --- Reset & base --- */
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+  background-color: #050505;
+}
+
+body {
+  font-family: "Inter", sans-serif;
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.app {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* --- Widget base — generic position system --- */
+
+.widget {
+  position: absolute;
+}
+
+.widget.hidden {
+  display: none !important;
+}
+
+.search-container.hidden {
+  display: none !important;
+}
+
+/* ==========================================================================
+   Hero — Clock + Date + Search, one centered column.
+   This container ignores the generic widget position system on purpose:
+   its children are always laid out top-to-bottom, so nothing below can
+   overlap the search bar regardless of viewport size.
+   ========================================================================== */
+
+.hero {
+  position: absolute;
+  inset: 0;
+
+  z-index: 5;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  /* Push composition slightly above true center for visual balance */
+  padding-bottom: 12vh;
+
+  pointer-events: none;
+}
+
+/* Re-enable pointer events on interactive children */
+.hero > * {
+  pointer-events: auto;
+}
+
+/* Clock + Date group */
+
+.clock-group {
+  position: relative;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Override widget positioning for hero children — they flow in flexbox */
+#clockGroup .clock-container,
+#clockGroup .date-widget {
+  position: relative;
+  inset: auto;
+  transform: none;
+}
+
+/* --- Clock --- */
+
+.clock-container h1 {
+  margin: 0;
+
+  font-size: clamp(52px, 7.5vw, 100px);
+  font-weight: 700;
+  letter-spacing: -2.5px;
+  line-height: 1;
+
+  color: var(--text-primary);
+  text-shadow: 0 4px 24px rgba(0, 0, 0, 0.45);
+}
+
+.clock-container h1 span {
+  font-size: 0.26em;
+  font-weight: 400;
+  letter-spacing: 1.5px;
+  margin-left: 6px;
+  vertical-align: super;
+
+  color: var(--text-secondary);
+  opacity: 0.7;
+}
+
+/* --- Date --- */
+
+.date-widget {
+  margin: 0;
+}
+
+.date-widget p {
+  margin: 0;
+
+  font-size: clamp(11px, 1vw, 13px);
+  font-weight: 500;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+
+  color: var(--text-secondary);
+  text-shadow: var(--shadow-text);
+}
+
+/* ==========================================================================
+   Animations — subtle entrance & transitions
+   ========================================================================== */
+
+/* Uses the individual `translate` property (not `transform`) so the entrance
+   animation never overrides the `transform` used by .widget[data-position]. */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    translate: 0 12px;
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+
+/* Staggered entrance for hero elements */
+.clock-group {
+  animation: fadeInUp 0.6s var(--ease) both;
+}
+
+.search-container {
+  animation: fadeInUp 0.6s var(--ease) 0.1s both;
+}
+
+.greeting {
+  animation: fadeInUp 0.5s var(--ease) 0.2s both;
+}
+
+/* ==========================================================================
+   Accessibility — focus-visible & reduced motion
+   ========================================================================== */
+
+/* Keyboard-only focus indicator */
+:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.4);
+  outline-offset: 2px;
+}
+
+/* Remove focus outline for mouse/touch */
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* Reduce motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ==========================================================================
+   Responsive — layout-specific
+   ========================================================================== */
+
+@media (max-width: 768px) {
+  .hero {
+    padding-bottom: 8vh;
+  }
+}
