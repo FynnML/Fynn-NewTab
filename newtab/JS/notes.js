@@ -4,6 +4,7 @@
  */
 
 import { STORES, dbGetAll, dbPut, dbDelete } from "./db.js";
+import { showConfirmDialog, showAlertDialog } from "./dialog.js";
 
 const notesList = document.querySelector("#notesList");
 const notesCount = document.querySelector("#notesCount");
@@ -158,7 +159,7 @@ async function handleSaveNote() {
     await renderNotes();
   } catch (error) {
     console.error("Note save failed:", error);
-    alert("Failed to save note.");
+    await showAlertDialog("Failed to save note.", "Error");
   }
 }
 
@@ -192,7 +193,7 @@ async function toggleNoteCompleted(id) {
 }
 
 async function removeNote(id) {
-  const confirmed = confirm("Delete this note?");
+  const confirmed = await showConfirmDialog("Delete this note?");
   if (!confirmed) return;
 
   await deleteNote(id);

@@ -270,3 +270,97 @@
     height: 26px;
   }
 }
+
+/* ==========================================================================
+   Custom Dialog Modal
+   ========================================================================== */
+
+.custom-dialog-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s ease, visibility 0.2s;
+}
+
+.custom-dialog-overlay.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.custom-dialog {
+  background: var(--surface-base);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  width: 320px;
+  max-width: 90vw;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  transform: translateY(10px) scale(0.95);
+  transition: transform 0.2s ease;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+.custom-dialog-overlay.active .custom-dialog {
+  transform: translateY(0) scale(1);
+}
+
+.custom-dialog-title {
+  margin: 0 0 12px 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.custom-dialog-message {
+  margin: 0 0 24px 0;
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.custom-dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.custom-dialog-button {
+  padding: 8px 16px;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.custom-dialog-button.cancel {
+  background: transparent;
+  color: var(--text-primary);
+  border: 1px solid var(--glass-border);
+}
+
+.custom-dialog-button.cancel:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.custom-dialog-button.confirm {
+  background: rgba(255, 60, 60, 0.8);
+  color: #fff;
+}
+
+.custom-dialog-button.confirm:hover {
+  background: rgba(255, 60, 60, 1);
+}

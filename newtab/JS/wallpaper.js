@@ -5,6 +5,7 @@
  */
 
 import { STORES, dbGetAll, dbPut, dbDelete } from "./db.js";
+import { showConfirmDialog, showAlertDialog } from "./dialog.js";
 
 /*
  * Built-in fallback wallpaper, shown whenever no custom wallpaper applies:
@@ -71,8 +72,12 @@ function getScheduledWallpaperMode(date = new Date()) {
 }
 
 function getActiveWallpaper(wallpapers) {
-  const findByMode = (mode) =>
-    wallpapers.find((wallpaper) => getWallpaperMode(wallpaper) === mode);
+  const findByMode = (mode) => {
+    const matches = wallpapers.filter((wallpaper) => getWallpaperMode(wallpaper) === mode);
+    if (matches.length === 0) return null;
+    matches.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+    return matches[0];
+  };
 
   return (
     findByMode(WALLPAPER_MODES.PRIMARY) ||
@@ -91,22 +96,43 @@ function extractVideoThumbnail(file) {
     video.muted = true;
     video.playsInline = true;
 
+    let timeoutId;
+    const cleanup = () => {
+      clearTimeout(timeoutId);
+      URL.revokeObjectURL(video.src);
+      video.remove();
+    };
+
+    timeoutId = setTimeout(() => {
+      console.warn("Video thumbnail extraction timed out.");
+      cleanup();
+      resolve(null);
+    }, 5000);
+
     video.onloadeddata = () => {
       video.currentTime = Math.min(1, video.duration / 2 || 0.1);
     };
 
     video.onseeked = () => {
       const canvas = document.createElement("canvas");
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
+      
+      const MAX_WIDTH = 640;
+      let width = video.videoWidth;
+      let height = video.videoHeight;
+      if (width > MAX_WIDTH) {
+        height = Math.floor(height * (MAX_WIDTH / width));
+        width = MAX_WIDTH;
+      }
+      
+      canvas.width = width;
+      canvas.height = height;
 
       const ctx = canvas.getContext("2d");
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
       canvas.toBlob(
         (blob) => {
-          URL.revokeObjectURL(video.src);
-          video.remove();
+          cleanup();
           resolve(blob);
         },
         "image/jpeg",
@@ -115,8 +141,7 @@ function extractVideoThumbnail(file) {
     };
 
     video.onerror = () => {
-      URL.revokeObjectURL(video.src);
-      video.remove();
+      cleanup();
       resolve(null);
     };
 
@@ -130,7 +155,14 @@ async function handleWallpaperUpload(event) {
     if (!file) return;
 
     if (!file.type.startsWith("video/") && !file.type.startsWith("image/")) {
-      alert("Please select a valid image or video.");
+      await showAlertDialog("Please select a valid image or video.", "Invalid File Type");
+      return;
+    }
+
+    const MAX_SIZE_MB = 20;
+    if (file.size > MAX_SIZE_MB * 1024 * 1024) {
+      await showAlertDialog(`File size exceeds ${MAX_SIZE_MB}MB limit. Please choose a smaller file.`, "File Too Large");
+      wallpaperInput.value = "";
       return;
     }
 
@@ -162,7 +194,7 @@ async function handleWallpaperUpload(event) {
     wallpaperInput.value = "";
   } catch (error) {
     console.error("Wallpaper upload failed:", error);
-    alert("Failed to save wallpaper.");
+    await showAlertDialog("Failed to save wallpaper.", "Error");
   }
 }
 
@@ -274,7 +306,9 @@ function attachWallpaperActions() {
   });
 
   wallpaperList.querySelectorAll("[data-delete]").forEach((button) => {
-    button.addEventListener("click", () => {
+    button.addEventListener("click", async () => {
+      const confirmed = await showConfirmDialog("Are you sure you want to delete this wallpaper?");
+      if (!confirmed) return;
       removeWallpaper(button.dataset.delete).catch((error) => {
         console.error("Wallpaper deletion failed:", error);
       });
@@ -283,6 +317,17 @@ function attachWallpaperActions() {
 }
 
 // --- State Management ---
+
+function updateVideoPlayback() {
+  if (!backgroundVideo.classList.contains("active")) return;
+  
+  const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (document.hidden || prefersReducedMotion) {
+    backgroundVideo.pause();
+  } else {
+    backgroundVideo.play().catch(() => {});
+  }
+}
 
 async function applyActiveWallpaper() {
   const wallpapers = await getWallpapers();
@@ -311,9 +356,7 @@ async function applyActiveWallpaper() {
   if (!activeWallpaper) {
     backgroundVideo.src = DEFAULT_WALLPAPER_SRC;
     backgroundVideo.classList.add("active");
-    backgroundVideo.play().catch((error) => {
-      console.error("Built-in wallpaper playback failed:", error);
-    });
+    updateVideoPlayback();
     return;
   }
 
@@ -322,7 +365,7 @@ async function applyActiveWallpaper() {
   if (activeWallpaper.type.startsWith("video/")) {
     backgroundVideo.src = currentWallpaperUrl;
     backgroundVideo.classList.add("active");
-    backgroundVideo.play().catch(() => {});
+    updateVideoPlayback();
   } else {
     backgroundImage.src = currentWallpaperUrl;
     backgroundImage.classList.add("active");
@@ -386,6 +429,9 @@ async function removeWallpaper(id) {
 
 function bindWallpaperEvents() {
   wallpaperInput.addEventListener("change", handleWallpaperUpload);
+
+  document.addEventListener("visibilitychange", updateVideoPlayback);
+  window.matchMedia("(prefers-reduced-motion: reduce)").addEventListener("change", updateVideoPlayback);
 
   // Bundled default missing or unreadable → keep the plain dark background.
   backgroundVideo.addEventListener("error", () => {

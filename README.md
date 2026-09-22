@@ -104,6 +104,7 @@ Fynn-NewTab/
 │     ├─ clock.js
 │     ├─ dashboard.js
 │     ├─ db.js
+│     ├─ dialog.js
 │     ├─ greeting.js
 │     ├─ notes.js
 │     ├─ search.js
