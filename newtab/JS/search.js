@@ -67,6 +67,12 @@ const searchButton = document.querySelector("#searchButton");
 const engineOptions = document.querySelectorAll(".engine-option");
 const searchContainer = document.querySelector("#searchContainer");
 const backgroundDim = document.querySelector("#backgroundDim");
+const searchSuggestions = document.querySelector("#searchSuggestions");
+
+// --- Autocomplete State ---
+let suggestionTimeout = null;
+let currentSuggestions = [];
+let selectedSuggestionIndex = -1;
 
 // --- Engine ---
 
@@ -181,6 +187,9 @@ function performSearch() {
     return;
   }
 
+  // Lưu từ khoá vào lịch sử tìm kiếm gần đây
+  saveRecentSearch(query);
+
   const directUrl = resolveDirectUrl(query);
 
   if (directUrl) {
@@ -250,6 +259,160 @@ function initTypeToSearch() {
   });
 }
 
+// --- Recent Searches ---
+
+const RECENT_SEARCHES_KEY = "fynn-recent-searches";
+const MAX_RECENT = 8;
+
+function getRecentSearches() {
+  try {
+    return JSON.parse(localStorage.getItem(RECENT_SEARCHES_KEY)) || [];
+  } catch {
+    return [];
+  }
+}
+
+function saveRecentSearch(query) {
+  if (!query) return;
+
+  let recent = getRecentSearches();
+
+  // Xoá nếu đã tồn tại (tránh trùng), đẩy lên đầu
+  recent = recent.filter((item) => item !== query);
+  recent.unshift(query);
+
+  // Giới hạn tối đa MAX_RECENT mục
+  if (recent.length > MAX_RECENT) recent = recent.slice(0, MAX_RECENT);
+
+  localStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify(recent));
+}
+
+function removeRecentSearch(query) {
+  let recent = getRecentSearches();
+  recent = recent.filter((item) => item !== query);
+  localStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify(recent));
+}
+
+function hideRecentSearches() {
+  searchSuggestions.classList.remove("active");
+  selectedSuggestionIndex = -1;
+  currentSuggestions = [];
+}
+
+function showRecentSearches() {
+  const recent = getRecentSearches();
+
+  if (recent.length === 0) {
+    hideRecentSearches();
+    return;
+  }
+
+  currentSuggestions = recent;
+  selectedSuggestionIndex = -1;
+  searchSuggestions.innerHTML = "";
+
+  recent.forEach((text, index) => {
+    const item = document.createElement("div");
+    item.className = "suggestion-item";
+    item.dataset.index = index;
+
+    // Icon đồng hồ (history) thay vì kính lúp
+    const historyIcon = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`;
+
+    const label = document.createElement("span");
+    label.className = "suggestion-label";
+    label.textContent = text;
+
+    const removeBtn = document.createElement("button");
+    removeBtn.className = "suggestion-remove";
+    removeBtn.innerHTML = "×";
+    removeBtn.setAttribute("aria-label", `Remove "${text}"`);
+    removeBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      removeRecentSearch(text);
+      showRecentSearches();
+      searchInput.focus();
+    });
+
+    item.innerHTML = historyIcon;
+    item.appendChild(label);
+    item.appendChild(removeBtn);
+
+    item.addEventListener("click", () => {
+      searchInput.value = text;
+      hideRecentSearches();
+      performSearch();
+    });
+
+    searchSuggestions.appendChild(item);
+  });
+
+  searchSuggestions.classList.add("active");
+}
+
+function updateSuggestionHighlight() {
+  const items = searchSuggestions.querySelectorAll(".suggestion-item");
+  items.forEach((item, index) => {
+    item.classList.toggle("selected", index === selectedSuggestionIndex);
+  });
+}
+
+function initRecentSearches() {
+  // Hiển thị khi ô search được focus VÀ đang trống
+  searchInput.addEventListener("focus", () => {
+    if (searchInput.value.trim() === "") {
+      showRecentSearches();
+    }
+  });
+
+  // Ẩn khi người dùng bắt đầu gõ chữ
+  searchInput.addEventListener("input", () => {
+    if (searchInput.value.trim() !== "") {
+      hideRecentSearches();
+    } else {
+      showRecentSearches();
+    }
+  });
+
+  // Điều hướng bằng bàn phím
+  searchInput.addEventListener("keydown", (event) => {
+    if (!searchSuggestions.classList.contains("active")) return;
+
+    if (event.key === "ArrowDown") {
+      event.preventDefault();
+      selectedSuggestionIndex = Math.min(
+        selectedSuggestionIndex + 1,
+        currentSuggestions.length - 1,
+      );
+      updateSuggestionHighlight();
+    } else if (event.key === "ArrowUp") {
+      event.preventDefault();
+      selectedSuggestionIndex = Math.max(selectedSuggestionIndex - 1, -1);
+      updateSuggestionHighlight();
+    } else if (event.key === "Enter" && selectedSuggestionIndex >= 0) {
+      event.preventDefault();
+      searchInput.value = currentSuggestions[selectedSuggestionIndex];
+      hideRecentSearches();
+      performSearch();
+    } else if (event.key === "Escape") {
+      hideRecentSearches();
+    }
+  });
+
+  // Ẩn khi click bên ngoài
+  document.addEventListener("click", (e) => {
+    if (!searchContainer.contains(e.target)) {
+      hideRecentSearches();
+    }
+  });
+
+  // Ẩn khi blur, nhưng cho phép click vào mục gợi ý trước
+  searchInput.addEventListener("blur", (e) => {
+    if (e.relatedTarget && searchContainer.contains(e.relatedTarget)) return;
+    setTimeout(hideRecentSearches, 150);
+  });
+}
+
 export function initSearch() {
   // Clean inline SVG icon instead of an emoji
   searchButton.innerHTML = SEARCH_ICON;
@@ -285,4 +448,5 @@ export function initSearch() {
 
   initFocusEffect();
   initTypeToSearch();
-}
+  initRecentSearches();
+}

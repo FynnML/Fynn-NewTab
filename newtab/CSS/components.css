@@ -75,12 +75,13 @@
   backdrop-filter: var(--blur-md);
   -webkit-backdrop-filter: var(--blur-md);
 
-  box-shadow: var(--shadow-soft);
+  box-shadow: inset 1px 1px 0 rgba(255, 255, 255, 0.1), var(--shadow-soft);
 
   transition:
     border-color 0.3s var(--ease),
     background 0.3s var(--ease),
-    box-shadow 0.3s var(--ease);
+    box-shadow 0.3s var(--ease),
+    transform 0.3s var(--ease);
 }
 
 .search-bar:hover {
@@ -91,7 +92,8 @@
 .search-bar:focus-within {
   border-color: rgba(255, 255, 255, 0.18);
   background: rgba(0, 0, 0, 0.52);
-  box-shadow: var(--shadow-soft), 0 0 0 1px rgba(255, 255, 255, 0.04);
+  box-shadow: inset 1px 1px 0 rgba(255, 255, 255, 0.1), var(--shadow-soft), 0 0 0 1px rgba(255, 255, 255, 0.04);
+  transform: scale(1.01);
 }
 
 /* Engine button */
@@ -143,6 +145,10 @@
   font-size: 14px;
   font-family: inherit;
   letter-spacing: 0.1px;
+}
+
+#searchInput:focus-visible {
+  box-shadow: none;
 }
 
 #searchInput::placeholder {
@@ -201,11 +207,12 @@
   backdrop-filter: var(--blur-lg);
   -webkit-backdrop-filter: var(--blur-lg);
 
-  box-shadow: var(--shadow-strong);
+  box-shadow: inset 1px 1px 0 rgba(255, 255, 255, 0.1), var(--shadow-strong);
 
   opacity: 0;
   visibility: hidden;
-  transform: translateY(-6px);
+  transform: translateY(-6px) scale(0.95);
+  transform-origin: top center;
 
   transition:
     opacity 0.2s var(--ease),
@@ -216,7 +223,7 @@
 .engine-menu.active {
   opacity: 1;
   visibility: visible;
-  transform: translateY(0);
+  transform: translateY(0) scale(1);
 }
 
 .engine-option {
@@ -249,6 +256,103 @@
   background: var(--surface-interactive);
   color: var(--text-primary);
 }
+
+/* ==========================================================================
+   Autocomplete Suggestions & Quick Links
+   ========================================================================== */
+
+.search-suggestions {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  width: 100%;
+  
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  
+  background: var(--glass-bg-panel);
+  backdrop-filter: var(--blur-lg);
+  -webkit-backdrop-filter: var(--blur-lg);
+  box-shadow: inset 1px 1px 0 rgba(255, 255, 255, 0.1), var(--shadow-strong);
+  
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-6px);
+  
+  transition: opacity 0.2s var(--ease), transform 0.2s var(--ease), visibility 0.2s;
+  z-index: 10;
+  overflow: hidden;
+}
+
+.search-suggestions.active {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.suggestion-item {
+  display: flex;
+  align-items: center;
+  padding: 10px 16px;
+  color: var(--text-secondary);
+  font-size: 14px;
+  cursor: pointer;
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.suggestion-item svg {
+  width: 14px;
+  height: 14px;
+  margin-right: 12px;
+  opacity: 0.5;
+}
+
+.suggestion-item:hover,
+.suggestion-item.selected {
+  background: var(--surface-interactive);
+  color: var(--text-primary);
+}
+
+.suggestion-label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.suggestion-remove {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: none;
+  border-radius: 50%;
+
+  background: transparent;
+  color: var(--text-muted);
+
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+
+  opacity: 0;
+  transition: opacity var(--transition-fast), background var(--transition-fast), color var(--transition-fast);
+}
+
+.suggestion-item:hover .suggestion-remove {
+  opacity: 1;
+}
+
+.suggestion-remove:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-primary);
+}
+
 
 /* ==========================================================================
    Responsive — components

@@ -99,7 +99,7 @@
   -webkit-backdrop-filter: var(--blur-lg);
 
   border-left: 1px solid var(--glass-border-soft);
-  box-shadow: -12px 0 40px rgba(0, 0, 0, 0.3);
+  box-shadow: inset 1px 1px 0 rgba(255, 255, 255, 0.1), -12px 0 40px rgba(0, 0, 0, 0.3);
 
   transform: translateX(100%);
   transition: transform 0.4s var(--ease);
@@ -123,8 +123,12 @@
 }
 
 .dashboard::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.08);
+  background: transparent;
   border-radius: 4px;
+}
+
+.dashboard:hover::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.08);
 }
 
 /* Dashboard tabs */
@@ -316,6 +320,7 @@
 
   letter-spacing: 1px;
   text-transform: uppercase;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
 }
 
 .setting-item {
@@ -499,6 +504,7 @@
   color: var(--text-primary);
 }
 
+
 /* ==========================================================================
    Responsive — dashboard
    ========================================================================== */
@@ -506,5 +512,25 @@
 @media (max-width: 768px) {
   .dashboard-toggle {
     bottom: 4%;
+  }
+}
+
+@media (max-width: 640px) {
+  .dashboard {
+    width: 100%;
+    height: 80vh;
+    top: auto;
+    bottom: 0;
+    
+    border-left: none;
+    border-top: 1px solid var(--glass-border-soft);
+    border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+    
+    transform: translateY(100%);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 -12px 40px rgba(0, 0, 0, 0.3);
+  }
+  
+  .dashboard.open {
+    transform: translateY(0);
   }
 }

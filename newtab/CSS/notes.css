@@ -20,7 +20,7 @@
   backdrop-filter: var(--blur-md);
   -webkit-backdrop-filter: var(--blur-md);
 
-  box-shadow: var(--shadow-soft);
+  box-shadow: inset 1px 1px 0 rgba(255, 255, 255, 0.1), var(--shadow-soft);
 
   z-index: 4;
 }
@@ -97,8 +97,12 @@
 }
 
 .notes-list::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
+  background: transparent;
   border-radius: 4px;
+}
+
+.notes-list:hover::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
 }
 
 /* Individual note */
@@ -160,6 +164,7 @@
 
   color: var(--text-primary);
   word-break: break-word;
+  transition: color var(--transition-normal), font-weight var(--transition-normal);
 }
 
 .note-title:empty {
@@ -184,6 +189,7 @@
 
   color: var(--text-secondary);
   word-break: break-word;
+  transition: color var(--transition-normal);
 }
 
 .note-text.completed {
