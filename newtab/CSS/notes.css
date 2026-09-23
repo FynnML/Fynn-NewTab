@@ -166,12 +166,10 @@
 
   color: var(--text-primary);
   word-break: break-word;
-  background-image: linear-gradient(transparent calc(50% - 0.5px), var(--text-muted) calc(50% - 0.5px), var(--text-muted) calc(50% + 0.5px), transparent calc(50% + 0.5px));
-  background-position: left center;
-  background-repeat: no-repeat;
-  background-size: 0% 100%;
+  text-decoration: line-through;
+  text-decoration-color: transparent;
   
-  transition: color var(--transition-normal), font-weight var(--transition-normal), background-size 0.3s ease;
+  transition: color var(--transition-normal), font-weight var(--transition-normal), text-decoration-color 0.3s ease;
 }
 
 .note-title:empty {
@@ -180,9 +178,8 @@
 
 .note-title.completed {
   color: var(--text-muted);
-  background-size: 100% 100%;
   font-weight: 400;
-  background-size: 100% 100%;
+  text-decoration-color: rgba(255, 255, 255, 0.2);
 }
 
 .note-text {
@@ -197,17 +194,15 @@
 
   color: var(--text-secondary);
   word-break: break-word;
-  background-image: linear-gradient(transparent calc(50% - 0.5px), var(--text-muted) calc(50% - 0.5px), var(--text-muted) calc(50% + 0.5px), transparent calc(50% + 0.5px));
-  background-position: left center;
-  background-repeat: no-repeat;
-  background-size: 0% 100%;
+  text-decoration: line-through;
+  text-decoration-color: transparent;
   
-  transition: color var(--transition-normal), background-size 0.3s ease;
+  transition: color var(--transition-normal), text-decoration-color 0.3s ease;
 }
 
 .note-text.completed {
   color: var(--text-muted);
-  background-size: 100% 100%;
+  text-decoration-color: rgba(255, 255, 255, 0.2);
 }
 
 /* Note actions — ghost buttons */
@@ -363,5 +358,7 @@
 @media (max-width: 768px) {
   .notes-widget {
     width: min(260px, 80vw);
+    bottom: 80px;
+    right: 28px;
   }
 }

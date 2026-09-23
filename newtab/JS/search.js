@@ -93,6 +93,10 @@ function applySearchEngine(engine) {
   engineIcon.src = config.icon;
   engineIcon.alt = config.label;
   searchInput.placeholder = `Search with ${config.label}`;
+
+  engineOptions.forEach((option) => {
+    option.classList.toggle("selected", option.dataset.engine === engine);
+  });
 }
 
 /** Applies + saves the engine. Used by the dropdown and the Settings tab. */

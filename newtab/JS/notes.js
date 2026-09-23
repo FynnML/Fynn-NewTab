@@ -115,6 +115,12 @@ function openNoteEditor(note = null) {
   editingNoteId = note ? note.id : null;
   noteTitle.value = note?.title || "";
   noteContent.value = note?.content || "";
+  
+  noteContent.style.height = "auto";
+  setTimeout(() => {
+    noteContent.style.height = noteContent.scrollHeight + "px";
+  }, 10);
+  
   noteEditor.classList.add("active");
   noteTitle.focus();
 }
@@ -206,6 +212,11 @@ function bindNoteEditor() {
   addNoteButton.addEventListener("click", () => openNoteEditor());
   saveNoteButton.addEventListener("click", handleSaveNote);
   cancelNoteButton.addEventListener("click", closeNoteEditor);
+  
+  noteContent.addEventListener("input", function() {
+    this.style.height = "auto";
+    this.style.height = this.scrollHeight + "px";
+  });
 }
 
 /** Requires openDatabase() to have resolved. */

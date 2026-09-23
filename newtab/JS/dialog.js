@@ -2,6 +2,53 @@
  * dialog.js — Custom modal dialogs to replace native browser prompts.
  */
 
+function setupA11y(overlay, cancelCallback) {
+  const previousActiveElement = document.activeElement;
+  
+  const focusableEls = overlay.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+  const firstFocusableEl = focusableEls[0];
+  const lastFocusableEl = focusableEls[focusableEls.length - 1];
+
+  const handleKeyDown = (e) => {
+    if (e.key === "Escape") {
+      e.preventDefault();
+      cancelCallback();
+    } else if (e.key === "Tab") {
+      if (focusableEls.length === 1) {
+        e.preventDefault();
+        return;
+      }
+      if (e.shiftKey) {
+        if (document.activeElement === firstFocusableEl) {
+          lastFocusableEl.focus();
+          e.preventDefault();
+        }
+      } else {
+        if (document.activeElement === lastFocusableEl) {
+          firstFocusableEl.focus();
+          e.preventDefault();
+        }
+      }
+    }
+  };
+
+  document.addEventListener("keydown", handleKeyDown);
+
+  // Set timeout to ensure the visibility transition has applied so element is focusable
+  setTimeout(() => {
+    if (firstFocusableEl) {
+      firstFocusableEl.focus();
+    }
+  }, 10);
+
+  return () => {
+    document.removeEventListener("keydown", handleKeyDown);
+    if (previousActiveElement && typeof previousActiveElement.focus === "function") {
+      previousActiveElement.focus();
+    }
+  };
+}
+
 export function showConfirmDialog(message, title = "Confirm") {
   return new Promise((resolve) => {
     let overlay = document.getElementById("customDialogOverlay");
@@ -11,7 +58,7 @@ export function showConfirmDialog(message, title = "Confirm") {
       overlay.className = "custom-dialog-overlay";
       overlay.id = "customDialogOverlay";
       overlay.innerHTML = `
-        <div class="custom-dialog">
+        <div class="custom-dialog" role="dialog" aria-modal="true" aria-labelledby="customDialogTitle" aria-describedby="customDialogMessage">
           <h3 class="custom-dialog-title" id="customDialogTitle"></h3>
           <p class="custom-dialog-message" id="customDialogMessage"></p>
           <div class="custom-dialog-actions">
@@ -31,10 +78,13 @@ export function showConfirmDialog(message, title = "Confirm") {
     titleEl.textContent = title;
     messageEl.textContent = message;
     
+    let a11yCleanup;
+
     const cleanup = () => {
       overlay.classList.remove("active");
       cancelBtn.removeEventListener("click", handleCancel);
       confirmBtn.removeEventListener("click", handleConfirm);
+      if (a11yCleanup) a11yCleanup();
     };
     
     const handleCancel = () => {
@@ -52,6 +102,7 @@ export function showConfirmDialog(message, title = "Confirm") {
     
     requestAnimationFrame(() => {
       overlay.classList.add("active");
+      a11yCleanup = setupA11y(overlay, handleCancel);
     });
   });
 }
@@ -65,7 +116,7 @@ export function showAlertDialog(message, title = "Notice") {
       overlay.className = "custom-dialog-overlay";
       overlay.id = "customAlertDialogOverlay";
       overlay.innerHTML = `
-        <div class="custom-dialog">
+        <div class="custom-dialog" role="dialog" aria-modal="true" aria-labelledby="customAlertDialogTitle" aria-describedby="customAlertDialogMessage">
           <h3 class="custom-dialog-title" id="customAlertDialogTitle"></h3>
           <p class="custom-dialog-message" id="customAlertDialogMessage"></p>
           <div class="custom-dialog-actions">
@@ -83,9 +134,12 @@ export function showAlertDialog(message, title = "Notice") {
     titleEl.textContent = title;
     messageEl.textContent = message;
     
+    let a11yCleanup;
+
     const cleanup = () => {
       overlay.classList.remove("active");
       confirmBtn.removeEventListener("click", handleConfirm);
+      if (a11yCleanup) a11yCleanup();
     };
     
     const handleConfirm = () => {
@@ -97,6 +151,7 @@ export function showAlertDialog(message, title = "Notice") {
     
     requestAnimationFrame(() => {
       overlay.classList.add("active");
+      a11yCleanup = setupA11y(overlay, handleConfirm);
     });
   });
 }

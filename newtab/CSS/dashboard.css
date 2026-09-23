@@ -134,11 +134,25 @@
 /* Dashboard tabs */
 
 .dashboard-tabs {
+  position: relative;
   display: flex;
   gap: 4px;
 
   padding-bottom: var(--space-sm);
   border-bottom: 1px solid var(--glass-border-soft);
+}
+
+/* Sliding tab indicator */
+.dashboard-tabs::after {
+  content: "";
+  position: absolute;
+  bottom: -1px;
+  left: var(--tab-left, 0);
+  width: var(--tab-width, 0);
+  height: 2px;
+  background: var(--accent);
+  border-radius: 2px 2px 0 0;
+  transition: left 0.3s var(--ease), width 0.3s var(--ease);
 }
 
 .dashboard-tab {
@@ -511,7 +525,8 @@
 
 @media (max-width: 768px) {
   .dashboard-toggle {
-    bottom: 4%;
+    bottom: 24px;
+    right: 28px;
   }
 }
 

@@ -61,6 +61,12 @@ function selectTab(tab) {
   });
 
   document.querySelector(`#${target}`).classList.add("active");
+
+  const tabsContainer = document.querySelector(".dashboard-tabs");
+  if (tabsContainer) {
+    tabsContainer.style.setProperty("--tab-left", tab.offsetLeft + "px");
+    tabsContainer.style.setProperty("--tab-width", tab.offsetWidth + "px");
+  }
 }
 
 function initPanel() {
@@ -71,6 +77,12 @@ function initPanel() {
   dashboardTabs.forEach((tab) => {
     tab.addEventListener("click", () => selectTab(tab));
   });
+
+  // Init sliding indicator position
+  const activeTab = document.querySelector(".dashboard-tab.active");
+  if (activeTab) {
+    requestAnimationFrame(() => selectTab(activeTab));
+  }
 
   // Click outside the dashboard closes it
   document.addEventListener("click", (event) => {
