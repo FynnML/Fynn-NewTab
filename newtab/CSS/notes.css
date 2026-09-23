@@ -20,7 +20,9 @@
   backdrop-filter: var(--blur-md);
   -webkit-backdrop-filter: var(--blur-md);
 
-  box-shadow: inset 1px 1px 0 rgba(255, 255, 255, 0.1), var(--shadow-soft);
+  box-shadow:
+    inset 1px 1px 0 rgba(255, 255, 255, 0.1),
+    var(--shadow-soft);
 
   z-index: 4;
 }
@@ -164,7 +166,12 @@
 
   color: var(--text-primary);
   word-break: break-word;
-  transition: color var(--transition-normal), font-weight var(--transition-normal);
+  background-image: linear-gradient(transparent calc(50% - 0.5px), var(--text-muted) calc(50% - 0.5px), var(--text-muted) calc(50% + 0.5px), transparent calc(50% + 0.5px));
+  background-position: left center;
+  background-repeat: no-repeat;
+  background-size: 0% 100%;
+  
+  transition: color var(--transition-normal), font-weight var(--transition-normal), background-size 0.3s ease;
 }
 
 .note-title:empty {
@@ -173,8 +180,9 @@
 
 .note-title.completed {
   color: var(--text-muted);
-  text-decoration: line-through;
+  background-size: 100% 100%;
   font-weight: 400;
+  background-size: 100% 100%;
 }
 
 .note-text {
@@ -189,12 +197,17 @@
 
   color: var(--text-secondary);
   word-break: break-word;
-  transition: color var(--transition-normal);
+  background-image: linear-gradient(transparent calc(50% - 0.5px), var(--text-muted) calc(50% - 0.5px), var(--text-muted) calc(50% + 0.5px), transparent calc(50% + 0.5px));
+  background-position: left center;
+  background-repeat: no-repeat;
+  background-size: 0% 100%;
+  
+  transition: color var(--transition-normal), background-size 0.3s ease;
 }
 
 .note-text.completed {
   color: var(--text-muted);
-  text-decoration: line-through;
+  background-size: 100% 100%;
 }
 
 /* Note actions — ghost buttons */

@@ -70,7 +70,6 @@ const backgroundDim = document.querySelector("#backgroundDim");
 const searchSuggestions = document.querySelector("#searchSuggestions");
 
 // --- Autocomplete State ---
-let suggestionTimeout = null;
 let currentSuggestions = [];
 let selectedSuggestionIndex = -1;
 
@@ -449,4 +448,4 @@ export function initSearch() {
   initFocusEffect();
   initTypeToSearch();
   initRecentSearches();
-}
+}

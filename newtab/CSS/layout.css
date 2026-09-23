@@ -98,7 +98,6 @@ body {
 .clock-container h1 {
   margin: 0;
 
-  font-family: 'Outfit', sans-serif;
   font-size: clamp(52px, 7.5vw, 100px);
   font-weight: 700;
   letter-spacing: -2.5px;
