@@ -2,7 +2,7 @@
  * dashboard.js — Everything inside the slide-out dashboard:
  *   1. Panel      open/close, tabs, click-outside, Escape
  *   2. Widgets    visibility toggles + widget layout (LocalStorage)
- *   3. Settings   search engine, time format, focus effect, reset
+ *   3. Settings   search engine, time format, focus effect, overlay, reset
  *
  * (The Wallpapers tab content is rendered by wallpaper.js.)
  */
@@ -14,8 +14,15 @@ import {
   setSearchEngine,
   isSearchFocusEffectEnabled,
   setSearchFocusEffect,
+  getCustomEngineUrl,
+  setCustomEngineUrl,
   resetSearchSettings,
 } from "./search.js";
+import {
+  getOverlayStrength,
+  setOverlayStrength,
+  resetOverlayStrength,
+} from "./wallpaper.js";
 
 /* ==========================================================================
    1. PANEL
@@ -203,19 +210,45 @@ function initSettings() {
   const searchFocusEffectSetting = document.querySelector(
     "#searchFocusEffectSetting",
   );
+  const customEngineUrlItem = document.querySelector("#customEngineUrlItem");
+  const customEngineUrlSetting = document.querySelector(
+    "#customEngineUrlSetting",
+  );
+  const overlayStrengthSetting = document.querySelector(
+    "#overlayStrengthSetting",
+  );
+  const overlayStrengthValue = document.querySelector(
+    "#overlayStrengthValue",
+  );
   const resetSettingsButton = document.querySelector("#resetSettingsButton");
+
+  // Custom engine URL only matters once "Custom" is picked.
+  const syncCustomEngineVisibility = () => {
+    customEngineUrlItem.classList.toggle(
+      "hidden",
+      searchEngineSetting.value !== "custom",
+    );
+  };
 
   // Reflect the saved values in the form controls.
   const syncControls = () => {
     searchEngineSetting.value = getSearchEngine();
     timeFormatSetting.value = getTimeFormat();
     searchFocusEffectSetting.checked = isSearchFocusEffectEnabled();
+    customEngineUrlSetting.value = getCustomEngineUrl();
+
+    const overlayStrength = getOverlayStrength();
+    overlayStrengthSetting.value = overlayStrength;
+    overlayStrengthValue.textContent = `${overlayStrength}%`;
+
+    syncCustomEngineVisibility();
   };
 
   syncControls();
 
   searchEngineSetting.addEventListener("change", () => {
     setSearchEngine(searchEngineSetting.value);
+    syncCustomEngineVisibility();
   });
 
   timeFormatSetting.addEventListener("change", () => {
@@ -226,6 +259,17 @@ function initSettings() {
     setSearchFocusEffect(searchFocusEffectSetting.checked);
   });
 
+  customEngineUrlSetting.addEventListener("change", () => {
+    setCustomEngineUrl(customEngineUrlSetting.value);
+  });
+
+  overlayStrengthSetting.addEventListener("input", () => {
+    const value = Number(overlayStrengthSetting.value);
+
+    setOverlayStrength(value);
+    overlayStrengthValue.textContent = `${value}%`;
+  });
+
   resetSettingsButton.addEventListener("click", () => {
     const confirmed = confirm("Reset Fynn NewTab settings?");
 
@@ -233,6 +277,7 @@ function initSettings() {
 
     resetSearchSettings();
     resetTimeFormat();
+    resetOverlayStrength();
     resetWidgets();
 
     syncControls();

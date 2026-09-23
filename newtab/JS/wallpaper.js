@@ -18,6 +18,11 @@ const DEFAULT_WALLPAPER_SRC = "../assets/wallpapers/default.mp4";
 const BUILTIN_WALLPAPER_ID = "__builtin-default__";
 const SCHEDULE_INTERVAL_MS = 60 * 1000;
 
+const OVERLAY_STRENGTH_KEY = "fynn-overlay-strength";
+const DEFAULT_OVERLAY_STRENGTH = 100; // percent
+const MIN_OVERLAY_STRENGTH = 50;
+const MAX_OVERLAY_STRENGTH = 180;
+
 const WALLPAPER_MODES = {
   DEFAULT: "default",
   PRIMARY: "primary",
@@ -43,6 +48,47 @@ let currentWallpaperUrl = null;
 let activeWallpaperId = null;
 let wallpaperScheduleTimer = null;
 const wallpaperPreviewUrls = new Set();
+
+// --- Overlay strength ---
+//
+// LocalStorage-only setting (like the search focus effect), so it can be
+// applied immediately on load without waiting on IndexedDB. Scales the
+// .overlay gradient defined in wallpaper.css via a CSS custom property.
+
+const clampOverlayStrength = (value) =>
+  Math.min(MAX_OVERLAY_STRENGTH, Math.max(MIN_OVERLAY_STRENGTH, value));
+
+export function getOverlayStrength() {
+  const saved = Number(localStorage.getItem(OVERLAY_STRENGTH_KEY));
+  return Number.isFinite(saved) && saved > 0
+    ? clampOverlayStrength(saved)
+    : DEFAULT_OVERLAY_STRENGTH;
+}
+
+function applyOverlayStrength(percent) {
+  document.documentElement.style.setProperty(
+    "--overlay-strength",
+    String(percent / 100),
+  );
+}
+
+/** Applies + saves the overlay strength. Used by the Settings tab. */
+export function setOverlayStrength(percent) {
+  const clamped = clampOverlayStrength(percent);
+
+  applyOverlayStrength(clamped);
+  localStorage.setItem(OVERLAY_STRENGTH_KEY, String(clamped));
+}
+
+export function resetOverlayStrength() {
+  localStorage.removeItem(OVERLAY_STRENGTH_KEY);
+  applyOverlayStrength(DEFAULT_OVERLAY_STRENGTH);
+}
+
+/** LocalStorage-only — call this early, before openDatabase(). */
+export function initOverlayStrength() {
+  applyOverlayStrength(getOverlayStrength());
+}
 
 // --- DB Operations ---
 

@@ -6,10 +6,34 @@
 
 const SEARCH_ENGINE_KEY = "fynn-search-engine";
 const SEARCH_FOCUS_EFFECT_KEY = "fynn-search-focus-effect";
+const CUSTOM_ENGINE_URL_KEY = "fynn-custom-engine-url";
 const DEFAULT_ENGINE = "brave";
 const DEFAULT_FOCUS_EFFECT = true;
+const DEFAULT_CUSTOM_ENGINE_URL = "https://www.bing.com/search?q=%s";
 
 const SEARCH_ICON = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>`;
+
+/* Inline icon for "Custom" — no local asset needed */
+const CUSTOM_ENGINE_ICON = `data:image/svg+xml,${encodeURIComponent(
+  '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#f0f0f0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3c2.5 2.8 4 6.2 4 9s-1.5 6.2-4 9c-2.5-2.8-4-6.2-4-9s1.5-6.2 4-9z"/></svg>',
+)}`;
+
+// --- Custom engine URL ---
+
+export function getCustomEngineUrl() {
+  return localStorage.getItem(CUSTOM_ENGINE_URL_KEY) || DEFAULT_CUSTOM_ENGINE_URL;
+}
+
+/** Saves the custom engine URL template. Expects a %s placeholder for the query. */
+export function setCustomEngineUrl(url) {
+  const trimmed = url.trim();
+  localStorage.setItem(CUSTOM_ENGINE_URL_KEY, trimmed || DEFAULT_CUSTOM_ENGINE_URL);
+}
+
+const buildCustomUrl = (query) => {
+  const template = getCustomEngineUrl();
+  return template.includes("%s") ? template.replace("%s", query) : `${template}${query}`;
+};
 
 const ENGINES = {
   brave: {
@@ -21,6 +45,17 @@ const ENGINES = {
     label: "Google",
     icon: "../assets/icons/google.png",
     buildUrl: (query) => `https://www.google.com/search?q=${query}`,
+  },
+  duckduckgo: {
+    label: "DuckDuckGo",
+    // Add this file yourself (32x32 transparent PNG), same as brave.png / google.png
+    icon: "../assets/icons/duckduckgo.png",
+    buildUrl: (query) => `https://duckduckgo.com/?q=${query}`,
+  },
+  custom: {
+    label: "Custom",
+    icon: CUSTOM_ENGINE_ICON,
+    buildUrl: buildCustomUrl,
   },
 };
 
@@ -93,12 +128,47 @@ export function setSearchFocusEffect(enabled) {
   localStorage.setItem(SEARCH_FOCUS_EFFECT_KEY, String(enabled));
 }
 
-/** Clears both search settings and re-applies the defaults. */
+/** Clears all search settings and re-applies the defaults. */
 export function resetSearchSettings() {
   localStorage.removeItem(SEARCH_ENGINE_KEY);
   localStorage.removeItem(SEARCH_FOCUS_EFFECT_KEY);
+  localStorage.removeItem(CUSTOM_ENGINE_URL_KEY);
 
   applySearchEngine(DEFAULT_ENGINE);
+}
+
+// --- URL detection ---
+//
+// If the query looks like a URL or a bare domain, navigate straight to it
+// instead of searching. Only a curated TLD list is treated as a domain
+// ending, so real search phrases with a dot (e.g. "node.js", "e.g. foo")
+// aren't misfired into a broken navigation. Extend COMMON_TLDS if you hit
+// a domain that isn't recognized.
+const COMMON_TLDS = new Set([
+  "com", "net", "org", "io", "dev", "app", "co", "ai", "me", "info",
+  "biz", "xyz", "tv", "us", "uk", "de", "jp", "cn", "ca", "au",
+  "vn", "edu", "gov", "gg", "sh", "to", "so", "ly", "im",
+]);
+
+const PROTOCOL_PATTERN = /^[a-z][a-z0-9+.-]*:\/\//i;
+const IPV4_PATTERN = /^(\d{1,3}\.){3}\d{1,3}(:\d+)?(\/\S*)?$/;
+const LOCALHOST_PATTERN = /^localhost(:\d+)?(\/\S*)?$/i;
+const DOMAIN_PATTERN = /^([a-z0-9]([a-z0-9-]*[a-z0-9])?\.)+([a-z]{2,})(:\d+)?(\/\S*)?$/i;
+
+function resolveDirectUrl(input) {
+  if (/\s/.test(input)) return null;
+
+  if (PROTOCOL_PATTERN.test(input)) return input;
+  if (input.startsWith("www.")) return `https://${input}`;
+  if (LOCALHOST_PATTERN.test(input)) return `http://${input}`;
+  if (IPV4_PATTERN.test(input)) return `http://${input}`;
+
+  const match = input.match(DOMAIN_PATTERN);
+  if (match && COMMON_TLDS.has(match[3].toLowerCase())) {
+    return `https://${input}`;
+  }
+
+  return null;
 }
 
 // --- Submit ---
@@ -108,6 +178,13 @@ function performSearch() {
 
   if (!query) {
     searchInput.focus();
+    return;
+  }
+
+  const directUrl = resolveDirectUrl(query);
+
+  if (directUrl) {
+    window.location.href = directUrl;
     return;
   }
 
@@ -140,6 +217,36 @@ function initFocusEffect() {
 
   searchInput.addEventListener("blur", () => {
     backgroundDim.classList.remove("active");
+  });
+}
+
+/**
+ * Typing anywhere on the page (when nothing else is focused) jumps straight
+ * into the search box, like Brave/Chrome's own New Tab.
+ */
+function initTypeToSearch() {
+  const dashboard = document.querySelector("#dashboard");
+
+  document.addEventListener("keydown", (event) => {
+    // Modifier combos are browser/OS shortcuts (Ctrl+T, Cmd+L, ...) — leave them alone.
+    if (event.ctrlKey || event.metaKey || event.altKey) return;
+
+    // Only single printable characters; ignores Tab, Escape, arrows, F-keys, etc.
+    if (event.key.length !== 1) return;
+
+    const active = document.activeElement;
+    const isEditable =
+      active?.tagName === "INPUT" ||
+      active?.tagName === "TEXTAREA" ||
+      active?.tagName === "SELECT" ||
+      active?.isContentEditable;
+
+    if (isEditable) return;
+    if (dashboard?.classList.contains("open")) return;
+    if (document.querySelector(".custom-dialog-overlay.active")) return;
+
+    searchInput.focus();
+    // Don't preventDefault: let this same keystroke land in the input.
   });
 }
 
@@ -177,4 +284,5 @@ export function initSearch() {
   });
 
   initFocusEffect();
+  initTypeToSearch();
 }

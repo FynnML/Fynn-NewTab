@@ -100,6 +100,15 @@
                 <img src="../assets/icons/google.png" alt="Google" />
                 <span>Google</span>
               </button>
+
+              <button class="engine-option" data-engine="duckduckgo">
+                <img src="../assets/icons/duckduckgo.png" alt="DuckDuckGo" />
+                <span>DuckDuckGo</span>
+              </button>
+
+              <button class="engine-option" data-engine="custom">
+                <span>Custom</span>
+              </button>
             </div>
           </div>
         </section>
@@ -298,7 +307,28 @@
             <select id="searchEngineSetting" class="setting-select">
               <option value="brave">Brave</option>
               <option value="google">Google</option>
+              <option value="duckduckgo">DuckDuckGo</option>
+              <option value="custom">Custom</option>
             </select>
+          </div>
+
+          <div
+            class="setting-item setting-item--stacked hidden"
+            id="customEngineUrlItem"
+          >
+            <div>
+              <strong>Custom engine URL</strong>
+              <span>Use %s where the query should go</span>
+            </div>
+
+            <input
+              type="text"
+              id="customEngineUrlSetting"
+              class="setting-text-input"
+              placeholder="https://example.com/search?q=%s"
+              autocomplete="off"
+              spellcheck="false"
+            />
           </div>
         </div>
 
@@ -331,6 +361,27 @@
               <input type="checkbox" id="searchFocusEffectSetting" />
               <span class="slider"></span>
             </label>
+          </div>
+
+          <div class="setting-item setting-item--stacked">
+            <div>
+              <strong>Overlay strength</strong>
+              <span>Darkens the wallpaper so text stays readable</span>
+            </div>
+
+            <div class="setting-item-row">
+              <input
+                type="range"
+                id="overlayStrengthSetting"
+                class="setting-range"
+                min="50"
+                max="180"
+                step="10"
+              />
+              <span class="setting-range-value" id="overlayStrengthValue"
+                >100%</span
+              >
+            </div>
           </div>
         </div>
 

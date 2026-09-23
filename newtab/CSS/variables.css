@@ -46,6 +46,9 @@
   --space-lg: 28px;
   --space-xl: 40px;
 
+  /* --- Overlay strength — multiplier set by Settings > Appearance --- */
+  --overlay-strength: 1;
+
   /* --- Shadows --- */
   --shadow-soft: 0 8px 32px rgba(0, 0, 0, 0.2);
   --shadow-strong: 0 16px 48px rgba(0, 0, 0, 0.35);

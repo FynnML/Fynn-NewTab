@@ -53,7 +53,12 @@
   -webkit-backdrop-filter: blur(6px);
 }
 
-/* Soft gradient so text stays legible on any wallpaper */
+/* Soft gradient so text stays legible on any wallpaper.
+   Every stop is scaled by --overlay-strength (set from Settings > Appearance,
+   default 1 = 100%), so raising it darkens the whole gradient proportionally
+   instead of only the bottom edge. The 35%/65% stops (roughly where the
+   clock + search bar sit) were previously near-zero — raised so the middle
+   of the screen isn't left undimmed against busy wallpapers. */
 
 .overlay {
   position: absolute;
@@ -61,11 +66,13 @@
 
   background: linear-gradient(
     180deg,
-    rgba(0, 0, 0, 0.08) 0%,
-    rgba(0, 0, 0, 0.02) 35%,
-    rgba(0, 0, 0, 0.12) 65%,
-    rgba(0, 0, 0, 0.55) 100%
+    rgba(0, 0, 0, calc(0.16 * var(--overlay-strength))) 0%,
+    rgba(0, 0, 0, calc(0.12 * var(--overlay-strength))) 35%,
+    rgba(0, 0, 0, calc(0.22 * var(--overlay-strength))) 65%,
+    rgba(0, 0, 0, calc(0.6 * var(--overlay-strength))) 100%
   );
+
+  transition: background 0.2s var(--ease);
 
   z-index: 1;
 }

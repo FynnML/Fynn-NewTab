@@ -15,7 +15,7 @@ import { initClock } from "./JS/clock.js";
 import { initSearch } from "./JS/search.js";
 import { initDashboard } from "./JS/dashboard.js";
 import { openDatabase } from "./JS/db.js";
-import { initWallpaper } from "./JS/wallpaper.js";
+import { initWallpaper, initOverlayStrength } from "./JS/wallpaper.js";
 import { initNotes } from "./JS/notes.js";
 
 async function start() {
@@ -27,6 +27,7 @@ async function start() {
 
     initClock();
     initSearch();
+    initOverlayStrength();
     initDashboard();
 
     // IndexedDB-backed features.
