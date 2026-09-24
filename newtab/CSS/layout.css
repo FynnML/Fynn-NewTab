@@ -176,7 +176,7 @@ body {
   box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.2);
 }
 
-/* Remove focus outline for mouse/touch */
+/* Remove focus outline for mouse clicks */
 :focus:not(:focus-visible) {
   outline: none;
 }

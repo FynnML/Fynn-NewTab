@@ -35,6 +35,8 @@ const dashboardContents = document.querySelectorAll(".dashboard-content");
 const appRoot = document.querySelector(".app");
 
 function setDashboardOpen(isOpen) {
+  const wasOpen = dashboard.classList.contains("open");
+
   dashboard.classList.toggle("open", isOpen);
   appRoot.classList.toggle("dashboard-open", isOpen);
 
@@ -43,6 +45,18 @@ function setDashboardOpen(isOpen) {
     "aria-label",
     isOpen ? "Close dashboard" : "Open dashboard",
   );
+
+  if (isOpen) {
+    dashboard.removeAttribute("inert");
+    dashboard.setAttribute("aria-hidden", "false");
+  } else {
+    dashboard.setAttribute("inert", "");
+    dashboard.setAttribute("aria-hidden", "true");
+    
+    if (wasOpen && document.activeElement && dashboard.contains(document.activeElement)) {
+      dashboardToggle.focus();
+    }
+  }
 }
 
 function selectTab(tab) {
@@ -70,6 +84,9 @@ function selectTab(tab) {
 }
 
 function initPanel() {
+  dashboard.setAttribute("inert", "");
+  dashboard.setAttribute("aria-hidden", "true");
+
   dashboardToggle.addEventListener("click", () => {
     setDashboardOpen(!dashboard.classList.contains("open"));
   });
@@ -87,6 +104,7 @@ function initPanel() {
   // Click outside the dashboard closes it
   document.addEventListener("click", (event) => {
     if (!dashboard.classList.contains("open")) return;
+    if (document.querySelector(".custom-dialog-overlay.active")) return;
 
     const clickedInsideDashboard = dashboard.contains(event.target);
     const clickedToggle = dashboardToggle.contains(event.target);
@@ -99,6 +117,7 @@ function initPanel() {
   // Escape closes the innermost open layer first: engine dropdown, then dashboard.
   document.addEventListener("keydown", (event) => {
     if (event.key !== "Escape") return;
+    if (document.querySelector(".custom-dialog-overlay.active")) return;
 
     if (closeEngineMenu({ restoreFocus: true })) return;
 

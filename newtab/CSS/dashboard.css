@@ -548,4 +548,14 @@
   .dashboard.open {
     transform: translateY(0);
   }
+
+  .app.dashboard-open .dashboard-toggle {
+    right: 28px;
+    bottom: calc(80vh + 16px);
+    border-radius: var(--radius-md);
+  }
+
+  .app.dashboard-open .dashboard-toggle .icon {
+    transform: rotate(90deg);
+  }
 }

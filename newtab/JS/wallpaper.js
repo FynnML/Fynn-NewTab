@@ -140,7 +140,6 @@ function extractVideoThumbnail(file) {
     const video = document.createElement("video");
     video.preload = "metadata";
     video.muted = true;
-    video.playsInline = true;
 
     let timeoutId;
     const cleanup = () => {
@@ -205,7 +204,7 @@ async function handleWallpaperUpload(event) {
       return;
     }
 
-    const MAX_SIZE_MB = 20;
+    const MAX_SIZE_MB = 50;
     if (file.size > MAX_SIZE_MB * 1024 * 1024) {
       await showAlertDialog(`File size exceeds ${MAX_SIZE_MB}MB limit. Please choose a smaller file.`, "File Too Large");
       wallpaperInput.value = "";
@@ -297,7 +296,7 @@ async function renderWallpapers() {
 
     const preview =
       wallpaper.type.startsWith("video/") && !wallpaper.thumbnailBlob
-        ? `<video src="${url}" muted loop autoplay playsinline></video>`
+        ? `<video src="${url}" muted loop autoplay></video>`
         : `<img src="${previewUrl}" alt="">`;
 
     const modeOptions = MODE_OPTIONS.map(
@@ -476,7 +475,13 @@ async function removeWallpaper(id) {
 function bindWallpaperEvents() {
   wallpaperInput.addEventListener("change", handleWallpaperUpload);
 
-  document.addEventListener("visibilitychange", updateVideoPlayback);
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible") {
+      applyActiveWallpaper().catch((error) => console.error("Wallpaper re-check failed:", error));
+    } else {
+      updateVideoPlayback();
+    }
+  });
   window.matchMedia("(prefers-reduced-motion: reduce)").addEventListener("change", updateVideoPlayback);
 
   // Bundled default missing or unreadable → keep the plain dark background.

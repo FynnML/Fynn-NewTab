@@ -29,13 +29,28 @@ async function start() {
     initSearch();
     initOverlayStrength();
     initDashboard();
+  } catch (error) {
+    console.error("Core UI initialization failed:", error);
+  }
 
+  try {
     // IndexedDB-backed features.
     await openDatabase();
+  } catch (error) {
+    console.error("IndexedDB initialization failed:", error);
+    return;
+  }
+
+  try {
     await initWallpaper();
+  } catch (error) {
+    console.error("Wallpaper initialization failed:", error);
+  }
+
+  try {
     await initNotes();
   } catch (error) {
-    console.error("Application initialization failed:", error);
+    console.error("Notes initialization failed:", error);
   }
 }
 

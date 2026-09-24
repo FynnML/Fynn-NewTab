@@ -390,16 +390,7 @@
   }
 }
 
-@media (max-width: 640px) {
-  .brand-logo {
-    top: 16px;
-    left: 16px;
-  }
 
-  .brand-logo__image {
-    height: 26px;
-  }
-}
 
 /* ==========================================================================
    Custom Dialog Modal
