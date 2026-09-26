@@ -12,20 +12,44 @@ import { initNotes } from "./JS/notes.js";
 import { initI18n } from "./JS/i18n/i18n.js";
 
 async function start() {
+  // LocalStorage-only features first (no waiting on IndexedDB).
+  // Each module gets its own try/catch so one throwing can't block the rest.
   try {
-    // LocalStorage-only features first (no waiting on IndexedDB).
     initI18n();
+  } catch (error) {
+    console.error("i18n initialization failed:", error);
+  }
 
+  try {
     initGreeting({
       el: document.getElementById("greeting"),
     });
+  } catch (error) {
+    console.error("Greeting initialization failed:", error);
+  }
 
+  try {
     initClock();
+  } catch (error) {
+    console.error("Clock initialization failed:", error);
+  }
+
+  try {
     initSearch();
+  } catch (error) {
+    console.error("Search initialization failed:", error);
+  }
+
+  try {
     initOverlayStrength();
+  } catch (error) {
+    console.error("Overlay strength initialization failed:", error);
+  }
+
+  try {
     initDashboard();
   } catch (error) {
-    console.error("Core UI initialization failed:", error);
+    console.error("Dashboard initialization failed:", error);
   }
 
   try {

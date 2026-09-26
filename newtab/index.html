@@ -418,6 +418,48 @@
           </div>
         </div>
 
+        <div class="setting-group">
+          <div class="setting-group-title" data-i18n="settings.data.title">Data</div>
+
+          <div class="setting-item">
+            <div>
+              <strong data-i18n="settings.data.export">Export data</strong>
+              <span data-i18n="settings.data.exportDescription">Save your notes and settings as a JSON file</span>
+            </div>
+
+            <button
+              type="button"
+              class="setting-action-button"
+              id="exportDataButton"
+              data-i18n="settings.data.exportButton"
+            >
+              Export
+            </button>
+          </div>
+
+          <div class="setting-item">
+            <div>
+              <strong data-i18n="settings.data.import">Import data</strong>
+              <span data-i18n="settings.data.importDescription">Restore notes and settings from a backup file</span>
+            </div>
+
+            <button
+              type="button"
+              class="setting-action-button"
+              id="importDataButton"
+              data-i18n="settings.data.importButton"
+            >
+              Import
+            </button>
+            <input
+              type="file"
+              id="importDataInput"
+              class="setting-file-input"
+              accept="application/json,.json"
+            />
+          </div>
+        </div>
+
         <div class="setting-group danger-group">
           <div class="setting-group-title" data-i18n="settings.reset.title">Reset</div>
 

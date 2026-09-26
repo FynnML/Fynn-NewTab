@@ -92,6 +92,8 @@ Open the dashboard with the gear button at the bottom of the right edge. Click o
 | Time format | 12-hour | Clock display |
 | Search focus effect | On | Dims and blurs the wallpaper while the search box is hovered or focused |
 | Overlay strength | 100% | Darkens the wallpaper so text stays readable (50–180%) |
+| Export data | — | Downloads your notes and settings as a JSON file |
+| Import data | — | Restores notes and settings from a previously exported JSON file |
 | Reset settings | — | Restores every setting and widget toggle above to its default |
 
 ## Wallpaper modes
@@ -141,6 +143,12 @@ So *Primary* means "always this one", while *Day/Night* means "follow the clock"
 The `unlimitedStorage` permission, the only one the extension requests, lets you keep large video wallpapers. There are no host permissions, content scripts or background scripts.
 
 **Reset settings** restores preferences only. Your wallpapers, notes and recent searches are kept; remove recent searches one by one with the × button. Uninstalling the extension removes all of its data.
+
+### Backup
+
+*Settings → Data → Export data* downloads a JSON file with your notes and every `fynn-`/`fynn:` setting. Wallpapers are **not** included — they are large binary files, so keep your originals if you want to re-upload them later.
+
+*Import data* reads that file back: it overwrites your current settings and adds its notes (matching IDs are updated, others are added — nothing already on this device is deleted). The page reloads once the import finishes.
 
 ## Project structure
 

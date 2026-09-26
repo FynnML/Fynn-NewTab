@@ -18,6 +18,7 @@ export const zh = {
     error: "错误",
     custom: "自定义",
     upload: "上传",
+    import: "导入",
   },
 
   search: {
@@ -123,6 +124,18 @@ export const zh = {
       overlayStrengthValue: "{value}%",
     },
 
+    data: {
+      title: "数据",
+
+      export: "导出数据",
+      exportDescription: "将便签和设置保存为 JSON 文件",
+      exportButton: "导出",
+
+      import: "导入数据",
+      importDescription: "从备份文件恢复便签和设置",
+      importButton: "导入",
+    },
+
     reset: {
       title: "重置",
       button: "重置设置",
@@ -167,6 +180,20 @@ export const zh = {
 
     errors: {
       saveFailed: "无法保存便签。",
+    },
+  },
+
+  backup: {
+    errors: {
+      invalidFile: "此文件不是有效的 Fynn New Tab 备份。",
+      readFailed: "无法读取数据，请稍后重试。",
+    },
+
+    dialogs: {
+      importTitle: "导入数据",
+      importConfirmation: "此操作将覆盖当前设置，并添加此文件中的便签。是否继续？",
+      importSuccessTitle: "导入完成",
+      importSuccess: "数据已恢复，页面即将重新加载。",
     },
   },
 

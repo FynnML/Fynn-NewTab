@@ -228,6 +228,4 @@ export async function initNotes() {
   onLanguageChange(() => {
     renderNotes();
   });
-
-  console.log("Notes system initialized.");
 }

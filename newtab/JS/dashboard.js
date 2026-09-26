@@ -25,6 +25,7 @@ import {
 } from "./wallpaper.js";
 import { showConfirmDialog } from "./dialog.js";
 import { t, onLanguageChange, getLanguage, setLanguage, resetLanguage } from "./i18n/i18n.js";
+import { exportData, importData } from "./backup.js";
 
 /* ==========================================================================
    1. PANEL
@@ -264,6 +265,9 @@ function initSettings() {
   );
   const overlayStrengthValue = document.querySelector("#overlayStrengthValue");
   const resetSettingsButton = document.querySelector("#resetSettingsButton");
+  const exportDataButton = document.querySelector("#exportDataButton");
+  const importDataButton = document.querySelector("#importDataButton");
+  const importDataInput = document.querySelector("#importDataInput");
 
   // Custom engine URL only matters once "Custom" is picked.
   const syncCustomEngineVisibility = () => {
@@ -334,6 +338,22 @@ function initSettings() {
     resetWidgets();
 
     syncControls();
+  });
+
+  exportDataButton.addEventListener("click", () => {
+    exportData();
+  });
+
+  importDataButton.addEventListener("click", () => {
+    importDataInput.click();
+  });
+
+  importDataInput.addEventListener("change", (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+    importData(file);
+    // Reset value so the same file can be selected again
+    event.target.value = "";
   });
 }
 

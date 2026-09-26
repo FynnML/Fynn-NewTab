@@ -18,6 +18,7 @@ export const vi = {
     error: "Lỗi",
     custom: "Tùy chỉnh",
     upload: "Tải lên",
+    import: "Nhập",
   },
 
   search: {
@@ -125,6 +126,18 @@ export const vi = {
       overlayStrengthValue: "{value}%",
     },
 
+    data: {
+      title: "Dữ liệu",
+
+      export: "Xuất dữ liệu",
+      exportDescription: "Lưu ghi chú và cài đặt của bạn thành một file JSON",
+      exportButton: "Xuất",
+
+      import: "Nhập dữ liệu",
+      importDescription: "Khôi phục ghi chú và cài đặt từ một file sao lưu",
+      importButton: "Nhập",
+    },
+
     reset: {
       title: "Đặt lại",
       button: "Đặt lại cài đặt",
@@ -170,6 +183,21 @@ export const vi = {
 
     errors: {
       saveFailed: "Không thể lưu ghi chú.",
+    },
+  },
+
+  backup: {
+    errors: {
+      invalidFile: "File này không phải bản sao lưu hợp lệ của Fynn New Tab.",
+      readFailed: "Không thể đọc dữ liệu. Vui lòng thử lại sau ít phút.",
+    },
+
+    dialogs: {
+      importTitle: "Nhập dữ liệu",
+      importConfirmation:
+        "Thao tác này sẽ ghi đè cài đặt hiện tại và thêm các ghi chú từ file này. Tiếp tục?",
+      importSuccessTitle: "Nhập dữ liệu thành công",
+      importSuccess: "Dữ liệu của bạn đã được khôi phục. Trang sẽ tải lại.",
     },
   },
 

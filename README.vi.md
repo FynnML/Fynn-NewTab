@@ -92,6 +92,8 @@ Mở dashboard bằng nút hình bánh răng ở cuối cạnh phải màn hình
 | Time format | 12-hour | Cách hiển thị đồng hồ |
 | Search focus effect | Bật | Làm tối và mờ hình nền khi rê chuột vào hoặc focus ô tìm kiếm |
 | Overlay strength | 100% | Làm tối hình nền để chữ dễ đọc (50–180%) |
+| Xuất dữ liệu | - | Xuất ghi chú và cài đặt của bạn xuống dưới dạng tệp JSON  |
+| Nhập dữ liệu | - | nhận file JSON ghi chú và cài đặt  |
 | Reset settings | — | Đưa mọi cài đặt và công tắc widget ở trên về mặc định |
 
 ## Chế độ hình nền
@@ -142,11 +144,25 @@ Quyền `unlimitedStorage` là quyền duy nhất extension yêu cầu, giúp b�
 
 **Reset settings** chỉ khôi phục tùy chọn. Hình nền, ghi chú và lịch sử tìm kiếm được giữ nguyên; xóa lịch sử tìm kiếm từng mục bằng nút ×. Gỡ extension sẽ xóa toàn bộ dữ liệu của nó.
 
+### Backup và Restore
+- Bạn có thể xuất toàn bộ dữ liệu của extension (cài đặt, lịch sử tìm kiếm, ghi chú, v.v.) ra một tệp JSON, và sau đó khôi phục lại dữ liệu này từ tệp JSON đã lưu.
+- Trong mục Settings, bấm nút **Export data** để tải tệp JSON chứa toàn bộ dữ liệu của extension. Hãy lưu tệp này ở nơi an toàn.
+- Bấm **Import data** để tải lên một tệp JSON chứa dữ liệu bạn đã xuất trước đó. Dữ liệu cũ (cài đặt, ghi chú, lịch sử tìm kiếm) sẽ được ghi đè bởi dữ liệu từ tệp JSON đã nhập.
+- Trong quá trình import dữ liệu, các video nền được lưu trong cơ sở dữ liệu IndexedDB sẽ không bị thay đổi.
+
+### Cập nhật hình nền
+- Việc tải lên video mới sẽ ghi đè video cũ có cùng chế độ (Primary/Day/Night/Default).
+- Hình nền mặc định tích hợp sẵn không thể bị xóa hoặc thay thế.
+
+### Reset settings
+**Reset settings** chỉ khôi phục các cài đặt có thể cấu hình (công cụ tìm kiếm, định dạng thời gian, hiệu ứng làm tối nền, hiển thị widget). Hình nền, ghi chú và lịch sử tìm kiếm **không bị ảnh hưởng**.
+
+Để xóa toàn bộ dữ liệu của extension (bao gồm hình nền, ghi chú và lịch sử tìm kiếm), bạn cần gỡ extension khỏi trình duyệt.
+
 ## Cấu trúc dự án
 
 ```text
 Fynn-NewTab/
-├─ manifest.json
 ├─ LICENSE
 ├─ newtab/
 │  ├─ index.html

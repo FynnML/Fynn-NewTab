@@ -8,13 +8,6 @@ import { STORES, dbGetAll, dbPut, dbDelete } from "./db.js";
 import { showConfirmDialog, showAlertDialog } from "./dialog.js";
 import { t, onLanguageChange } from "./i18n/i18n.js";
 
-/*
- * Built-in fallback wallpaper, shown whenever no custom wallpaper applies:
- * first run, or after every custom wallpaper has been deleted.
- * It lives in assets/, not in IndexedDB, so it can't be deleted from the
- * dashboard and never competes with uploads when picking the active one.
- * If the file is missing, the plain dark background is used instead.
- */
 const DEFAULT_WALLPAPER_SRC = "../assets/wallpapers/default.mp4";
 const BUILTIN_WALLPAPER_ID = "__builtin-default__";
 const SCHEDULE_INTERVAL_MS = 60 * 1000;
@@ -33,28 +26,19 @@ const WALLPAPER_MODES = {
 
 const VALID_WALLPAPER_MODES = Object.values(WALLPAPER_MODES);
 
-const MODE_OPTIONS = [
-  [WALLPAPER_MODES.DEFAULT, "Default"],
-  [WALLPAPER_MODES.PRIMARY, "Primary"],
-  [WALLPAPER_MODES.DAY, "Day"],
-  [WALLPAPER_MODES.NIGHT, "Night"],
-];
-
 const wallpaperInput = document.querySelector("#wallpaperInput");
 const wallpaperList = document.querySelector("#wallpaperList");
 const backgroundVideo = document.querySelector("#backgroundVideo");
 const backgroundImage = document.querySelector("#backgroundImage");
+const reducedMotionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
 
 let currentWallpaperUrl = null;
 let activeWallpaperId = null;
 let wallpaperScheduleTimer = null;
+let applyToken = 0;
 const wallpaperPreviewUrls = new Set();
 
 // --- Overlay strength ---
-//
-// LocalStorage-only setting (like the search focus effect), so it can be
-// applied immediately on load without waiting on IndexedDB. Scales the
-// .overlay gradient defined in wallpaper.css via a CSS custom property.
 
 const clampOverlayStrength = (value) =>
   Math.min(MAX_OVERLAY_STRENGTH, Math.max(MIN_OVERLAY_STRENGTH, value));
@@ -120,7 +104,9 @@ function getScheduledWallpaperMode(date = new Date()) {
 
 function getActiveWallpaper(wallpapers) {
   const findByMode = (mode) => {
-    const matches = wallpapers.filter((wallpaper) => getWallpaperMode(wallpaper) === mode);
+    const matches = wallpapers.filter(
+      (wallpaper) => getWallpaperMode(wallpaper) === mode,
+    );
     if (matches.length === 0) return null;
     matches.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
     return matches[0];
@@ -141,11 +127,14 @@ function extractVideoThumbnail(file) {
     const video = document.createElement("video");
     video.preload = "metadata";
     video.muted = true;
+    video.playsInline = true;
 
     let timeoutId;
     const cleanup = () => {
       clearTimeout(timeoutId);
       URL.revokeObjectURL(video.src);
+      video.removeAttribute("src");
+      video.load();
       video.remove();
     };
 
@@ -161,7 +150,7 @@ function extractVideoThumbnail(file) {
 
     video.onseeked = () => {
       const canvas = document.createElement("canvas");
-      
+
       const MAX_WIDTH = 640;
       let width = video.videoWidth;
       let height = video.videoHeight;
@@ -169,7 +158,7 @@ function extractVideoThumbnail(file) {
         height = Math.floor(height * (MAX_WIDTH / width));
         width = MAX_WIDTH;
       }
-      
+
       canvas.width = width;
       canvas.height = height;
 
@@ -201,13 +190,19 @@ async function handleWallpaperUpload(event) {
     if (!file) return;
 
     if (!file.type.startsWith("video/") && !file.type.startsWith("image/")) {
-      await showAlertDialog(t("wallpapers.errors.invalidFileType"), t("wallpapers.dialogs.invalidFileTypeTitle"));
+      await showAlertDialog(
+        t("wallpapers.errors.invalidFileType"),
+        t("wallpapers.dialogs.invalidFileTypeTitle"),
+      );
       return;
     }
 
     const MAX_SIZE_MB = 50;
     if (file.size > MAX_SIZE_MB * 1024 * 1024) {
-      await showAlertDialog(t("wallpapers.errors.fileTooLarge", { maxSize: MAX_SIZE_MB }), t("wallpapers.dialogs.fileTooLargeTitle"));
+      await showAlertDialog(
+        t("wallpapers.errors.fileTooLarge", { maxSize: MAX_SIZE_MB }),
+        t("wallpapers.dialogs.fileTooLargeTitle"),
+      );
       wallpaperInput.value = "";
       return;
     }
@@ -234,8 +229,10 @@ async function handleWallpaperUpload(event) {
     };
 
     await saveWallpaper(wallpaper);
-    await applyActiveWallpaper();
-    await renderWallpapers();
+
+    const wallpapers = await getWallpapers();
+    await applyActiveWallpaper(wallpapers);
+    await renderWallpapers(wallpapers);
 
     wallpaperInput.value = "";
   } catch (error) {
@@ -262,13 +259,13 @@ function formatFileSize(bytes) {
   return `${(bytes / 1024 / 1024 / 1024).toFixed(1)} GB`;
 }
 
-async function renderWallpapers() {
-  const wallpapers = await getWallpapers();
+async function renderWallpapers(wallpapers) {
+  const list = wallpapers ?? (await getWallpapers());
 
   revokeWallpaperPreviewUrls();
   wallpaperList.innerHTML = "";
 
-  if (wallpapers.length === 0) {
+  if (list.length === 0) {
     wallpaperList.innerHTML = `
       <div class="empty-state">
         <p>${t("wallpapers.empty.title")}</p>
@@ -278,7 +275,7 @@ async function renderWallpapers() {
     return;
   }
 
-  wallpapers.forEach((wallpaper) => {
+  list.forEach((wallpaper) => {
     const currentMode = getWallpaperMode(wallpaper);
     const isPrimary = currentMode === WALLPAPER_MODES.PRIMARY;
 
@@ -297,11 +294,11 @@ async function renderWallpapers() {
 
     const preview =
       wallpaper.type.startsWith("video/") && !wallpaper.thumbnailBlob
-        ? `<video src="${url}" muted loop autoplay></video>`
+        ? `<video src="${url}" muted loop playsinline></video>`
         : `<img src="${previewUrl}" alt="">`;
 
-    const modeOptions = MODE_OPTIONS.map(
-      ([value, _]) =>
+    const modeOptions = VALID_WALLPAPER_MODES.map(
+      (value) =>
         `<option value="${value}" ${currentMode === value ? "selected" : ""}>${t("wallpapers.modes." + value)}</option>`,
     ).join("");
 
@@ -353,7 +350,11 @@ function attachWallpaperActions() {
 
   wallpaperList.querySelectorAll("[data-delete]").forEach((button) => {
     button.addEventListener("click", async () => {
-      const confirmed = await showConfirmDialog(t("wallpapers.dialogs.deleteConfirmation"), t("common.confirm"), t("common.delete"));
+      const confirmed = await showConfirmDialog(
+        t("wallpapers.dialogs.deleteConfirmation"),
+        t("common.confirm"),
+        t("common.delete"),
+      );
       if (!confirmed) return;
       removeWallpaper(button.dataset.delete).catch((error) => {
         console.error("Wallpaper deletion failed:", error);
@@ -362,35 +363,9 @@ function attachWallpaperActions() {
   });
 }
 
-// --- State Management ---
+// --- Playback ---
 
-function updateVideoPlayback() {
-  if (!backgroundVideo.classList.contains("active")) return;
-  
-  const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  if (document.hidden || prefersReducedMotion) {
-    backgroundVideo.pause();
-  } else {
-    backgroundVideo.play().catch(() => {});
-  }
-}
-
-async function applyActiveWallpaper() {
-  const wallpapers = await getWallpapers();
-  const activeWallpaper = getActiveWallpaper(wallpapers);
-  const nextWallpaperId = activeWallpaper?.id || BUILTIN_WALLPAPER_ID;
-
-  if (nextWallpaperId === activeWallpaperId) {
-    return;
-  }
-
-  activeWallpaperId = nextWallpaperId;
-
-  if (currentWallpaperUrl) {
-    URL.revokeObjectURL(currentWallpaperUrl);
-    currentWallpaperUrl = null;
-  }
-
+function clearBackgroundMedia() {
   backgroundVideo.pause();
   backgroundVideo.removeAttribute("src");
   backgroundVideo.load();
@@ -398,6 +373,54 @@ async function applyActiveWallpaper() {
 
   backgroundImage.removeAttribute("src");
   backgroundImage.classList.remove("active");
+
+  // Revoke after detaching src so the element never holds a dead blob URL.
+  if (currentWallpaperUrl) {
+    URL.revokeObjectURL(currentWallpaperUrl);
+    currentWallpaperUrl = null;
+  }
+}
+
+function updateVideoPlayback({ recover = false } = {}) {
+  if (!backgroundVideo.classList.contains("active")) return;
+
+  if (document.hidden || reducedMotionQuery.matches) {
+    backgroundVideo.pause();
+    return;
+  }
+
+  const attempt = backgroundVideo.play();
+  if (!attempt) return;
+
+  attempt.catch(() => {
+    // Chromium may discard the decoder after a long time in the background.
+    // Reload once, then give up silently — a looping wallpaper can restart.
+    if (!recover) return;
+    if (document.hidden || reducedMotionQuery.matches) return;
+    if (!backgroundVideo.classList.contains("active")) return;
+    if (!backgroundVideo.src) return;
+
+    backgroundVideo.load();
+    backgroundVideo.play().catch(() => {});
+  });
+}
+
+async function applyActiveWallpaper(wallpapers) {
+  const token = ++applyToken;
+  const list = wallpapers ?? (await getWallpapers());
+  if (token !== applyToken) return;
+
+  const activeWallpaper = getActiveWallpaper(list);
+  const nextWallpaperId = activeWallpaper?.id || BUILTIN_WALLPAPER_ID;
+
+  // Same wallpaper: still resume/pause to match current visibility.
+  if (nextWallpaperId === activeWallpaperId) {
+    updateVideoPlayback();
+    return;
+  }
+
+  activeWallpaperId = nextWallpaperId;
+  clearBackgroundMedia();
 
   if (!activeWallpaper) {
     backgroundVideo.src = DEFAULT_WALLPAPER_SRC;
@@ -424,6 +447,8 @@ function startWallpaperScheduler() {
   }
 
   wallpaperScheduleTimer = setInterval(() => {
+    if (document.hidden) return;
+
     applyActiveWallpaper().catch((error) => {
       console.error("Wallpaper scheduler failed:", error);
     });
@@ -463,8 +488,9 @@ async function setWallpaperMode(id, mode) {
   // every wallpaper on every mode change.
   await Promise.all(changed.map((wallpaper) => saveWallpaper(wallpaper)));
 
-  await applyActiveWallpaper();
-  await renderWallpapers();
+  // In-memory records are already updated; reuse them instead of re-reading.
+  await applyActiveWallpaper(wallpapers);
+  await renderWallpapers(wallpapers);
 }
 
 async function removeWallpaper(id) {
@@ -474,8 +500,9 @@ async function removeWallpaper(id) {
     activeWallpaperId = null;
   }
 
-  await applyActiveWallpaper();
-  await renderWallpapers();
+  const wallpapers = await getWallpapers();
+  await applyActiveWallpaper(wallpapers);
+  await renderWallpapers(wallpapers);
 }
 
 // --- Init ---
@@ -483,14 +510,35 @@ async function removeWallpaper(id) {
 function bindWallpaperEvents() {
   wallpaperInput.addEventListener("change", handleWallpaperUpload);
 
+  backgroundVideo.muted = true;
+  backgroundVideo.loop = true;
+  backgroundVideo.playsInline = true;
+  backgroundVideo.disablePictureInPicture = true;
+
   document.addEventListener("visibilitychange", () => {
-    if (document.visibilityState === "visible") {
-      applyActiveWallpaper().catch((error) => console.error("Wallpaper re-check failed:", error));
-    } else {
-      updateVideoPlayback();
+    const isVisible = document.visibilityState === "visible";
+
+    // Resume/pause immediately — do not wait on IndexedDB.
+    updateVideoPlayback({ recover: isVisible });
+
+    if (isVisible) {
+      applyActiveWallpaper().catch((error) => {
+        console.error("Wallpaper re-check failed:", error);
+      });
     }
   });
-  window.matchMedia("(prefers-reduced-motion: reduce)").addEventListener("change", updateVideoPlayback);
+
+  document.addEventListener("freeze", () => {
+    backgroundVideo.pause();
+  });
+
+  document.addEventListener("resume", () => {
+    updateVideoPlayback({ recover: true });
+  });
+
+  reducedMotionQuery.addEventListener("change", () => {
+    updateVideoPlayback();
+  });
 
   // Bundled default missing or unreadable → keep the plain dark background.
   backgroundVideo.addEventListener("error", () => {
@@ -503,6 +551,7 @@ function bindWallpaperEvents() {
 
     backgroundVideo.classList.remove("active");
     backgroundVideo.removeAttribute("src");
+    backgroundVideo.load();
   });
 }
 
@@ -510,13 +559,14 @@ function bindWallpaperEvents() {
 export async function initWallpaper() {
   bindWallpaperEvents();
 
-  await renderWallpapers();
-  await applyActiveWallpaper();
+  const wallpapers = await getWallpapers();
+  await renderWallpapers(wallpapers);
+  await applyActiveWallpaper(wallpapers);
   startWallpaperScheduler();
 
   onLanguageChange(() => {
-    renderWallpapers();
+    renderWallpapers().catch((error) => {
+      console.error("Wallpaper re-render failed:", error);
+    });
   });
-
-  console.log("Wallpaper system initialized.");
 }

@@ -18,6 +18,7 @@ export const en = {
     error: "Error",
     custom: "Custom",
     upload: "Upload",
+    import: "Import",
   },
 
   search: {
@@ -125,6 +126,18 @@ export const en = {
       overlayStrengthValue: "{value}%",
     },
 
+    data: {
+      title: "Data",
+
+      export: "Export data",
+      exportDescription: "Save your notes and settings as a JSON file",
+      exportButton: "Export",
+
+      import: "Import data",
+      importDescription: "Restore notes and settings from a backup file",
+      importButton: "Import",
+    },
+
     reset: {
       title: "Reset",
       button: "Reset settings",
@@ -169,6 +182,21 @@ export const en = {
 
     errors: {
       saveFailed: "Failed to save note.",
+    },
+  },
+
+  backup: {
+    errors: {
+      invalidFile: "This file is not a valid Fynn New Tab backup.",
+      readFailed: "Couldn't read your data. Please try again in a moment.",
+    },
+
+    dialogs: {
+      importTitle: "Import data",
+      importConfirmation:
+        "This will overwrite your current settings and add the notes from this file. Continue?",
+      importSuccessTitle: "Import complete",
+      importSuccess: "Your data has been restored. The page will now reload.",
     },
   },
 
