@@ -10,6 +10,8 @@ import { openDatabase } from "./JS/db.js";
 import { initWallpaper, initOverlayStrength } from "./JS/wallpaper.js";
 import { initNotes } from "./JS/notes.js";
 import { initI18n } from "./JS/i18n/i18n.js";
+import { showAlertDialog } from "./JS/dialog.js";
+import { t } from "./JS/i18n/i18n.js";
 
 async function start() {
   // LocalStorage-only features first (no waiting on IndexedDB).
@@ -52,25 +54,30 @@ async function start() {
     console.error("Dashboard initialization failed:", error);
   }
 
+  // IndexedDB-backed features.
+  let dbReady = false;
   try {
-    // IndexedDB-backed features.
     await openDatabase();
+    dbReady = true;
   } catch (error) {
     console.error("IndexedDB initialization failed:", error);
-    return;
+    showAlertDialog(t("db.errorMessage"), t("db.errorTitle"));
   }
 
-  try {
-    await initWallpaper();
-  } catch (error) {
-    console.error("Wallpaper initialization failed:", error);
-  }
+  if (dbReady) {
+    try {
+      await initWallpaper();
+    } catch (error) {
+      console.error("Wallpaper initialization failed:", error);
+    }
 
-  try {
-    await initNotes();
-  } catch (error) {
-    console.error("Notes initialization failed:", error);
+    try {
+      await initNotes();
+    } catch (error) {
+      console.error("Notes initialization failed:", error);
+    }
   }
 }
 
 start();
+

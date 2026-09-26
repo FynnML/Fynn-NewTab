@@ -4,6 +4,12 @@ export const zh = {
     githubLabel: "在 GitHub 上查看 Fynn New Tab",
   },
 
+  db: {
+    errorTitle: "存储不可用",
+    errorMessage:
+      "由于本地数据库无法打开，壁纸和便签无法加载。其他功能仍可正常使用。请尝试重新加载页面。",
+  },
+
   common: {
     cancel: "取消",
     save: "保存",

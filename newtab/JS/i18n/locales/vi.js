@@ -4,6 +4,12 @@ export const vi = {
     githubLabel: "Fynn New Tab trên GitHub",
   },
 
+  db: {
+    errorTitle: "Bộ nhớ không khả dụng",
+    errorMessage:
+      "Không thể tải Hình nền và Ghi chú vì cơ sở dữ liệu cục bộ không mở được. Các tính năng khác vẫn hoạt động bình thường. Hãy thử tải lại trang.",
+  },
+
   common: {
     cancel: "Hủy",
     save: "Lưu",

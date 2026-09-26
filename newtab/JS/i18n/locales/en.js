@@ -4,6 +4,12 @@ export const en = {
     githubLabel: "Fynn New Tab on GitHub",
   },
 
+  db: {
+    errorTitle: "Storage Unavailable",
+    errorMessage:
+      "Wallpapers and Notes could not be loaded because the local database failed to open. Other features still work normally. Try reloading the page.",
+  },
+
   common: {
     cancel: "Cancel",
     save: "Save",
