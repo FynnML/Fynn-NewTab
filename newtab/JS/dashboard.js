@@ -23,6 +23,7 @@ import {
   setOverlayStrength,
   resetOverlayStrength,
 } from "./wallpaper.js";
+import { showConfirmDialog } from "./dialog.js";
 
 /* ==========================================================================
    1. PANEL
@@ -301,8 +302,12 @@ function initSettings() {
     overlayStrengthValue.textContent = `${value}%`;
   });
 
-  resetSettingsButton.addEventListener("click", () => {
-    const confirmed = confirm("Reset Fynn NewTab settings?");
+  resetSettingsButton.addEventListener("click", async () => {
+    const confirmed = await showConfirmDialog(
+      "Reset Fynn NewTab settings?",
+      "Reset settings",
+      "Reset",
+    );
 
     if (!confirmed) return;
 

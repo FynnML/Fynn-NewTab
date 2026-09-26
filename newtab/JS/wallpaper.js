@@ -436,13 +436,17 @@ async function setWallpaperMode(id, mode) {
   }
 
   const wallpapers = await getWallpapers();
+  const changed = [];
 
   for (const wallpaper of wallpapers) {
     const currentMode = getWallpaperMode(wallpaper);
 
     if (wallpaper.id === id) {
+      if (currentMode === mode) continue;
+
       wallpaper.mode = mode;
       wallpaper.primary = mode === WALLPAPER_MODES.PRIMARY;
+      changed.push(wallpaper);
     } else if (
       currentMode === WALLPAPER_MODES.PRIMARY &&
       mode === WALLPAPER_MODES.PRIMARY
@@ -450,10 +454,13 @@ async function setWallpaperMode(id, mode) {
       // Only one wallpaper can be primary at a time
       wallpaper.mode = WALLPAPER_MODES.DEFAULT;
       wallpaper.primary = false;
+      changed.push(wallpaper);
     }
-
-    await saveWallpaper(wallpaper);
   }
+
+  // Only write the records that actually changed, instead of rewriting
+  // every wallpaper on every mode change.
+  await Promise.all(changed.map((wallpaper) => saveWallpaper(wallpaper)));
 
   await applyActiveWallpaper();
   await renderWallpapers();

@@ -48,7 +48,6 @@ const ENGINES = {
   },
   duckduckgo: {
     label: "DuckDuckGo",
-    // Add this file yourself (32x32 transparent PNG), same as brave.png / google.png
     icon: "../assets/icons/duckduckgo.png",
     buildUrl: (query) => `https://duckduckgo.com/?q=${query}`,
   },
@@ -159,7 +158,10 @@ const COMMON_TLDS = new Set([
   "vn", "edu", "gov", "gg", "sh", "to", "so", "ly", "im",
 ]);
 
-const PROTOCOL_PATTERN = /^[a-z][a-z0-9+.-]*:\/\//i;
+// Only http/https are treated as direct navigation. Anything else
+// (javascript:, data:, file:, chrome:, etc.) falls through to a normal
+// search instead of being navigated to directly.
+const PROTOCOL_PATTERN = /^https?:\/\//i;
 const IPV4_PATTERN = /^(\d{1,3}\.){3}\d{1,3}(:\d+)?(\/\S*)?$/;
 const LOCALHOST_PATTERN = /^localhost(:\d+)?(\/\S*)?$/i;
 const DOMAIN_PATTERN = /^([a-z0-9]([a-z0-9-]*[a-z0-9])?\.)+([a-z]{2,})(:\d+)?(\/\S*)?$/i;
@@ -190,15 +192,17 @@ function performSearch() {
     return;
   }
 
-  // Lưu từ khoá vào lịch sử tìm kiếm gần đây
-  saveRecentSearch(query);
-
   const directUrl = resolveDirectUrl(query);
 
   if (directUrl) {
+    // Direct navigations aren't search queries, so they don't belong in
+    // the recent-searches list.
     window.location.href = directUrl;
     return;
   }
+
+  // Lưu từ khoá vào lịch sử tìm kiếm gần đây
+  saveRecentSearch(query);
 
   window.location.href = ENGINES[currentEngine].buildUrl(
     encodeURIComponent(query),

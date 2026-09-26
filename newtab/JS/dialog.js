@@ -49,7 +49,7 @@ function setupA11y(overlay, cancelCallback) {
   };
 }
 
-export function showConfirmDialog(message, title = "Confirm") {
+export function showConfirmDialog(message, title = "Confirm", confirmLabel = "Delete") {
   return new Promise((resolve) => {
     let overlay = document.getElementById("customDialogOverlay");
     
@@ -77,6 +77,7 @@ export function showConfirmDialog(message, title = "Confirm") {
     
     titleEl.textContent = title;
     messageEl.textContent = message;
+    confirmBtn.textContent = confirmLabel;
     
     let a11yCleanup;
 
