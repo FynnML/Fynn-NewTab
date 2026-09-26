@@ -191,7 +191,7 @@ Fynn-NewTab/
    └─ screenshots/
 ```
 
-`app.js` starts the localStorage-only features first (greeting, clock, search, overlay, dashboard), then opens IndexedDB and starts the wallpaper and notes modules. A failure in one module doesn't stop the others.
+`app.js` starts the localStorage-only features first (greeting, clock, search, overlay, dashboard), then opens IndexedDB and starts the wallpaper and notes modules. Each localStorage module has its own `try/catch` so a failure in one doesn't stop the others. If IndexedDB fails to open, Wallpaper and Notes are disabled for that session but the rest of the New Tab remains fully usable, and the user is informed through an in-page dialog.
 
 ## Customizing
 
