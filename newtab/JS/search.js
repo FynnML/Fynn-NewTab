@@ -13,6 +13,8 @@ const DEFAULT_ENGINE = "brave";
 const DEFAULT_FOCUS_EFFECT = true;
 const DEFAULT_CUSTOM_ENGINE_URL = "https://www.bing.com/search?q=%s";
 
+const PROTOCOL_PATTERN = /^https?:\/\//i;
+
 const SEARCH_ICON = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>`;
 
 /* Inline icon for "Custom" — no local asset needed */
@@ -28,12 +30,16 @@ export function getCustomEngineUrl() {
 
 /** Saves the custom engine URL template. Expects a %s placeholder for the query. */
 export function setCustomEngineUrl(url) {
-  const trimmed = url.trim();
-  localStorage.setItem(CUSTOM_ENGINE_URL_KEY, trimmed || DEFAULT_CUSTOM_ENGINE_URL);
+  const trimmed = (url || "").trim();
+  const finalUrl = PROTOCOL_PATTERN.test(trimmed) ? trimmed : DEFAULT_CUSTOM_ENGINE_URL;
+  localStorage.setItem(CUSTOM_ENGINE_URL_KEY, finalUrl);
 }
 
 const buildCustomUrl = (query) => {
-  const template = getCustomEngineUrl();
+  let template = getCustomEngineUrl();
+  if (!PROTOCOL_PATTERN.test(template)) {
+    template = DEFAULT_CUSTOM_ENGINE_URL;
+  }
   return template.includes("%s") ? template.replace("%s", query) : `${template}${query}`;
 };
 
@@ -163,7 +169,6 @@ const COMMON_TLDS = new Set([
 // Only http/https are treated as direct navigation. Anything else
 // (javascript:, data:, file:, chrome:, etc.) falls through to a normal
 // search instead of being navigated to directly.
-const PROTOCOL_PATTERN = /^https?:\/\//i;
 const IPV4_PATTERN = /^(\d{1,3}\.){3}\d{1,3}(:\d+)?(\/\S*)?$/;
 const LOCALHOST_PATTERN = /^localhost(:\d+)?(\/\S*)?$/i;
 const DOMAIN_PATTERN = /^([a-z0-9]([a-z0-9-]*[a-z0-9])?\.)+([a-z]{2,})(:\d+)?(\/\S*)?$/i;

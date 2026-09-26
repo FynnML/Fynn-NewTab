@@ -5,6 +5,7 @@
 import { STORES, dbGetAll, dbPut } from "./db.js";
 import { showAlertDialog, showConfirmDialog } from "./dialog.js";
 import { t } from "./i18n/i18n.js";
+import { setCustomEngineUrl } from "./search.js";
 
 const APP_ID = "fynn-new-tab";
 const EXPORT_VERSION = 1;
@@ -79,7 +80,11 @@ async function restoreSettings(settings) {
   for (const [key, value] of Object.entries(settings)) {
     if (!STORAGE_PREFIX_RE.test(key) || typeof value !== "string") continue;
     try {
-      localStorage.setItem(key, value);
+      if (key === "fynn-custom-engine-url") {
+        setCustomEngineUrl(value);
+      } else {
+        localStorage.setItem(key, value);
+      }
     } catch {
       /* quota or private-mode error — skip this key, keep going */
     }

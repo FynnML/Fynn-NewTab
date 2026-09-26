@@ -313,6 +313,7 @@ function initSettings() {
 
   customEngineUrlSetting.addEventListener("change", () => {
     setCustomEngineUrl(customEngineUrlSetting.value);
+    customEngineUrlSetting.value = getCustomEngineUrl();
   });
 
   overlayStrengthSetting.addEventListener("input", () => {
