@@ -34,9 +34,10 @@ function updateClock() {
     day: "numeric",
   });
 
-  clockElement.innerHTML = time
-    .replace("AM", "<span>AM</span>")
-    .replace("PM", "<span>PM</span>");
+  clockElement.innerHTML = time.replace(
+    /(AM|PM|SA|CH|上午|下午)/i,
+    (match) => `<span>${match}</span>`
+  );
 
   dateElement.textContent = date;
 }
