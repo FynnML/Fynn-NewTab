@@ -7,6 +7,8 @@
  *   initGreeting({ el: document.getElementById('greeting') });
  */
 
+import { tArray, onLanguageChange } from './i18n/i18n.js';
+
 // Mốc giờ bắt đầu của từng buổi (theo giờ 24h)
 export const PERIODS = [
   { id: 'night',     from: 0,  label: 'Khuya'  },
@@ -17,65 +19,6 @@ export const PERIODS = [
   { id: 'late',      from: 22, label: 'Khuya'  },
 ];
 
-/**
- * Danh sách câu chào theo từng buổi.
- * Mỗi lần mở New Tab sẽ chọn ngẫu nhiên một câu.
- */
-export const GREETINGS = {
-  // 00:00 – 04:59 — khuya, đang thức rất muộn
-  night: [
-    'Still up?',
-    'Burning the midnight oil?',
-    'It’s the middle of the night.',
-    'Sweet dreams.',
-    'Sleep well and wake up refreshed.',
-  ],
-
-  // 05:00 – 10:59
-  morning: [
-    'Good morning',
-    'Rise and shine.',
-    'Ready for a new day?',
-    'Hope today treats you well.',
-    'What will you create today?',
-  ],
-
-  // 11:00 – 12:59
-  noon: [
-    'Good afternoon',
-    'Time for a lunch break?',
-    'Hope you enjoy your lunch.',
-    'Halfway through the day.',
-    'Take a moment to recharge.',
-  ],
-
-  // 13:00 – 17:59
-  afternoon: [
-    'Good afternoon',
-    'How’s your day going?',
-    'Hope you’re having a good one.',
-    'Still going strong?',
-    'A short break wouldn’t hurt.',
-  ],
-
-  // 18:00 – 21:59
-  evening: [
-    'Good evening',
-    'How was your day?',
-    'Time to unwind.',
-    'Hope you’re having a lovely evening.',
-    'You made it through the day.',
-  ],
-
-  // 22:00 – 23:59 — đêm muộn, nên đi ngủ
-  late: [
-    'Getting late.',
-    'Time to call it a day?',
-    'Don’t stay up too long.',
-    'Rest well tonight.',
-    'Sweet dreams.',
-  ],
-};
 
 /** Trả về buổi tương ứng với thời điểm `date`. */
 export function getPeriod(date = new Date()) {
@@ -115,7 +58,8 @@ function saveLast(periodId, text) {
 
 /** Chọn ngẫu nhiên một câu chào trong buổi, khác câu lần trước. */
 function getRandomGreeting(periodId) {
-  const list = GREETINGS[periodId] || ['Xin chào'];
+  let list = tArray(`greeting.${periodId}`);
+  if (!list || list.length === 0) list = ['Hello'];
   const last = readLast()[periodId];
   const pool = list.length > 1 ? list.filter((t) => t !== last) : list;
   const pick = pool[Math.floor(Math.random() * pool.length)];
@@ -175,11 +119,11 @@ export function initGreeting({ el } = {}) {
    *  - New Tab được mở lần đầu
    *  - Buổi trong ngày thay đổi
    */
-  const render = (animate = true) => {
+  const render = (animate = true, forceNew = false) => {
     const now = new Date();
     const period = getPeriod(now);
 
-    if (!currentGreeting || lastId !== period.id) {
+    if (!currentGreeting || lastId !== period.id || forceNew) {
       currentGreeting = getRandomGreeting(period.id);
     }
 
@@ -223,6 +167,13 @@ export function initGreeting({ el } = {}) {
   };
 
   document.addEventListener('visibilitychange', onVisible);
+
+  if (!el.dataset.hasI18nListener) {
+    onLanguageChange(() => {
+      render(true, true);
+    });
+    el.dataset.hasI18nListener = 'true';
+  }
 
   // Mở New Tab → chọn random một câu.
   render(false);

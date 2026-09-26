@@ -6,6 +6,7 @@
 
 import { STORES, dbGetAll, dbPut, dbDelete } from "./db.js";
 import { showConfirmDialog, showAlertDialog } from "./dialog.js";
+import { t, onLanguageChange } from "./i18n/i18n.js";
 
 /*
  * Built-in fallback wallpaper, shown whenever no custom wallpaper applies:
@@ -200,13 +201,13 @@ async function handleWallpaperUpload(event) {
     if (!file) return;
 
     if (!file.type.startsWith("video/") && !file.type.startsWith("image/")) {
-      await showAlertDialog("Please select a valid image or video.", "Invalid File Type");
+      await showAlertDialog(t("wallpapers.errors.invalidFileType"), t("wallpapers.dialogs.invalidFileTypeTitle"));
       return;
     }
 
     const MAX_SIZE_MB = 50;
     if (file.size > MAX_SIZE_MB * 1024 * 1024) {
-      await showAlertDialog(`File size exceeds ${MAX_SIZE_MB}MB limit. Please choose a smaller file.`, "File Too Large");
+      await showAlertDialog(t("wallpapers.errors.fileTooLarge", { maxSize: MAX_SIZE_MB }), t("wallpapers.dialogs.fileTooLargeTitle"));
       wallpaperInput.value = "";
       return;
     }
@@ -239,7 +240,7 @@ async function handleWallpaperUpload(event) {
     wallpaperInput.value = "";
   } catch (error) {
     console.error("Wallpaper upload failed:", error);
-    await showAlertDialog("Failed to save wallpaper.", "Error");
+    await showAlertDialog(t("wallpapers.errors.uploadFailed"), t("common.error"));
   }
 }
 
@@ -270,8 +271,8 @@ async function renderWallpapers() {
   if (wallpapers.length === 0) {
     wallpaperList.innerHTML = `
       <div class="empty-state">
-        <p>No custom wallpapers yet.</p>
-        <span>Upload an MP4 or image to replace the default.</span>
+        <p>${t("wallpapers.empty.title")}</p>
+        <span>${t("wallpapers.empty.description")}</span>
       </div>
     `;
     return;
@@ -300,8 +301,8 @@ async function renderWallpapers() {
         : `<img src="${previewUrl}" alt="">`;
 
     const modeOptions = MODE_OPTIONS.map(
-      ([value, label]) =>
-        `<option value="${value}" ${currentMode === value ? "selected" : ""}>${label}</option>`,
+      ([value, _]) =>
+        `<option value="${value}" ${currentMode === value ? "selected" : ""}>${t("wallpapers.modes." + value)}</option>`,
     ).join("");
 
     card.innerHTML = `
@@ -314,17 +315,17 @@ async function renderWallpapers() {
 
       <div class="wallpaper-mode-row">
         <span class="wallpaper-mode-label">
-          ${currentMode.toUpperCase()}
+          ${t("wallpapers.modes." + currentMode).toUpperCase()}
         </span>
 
-        <select class="wallpaper-mode-select" data-mode="${wallpaper.id}" aria-label="Wallpaper mode">
+        <select class="wallpaper-mode-select" data-mode="${wallpaper.id}" aria-label="${t("accessibility.wallpaperMode")}">
           ${modeOptions}
         </select>
       </div>
 
       <div class="wallpaper-actions">
         <button class="wallpaper-action delete-button" data-delete="${wallpaper.id}">
-          Delete
+          ${t("common.delete")}
         </button>
       </div>
     `;
@@ -352,7 +353,7 @@ function attachWallpaperActions() {
 
   wallpaperList.querySelectorAll("[data-delete]").forEach((button) => {
     button.addEventListener("click", async () => {
-      const confirmed = await showConfirmDialog("Are you sure you want to delete this wallpaper?");
+      const confirmed = await showConfirmDialog(t("wallpapers.dialogs.deleteConfirmation"), t("common.confirm"), t("common.delete"));
       if (!confirmed) return;
       removeWallpaper(button.dataset.delete).catch((error) => {
         console.error("Wallpaper deletion failed:", error);
@@ -512,6 +513,10 @@ export async function initWallpaper() {
   await renderWallpapers();
   await applyActiveWallpaper();
   startWallpaperScheduler();
+
+  onLanguageChange(() => {
+    renderWallpapers();
+  });
 
   console.log("Wallpaper system initialized.");
 }

@@ -5,6 +5,7 @@
 
 import { STORES, dbGetAll, dbPut, dbDelete } from "./db.js";
 import { showConfirmDialog, showAlertDialog } from "./dialog.js";
+import { t, onLanguageChange } from "./i18n/i18n.js";
 
 const notesList = document.querySelector("#notesList");
 const notesCount = document.querySelector("#notesCount");
@@ -41,10 +42,10 @@ async function renderNotes() {
   });
 
   notesList.innerHTML = "";
-  notesCount.textContent = `${notes.length} ${notes.length === 1 ? "note" : "notes"}`;
+  notesCount.textContent = t("notes.count", { count: notes.length });
 
   if (notes.length === 0) {
-    notesList.innerHTML = `<div class="note-empty">No notes yet.</div>`;
+    notesList.innerHTML = `<div class="note-empty">${t("notes.empty")}</div>`;
     return;
   }
 
@@ -60,9 +61,9 @@ async function renderNotes() {
         <div class="note-text ${note.completed ? "completed" : ""}"></div>
       </div>
       <div class="note-actions">
-        <button class="note-action" data-pin="${note.id}">${note.pinned ? "Unpin" : "Pin"}</button>
-        <button class="note-action" data-edit="${note.id}">Edit</button>
-        <button class="note-action" data-delete-note="${note.id}">Delete</button>
+        <button class="note-action" data-pin="${note.id}">${note.pinned ? t("notes.unpin") : t("notes.pin")}</button>
+        <button class="note-action" data-edit="${note.id}">${t("notes.edit")}</button>
+        <button class="note-action" data-delete-note="${note.id}">${t("notes.delete")}</button>
       </div>
     `;
     // User-provided text goes in via textContent (no HTML escaping needed).
@@ -165,7 +166,7 @@ async function handleSaveNote() {
     await renderNotes();
   } catch (error) {
     console.error("Note save failed:", error);
-    await showAlertDialog("Failed to save note.", "Error");
+    await showAlertDialog(t("notes.errors.saveFailed"), t("common.error"));
   }
 }
 
@@ -199,7 +200,7 @@ async function toggleNoteCompleted(id) {
 }
 
 async function removeNote(id) {
-  const confirmed = await showConfirmDialog("Delete this note?");
+  const confirmed = await showConfirmDialog(t("notes.dialogs.deleteConfirmation"), t("common.confirm"), t("common.delete"));
   if (!confirmed) return;
 
   await deleteNote(id);
@@ -223,6 +224,10 @@ function bindNoteEditor() {
 export async function initNotes() {
   bindNoteEditor();
   await renderNotes();
+
+  onLanguageChange(() => {
+    renderNotes();
+  });
 
   console.log("Notes system initialized.");
 }

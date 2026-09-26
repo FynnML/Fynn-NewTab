@@ -2,7 +2,7 @@
  * dashboard.js — Everything inside the slide-out dashboard:
  *   1. Panel      open/close, tabs, click-outside, Escape
  *   2. Widgets    visibility toggles + widget layout (LocalStorage)
- *   3. Settings   search engine, time format, focus effect, overlay, reset
+ *   3. Settings   language, search engine, time format, focus effect, overlay, reset
  *
  * (The Wallpapers tab content is rendered by wallpaper.js.)
  */
@@ -24,6 +24,7 @@ import {
   resetOverlayStrength,
 } from "./wallpaper.js";
 import { showConfirmDialog } from "./dialog.js";
+import { t, onLanguageChange, getLanguage, setLanguage, resetLanguage } from "./i18n/i18n.js";
 
 /* ==========================================================================
    1. PANEL
@@ -44,7 +45,7 @@ function setDashboardOpen(isOpen) {
   dashboardToggle.setAttribute("aria-expanded", String(isOpen));
   dashboardToggle.setAttribute(
     "aria-label",
-    isOpen ? "Close dashboard" : "Open dashboard",
+    isOpen ? t("dashboard.close") : t("dashboard.open"),
   );
 
   if (isOpen) {
@@ -53,8 +54,12 @@ function setDashboardOpen(isOpen) {
   } else {
     dashboard.setAttribute("inert", "");
     dashboard.setAttribute("aria-hidden", "true");
-    
-    if (wasOpen && document.activeElement && dashboard.contains(document.activeElement)) {
+
+    if (
+      wasOpen &&
+      document.activeElement &&
+      dashboard.contains(document.activeElement)
+    ) {
       dashboardToggle.focus();
     }
   }
@@ -101,6 +106,13 @@ function initPanel() {
   if (activeTab) {
     requestAnimationFrame(() => selectTab(activeTab));
   }
+
+  onLanguageChange(() => {
+    dashboardToggle.setAttribute(
+      "aria-label",
+      dashboard.classList.contains("open") ? t("dashboard.close") : t("dashboard.open")
+    );
+  });
 
   // Click outside the dashboard closes it
   document.addEventListener("click", (event) => {
@@ -237,6 +249,7 @@ function resetWidgets() {
    ========================================================================== */
 
 function initSettings() {
+  const languageSetting = document.querySelector("#languageSetting");
   const searchEngineSetting = document.querySelector("#searchEngineSetting");
   const timeFormatSetting = document.querySelector("#timeFormatSetting");
   const searchFocusEffectSetting = document.querySelector(
@@ -249,9 +262,7 @@ function initSettings() {
   const overlayStrengthSetting = document.querySelector(
     "#overlayStrengthSetting",
   );
-  const overlayStrengthValue = document.querySelector(
-    "#overlayStrengthValue",
-  );
+  const overlayStrengthValue = document.querySelector("#overlayStrengthValue");
   const resetSettingsButton = document.querySelector("#resetSettingsButton");
 
   // Custom engine URL only matters once "Custom" is picked.
@@ -264,6 +275,7 @@ function initSettings() {
 
   // Reflect the saved values in the form controls.
   const syncControls = () => {
+    languageSetting.value = getLanguage();
     searchEngineSetting.value = getSearchEngine();
     timeFormatSetting.value = getTimeFormat();
     searchFocusEffectSetting.checked = isSearchFocusEffectEnabled();
@@ -271,12 +283,16 @@ function initSettings() {
 
     const overlayStrength = getOverlayStrength();
     overlayStrengthSetting.value = overlayStrength;
-    overlayStrengthValue.textContent = `${overlayStrength}%`;
+    overlayStrengthValue.textContent = t("settings.appearance.overlayStrengthValue", { value: overlayStrength });
 
     syncCustomEngineVisibility();
   };
 
   syncControls();
+
+  languageSetting.addEventListener("change", () => {
+    setLanguage(languageSetting.value);
+  });
 
   searchEngineSetting.addEventListener("change", () => {
     setSearchEngine(searchEngineSetting.value);
@@ -299,18 +315,19 @@ function initSettings() {
     const value = Number(overlayStrengthSetting.value);
 
     setOverlayStrength(value);
-    overlayStrengthValue.textContent = `${value}%`;
+    overlayStrengthValue.textContent = t("settings.appearance.overlayStrengthValue", { value });
   });
 
   resetSettingsButton.addEventListener("click", async () => {
     const confirmed = await showConfirmDialog(
-      "Reset Fynn NewTab settings?",
-      "Reset settings",
-      "Reset",
+      t("settings.reset.confirmation"),
+      t("settings.reset.title"),
+      t("common.reset"),
     );
 
     if (!confirmed) return;
 
+    resetLanguage();
     resetSearchSettings();
     resetTimeFormat();
     resetOverlayStrength();
@@ -319,7 +336,6 @@ function initSettings() {
     syncControls();
   });
 }
-
 
 /* ==========================================================================
    INIT

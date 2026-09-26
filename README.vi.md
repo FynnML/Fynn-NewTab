@@ -22,6 +22,7 @@ Viết bằng HTML, CSS và JavaScript thuần (ES modules) trên Chrome Extensi
 - **Dashboard** — bảng trượt ra với các tab *Wallpapers*, *Widgets* và *Settings*.
 - **Tùy chỉnh độ dễ đọc** — thanh chỉnh độ đậm lớp phủ (50–180%) và hiệu ứng làm tối/mờ nền khi đang tìm kiếm.
 - **Trợ năng** — hộp thoại giữ focus, menu điều khiển được bằng bàn phím, video tự tạm dừng khi tab bị ẩn hoặc khi hệ điều hành yêu cầu giảm chuyển động.
+- **Đa ngôn ngữ** — hỗ trợ hoàn chỉnh tiếng Anh, tiếng Việt, và tiếng Trung với tính năng chuyển đổi ngôn ngữ tức thời.
 - **Riêng tư và offline** — không analytics, không tài khoản, không background script. Yêu cầu mạng duy nhất là lượt tìm kiếm bạn gửi đi. Font được đóng gói sẵn nên không tải gì từ CDN.
 
 ## Yêu cầu
@@ -161,6 +162,9 @@ Fynn-NewTab/
 │  │  ├─ notes.css
 │  │  └─ wallpaper.css
 │  └─ JS/
+│     ├── i18n/         # định nghĩa ngôn ngữ và helper
+│     │  ├── i18n.js    # logic cốt lõi và phát hiện ngôn ngữ
+│     │  └── locales/   # file ngôn ngữ tiếng Anh, Việt, Trung
 │     ├─ clock.js        # đồng hồ, ngày, cài đặt 12h/24h
 │     ├─ dashboard.js    # bảng, tab, công tắc widget, cài đặt
 │     ├─ db.js           # kết nối IndexedDB + các hàm promise nhỏ
@@ -175,7 +179,8 @@ Fynn-NewTab/
 │  ├─ images/            # logo Fynn và icon extension
 │  └─ wallpapers/        # hình nền tích hợp sẵn (default.mp4)
 └─ docs/
-   └─ screenshots/
+   ├─ screenshots/
+   └─ i18n.md
 ```
 
 `app.js` khởi động các tính năng chỉ dùng localStorage trước (lời chào, đồng hồ, tìm kiếm, lớp phủ, dashboard), sau đó mở IndexedDB và khởi động module hình nền và ghi chú. Một module lỗi sẽ không làm dừng các module còn lại.

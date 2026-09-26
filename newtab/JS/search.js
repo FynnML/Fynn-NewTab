@@ -4,6 +4,8 @@
  * Owns the search-engine and focus-effect settings (LocalStorage).
  */
 
+import { t, onLanguageChange } from "./i18n/i18n.js";
+
 const SEARCH_ENGINE_KEY = "fynn-search-engine";
 const SEARCH_FOCUS_EFFECT_KEY = "fynn-search-focus-effect";
 const CUSTOM_ENGINE_URL_KEY = "fynn-custom-engine-url";
@@ -90,8 +92,8 @@ function applySearchEngine(engine) {
 
   currentEngine = engine;
   engineIcon.src = config.icon;
-  engineIcon.alt = config.label;
-  searchInput.placeholder = `Search with ${config.label}`;
+  engineIcon.alt = t(`search.engines.${engine}`);
+  searchInput.placeholder = t("search.searchWith", { engine: t(`search.engines.${engine}`) });
 
   engineOptions.forEach((option) => {
     option.classList.toggle("selected", option.dataset.engine === engine);
@@ -333,7 +335,7 @@ function showRecentSearches() {
     const removeBtn = document.createElement("button");
     removeBtn.className = "suggestion-remove";
     removeBtn.innerHTML = "×";
-    removeBtn.setAttribute("aria-label", `Remove "${text}"`);
+    removeBtn.setAttribute("aria-label", t("search.removeRecentSearch", { query: text }));
     removeBtn.addEventListener("click", (e) => {
       e.stopPropagation();
       removeRecentSearch(text);
@@ -423,9 +425,15 @@ function initRecentSearches() {
 export function initSearch() {
   // Clean inline SVG icon instead of an emoji
   searchButton.innerHTML = SEARCH_ICON;
-  searchButton.setAttribute("aria-label", "Search");
+  searchButton.setAttribute("aria-label", t("search.search"));
 
   applySearchEngine(currentEngine);
+
+  onLanguageChange(() => {
+    searchButton.setAttribute("aria-label", t("search.search"));
+    applySearchEngine(currentEngine);
+    if (searchSuggestions.classList.contains("active")) showRecentSearches();
+  });
 
   engineButton.addEventListener("click", (event) => {
     event.stopPropagation();

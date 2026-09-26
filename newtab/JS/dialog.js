@@ -2,6 +2,8 @@
  * dialog.js — Custom modal dialogs to replace native browser prompts.
  */
 
+import { t } from "./i18n/i18n.js";
+
 function setupA11y(overlay, cancelCallback) {
   const previousActiveElement = document.activeElement;
   
@@ -49,7 +51,7 @@ function setupA11y(overlay, cancelCallback) {
   };
 }
 
-export function showConfirmDialog(message, title = "Confirm", confirmLabel = "Delete") {
+export function showConfirmDialog(message, title, confirmLabel) {
   return new Promise((resolve) => {
     let overlay = document.getElementById("customDialogOverlay");
     
@@ -62,8 +64,8 @@ export function showConfirmDialog(message, title = "Confirm", confirmLabel = "De
           <h3 class="custom-dialog-title" id="customDialogTitle"></h3>
           <p class="custom-dialog-message" id="customDialogMessage"></p>
           <div class="custom-dialog-actions">
-            <button class="custom-dialog-button cancel" id="customDialogCancel">Cancel</button>
-            <button class="custom-dialog-button confirm" id="customDialogConfirm">Delete</button>
+            <button class="custom-dialog-button cancel" id="customDialogCancel"></button>
+            <button class="custom-dialog-button confirm" id="customDialogConfirm"></button>
           </div>
         </div>
       `;
@@ -75,9 +77,10 @@ export function showConfirmDialog(message, title = "Confirm", confirmLabel = "De
     const cancelBtn = overlay.querySelector("#customDialogCancel");
     const confirmBtn = overlay.querySelector("#customDialogConfirm");
     
-    titleEl.textContent = title;
+    titleEl.textContent = title || t("dialogs.confirm");
     messageEl.textContent = message;
-    confirmBtn.textContent = confirmLabel;
+    cancelBtn.textContent = t("dialogs.cancel");
+    confirmBtn.textContent = confirmLabel || t("dialogs.confirmAction");
     
     let a11yCleanup;
 
@@ -108,7 +111,7 @@ export function showConfirmDialog(message, title = "Confirm", confirmLabel = "De
   });
 }
 
-export function showAlertDialog(message, title = "Notice") {
+export function showAlertDialog(message, title) {
   return new Promise((resolve) => {
     let overlay = document.getElementById("customAlertDialogOverlay");
     
@@ -121,7 +124,7 @@ export function showAlertDialog(message, title = "Notice") {
           <h3 class="custom-dialog-title" id="customAlertDialogTitle"></h3>
           <p class="custom-dialog-message" id="customAlertDialogMessage"></p>
           <div class="custom-dialog-actions">
-            <button class="custom-dialog-button confirm" id="customAlertDialogConfirm">OK</button>
+            <button class="custom-dialog-button confirm" id="customAlertDialogConfirm"></button>
           </div>
         </div>
       `;
@@ -132,8 +135,9 @@ export function showAlertDialog(message, title = "Notice") {
     const messageEl = overlay.querySelector("#customAlertDialogMessage");
     const confirmBtn = overlay.querySelector("#customAlertDialogConfirm");
     
-    titleEl.textContent = title;
+    titleEl.textContent = title || t("dialogs.notice");
     messageEl.textContent = message;
+    confirmBtn.textContent = t("dialogs.ok");
     
     let a11yCleanup;
 

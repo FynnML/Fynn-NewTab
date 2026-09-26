@@ -3,6 +3,8 @@
  * Owns the 12h/24h setting (saved in LocalStorage).
  */
 
+import { getLanguage, onLanguageChange } from "./i18n/i18n.js";
+
 const TIME_FORMAT_KEY = "fynn-time-format";
 const DEFAULT_TIME_FORMAT = "12h";
 const VALID_TIME_FORMATS = ["12h", "24h"];
@@ -20,13 +22,13 @@ let timeFormat = loadTimeFormat();
 function updateClock() {
   const now = new Date();
 
-  const time = now.toLocaleTimeString("en-US", {
+  const time = now.toLocaleTimeString(getLanguage(), {
     hour: "2-digit",
     minute: "2-digit",
     hour12: timeFormat === "12h",
   });
 
-  const date = now.toLocaleDateString("en-US", {
+  const date = now.toLocaleDateString(getLanguage(), {
     weekday: "long",
     month: "long",
     day: "numeric",
@@ -65,4 +67,8 @@ export function resetTimeFormat() {
 export function initClock() {
   updateClock();
   setInterval(updateClock, 1000);
+  
+  onLanguageChange(() => {
+    updateClock();
+  });
 }

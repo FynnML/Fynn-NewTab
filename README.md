@@ -22,6 +22,7 @@ Built with plain HTML, CSS and JavaScript (ES modules) on Chrome Extension **Man
 - **Dashboard** — a slide-out panel with *Wallpapers*, *Widgets* and *Settings* tabs.
 - **Readability controls** — an overlay-strength slider (50–180%) and an optional dim/blur effect while you search.
 - **Accessibility** — focus-trapped dialogs, keyboard-navigable menus, and video that pauses in background tabs or when the OS asks for reduced motion.
+- **Multilingual** — fully translated into English, Vietnamese, and Chinese, with instant runtime switching.
 - **Private and offline** — no analytics, no accounts, no background script. The only outgoing request is the search you submit. Fonts are bundled, so nothing is loaded from a CDN.
 
 ## Requirements
@@ -161,6 +162,9 @@ Fynn-NewTab/
 │  │  ├─ notes.css
 │  │  └─ wallpaper.css
 │  └─ JS/
+│     ├─ i18n/           # language definitions and helpers
+│     │  ├── i18n.js     # core logic and language detection
+│     │  └── locales/    # English, Vietnamese, Chinese language files
 │     ├─ clock.js        # clock, date, 12h/24h setting
 │     ├─ dashboard.js    # panel, tabs, widget toggles, settings
 │     ├─ db.js           # IndexedDB connection + small promise helpers
@@ -175,6 +179,7 @@ Fynn-NewTab/
 │  ├─ images/            # Fynn logo and extension icons
 │  └─ wallpapers/        # built-in default wallpaper (default.mp4)
 └─ docs/
+   ├─ i18n.md
    └─ screenshots/
 ```
 

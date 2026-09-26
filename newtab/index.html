@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
 
-    <title>Fynn New Tab</title>
+    <title data-i18n="app.name">Fynn New Tab</title>
 
     <link rel="icon" type="image/png" href="../assets/images/fynn-icon.png" />
     <!-- Inter is self-hosted (see fonts.css); preload the main file to avoid a font flash -->
@@ -24,6 +24,7 @@
       target="_blank"
       rel="noopener noreferrer"
       aria-label="Fynn New Tab trên GitHub"
+      data-i18n-attr="aria-label:app.githubLabel"
     >
       <img
         class="brand-logo__image"
@@ -68,6 +69,7 @@
               class="engine-button"
               id="engineButton"
               aria-label="Choose search engine"
+              data-i18n-attr="aria-label:search.chooseEngine"
               aria-controls="engineMenu"
               aria-expanded="false"
             >
@@ -82,6 +84,7 @@
               type="text"
               id="searchInput"
               placeholder="Search the Web"
+              data-i18n-attr="placeholder:search.placeholder"
               autocomplete="off"
             />
 
@@ -91,21 +94,21 @@
             <div class="engine-menu" id="engineMenu">
               <button class="engine-option" data-engine="brave">
                 <img src="../assets/icons/brave.png" alt="Brave" />
-                <span>Brave</span>
+                <span data-i18n="search.engines.brave">Brave</span>
               </button>
 
               <button class="engine-option" data-engine="google">
                 <img src="../assets/icons/google.png" alt="Google" />
-                <span>Google</span>
+                <span data-i18n="search.engines.google">Google</span>
               </button>
 
               <button class="engine-option" data-engine="duckduckgo">
                 <img src="../assets/icons/duckduckgo.png" alt="DuckDuckGo" />
-                <span>DuckDuckGo</span>
+                <span data-i18n="search.engines.duckduckgo">DuckDuckGo</span>
               </button>
 
               <button class="engine-option" data-engine="custom">
-                <span>Custom</span>
+                <span data-i18n="search.engines.custom">Custom</span>
               </button>
             </div>
             
@@ -126,11 +129,11 @@
       >
         <div class="notes-header">
           <div>
-            <h3>Notes</h3>
+            <h3 data-i18n="notes.title">Notes</h3>
             <span id="notesCount">0 notes</span>
           </div>
 
-          <button class="notes-add" id="addNoteButton" aria-label="Add note">
+          <button class="notes-add" id="addNoteButton" aria-label="Add note" data-i18n-attr="aria-label:accessibility.addNote">
             +
           </button>
         </div>
@@ -143,20 +146,22 @@
             type="text"
             id="noteTitle"
             placeholder="Note title"
+            data-i18n-attr="placeholder:notes.titlePlaceholder"
             maxlength="80"
           />
 
           <textarea
             id="noteContent"
             placeholder="Write something..."
+            data-i18n-attr="placeholder:notes.contentPlaceholder"
             maxlength="2000"
           ></textarea>
 
           <div class="note-editor-actions">
-            <button class="note-editor-button cancel" id="cancelNoteButton">
+            <button class="note-editor-button cancel" id="cancelNoteButton" data-i18n="common.cancel">
               Cancel
             </button>
-            <button class="note-editor-button save" id="saveNoteButton">
+            <button class="note-editor-button save" id="saveNoteButton" data-i18n="common.save">
               Save
             </button>
           </div>
@@ -169,6 +174,7 @@
         class="dashboard-toggle"
         id="dashboardToggle"
         aria-label="Open dashboard"
+        data-i18n-attr="aria-label:accessibility.openDashboard"
         aria-controls="dashboard"
         aria-expanded="false"
       >
@@ -191,6 +197,7 @@
             data-tab="wallpapers"
             aria-controls="wallpapers"
             aria-selected="true"
+            data-i18n="dashboard.tabs.wallpapers"
           >
             Wallpapers
           </button>
@@ -201,6 +208,7 @@
             data-tab="widgets"
             aria-controls="widgets"
             aria-selected="false"
+            data-i18n="dashboard.tabs.widgets"
           >
             Widgets
           </button>
@@ -211,6 +219,7 @@
             data-tab="settings"
             aria-controls="settings"
             aria-selected="false"
+            data-i18n="dashboard.tabs.settings"
           >
             Settings
           </button>
@@ -219,7 +228,7 @@
 
       <!-- Wallpapers -->
       <section class="dashboard-content active" id="wallpapers">
-        <h2>Wallpapers</h2>
+        <h2 data-i18n="wallpapers.title">Wallpapers</h2>
         <label class="upload-wallpaper">
           <input
             type="file"
@@ -227,17 +236,17 @@
             accept="video/mp4,image/jpeg,image/png,image/webp"
             hidden
           />
-          <span>Upload Wallpaper</span>
+          <span data-i18n="wallpapers.upload">Upload Wallpaper</span>
         </label>
         <div class="wallpaper-list" id="wallpaperList"></div>
       </section>
 
       <!-- Widgets -->
       <section class="dashboard-content" id="widgets">
-        <h2>Widgets</h2>
+        <h2 data-i18n="widgets.title">Widgets</h2>
 
         <div class="widget-setting">
-          <span>Clock</span>
+          <span data-i18n="widgets.clock">Clock</span>
           <label class="switch">
             <input
               type="checkbox"
@@ -250,7 +259,7 @@
         </div>
 
         <div class="widget-setting">
-          <span>Date</span>
+          <span data-i18n="widgets.date">Date</span>
           <label class="switch">
             <input
               type="checkbox"
@@ -263,7 +272,7 @@
         </div>
 
         <div class="widget-setting">
-          <span>Greeting</span>
+          <span data-i18n="widgets.greeting">Greeting</span>
           <label class="switch">
             <input
               type="checkbox"
@@ -276,7 +285,7 @@
         </div>
 
         <div class="widget-setting">
-          <span>Notes</span>
+          <span data-i18n="widgets.notes">Notes</span>
           <label class="switch">
             <input type="checkbox" class="widget-toggle" data-widget="notes" />
             <span class="slider"></span>
@@ -284,7 +293,7 @@
         </div>
 
         <div class="widget-setting">
-          <span>Search</span>
+          <span data-i18n="widgets.search">Search</span>
           <label class="switch">
             <input
               type="checkbox"
@@ -299,22 +308,39 @@
 
       <!-- Settings -->
       <section class="dashboard-content" id="settings">
-        <h2>Settings</h2>
+        <h2 data-i18n="settings.title">Settings</h2>
 
         <div class="setting-group">
-          <div class="setting-group-title">Search</div>
+          <div class="setting-group-title" data-i18n="settings.language.title">Language</div>
 
           <div class="setting-item">
             <div>
-              <strong>Default search engine</strong>
-              <span>Used when you open a new tab</span>
+              <strong data-i18n="settings.language.title">Language</strong>
+              <span data-i18n="settings.language.description">Choose your preferred language</span>
+            </div>
+
+            <select id="languageSetting" class="setting-select">
+              <option value="en" data-i18n="settings.language.en">English</option>
+              <option value="vi" data-i18n="settings.language.vi">Tiếng Việt</option>
+              <option value="zh" data-i18n="settings.language.zh">中文</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="setting-group">
+          <div class="setting-group-title" data-i18n="settings.search.title">Search</div>
+
+          <div class="setting-item">
+            <div>
+              <strong data-i18n="settings.search.defaultEngine">Default search engine</strong>
+              <span data-i18n="settings.search.defaultEngineDescription">Used when you open a new tab</span>
             </div>
 
             <select id="searchEngineSetting" class="setting-select">
-              <option value="brave">Brave</option>
-              <option value="google">Google</option>
-              <option value="duckduckgo">DuckDuckGo</option>
-              <option value="custom">Custom</option>
+              <option value="brave" data-i18n="search.engines.brave">Brave</option>
+              <option value="google" data-i18n="search.engines.google">Google</option>
+              <option value="duckduckgo" data-i18n="search.engines.duckduckgo">DuckDuckGo</option>
+              <option value="custom" data-i18n="search.engines.custom">Custom</option>
             </select>
           </div>
 
@@ -323,8 +349,8 @@
             id="customEngineUrlItem"
           >
             <div>
-              <strong>Custom engine URL</strong>
-              <span>Use %s where the query should go</span>
+              <strong data-i18n="settings.search.customEngineUrl">Custom engine URL</strong>
+              <span data-i18n="settings.search.customEngineUrlDescription">Use %s where the query should go</span>
             </div>
 
             <input
@@ -332,6 +358,7 @@
               id="customEngineUrlSetting"
               class="setting-text-input"
               placeholder="https://example.com/search?q=%s"
+              data-i18n-attr="placeholder:settings.search.customEngineUrlPlaceholder"
               autocomplete="off"
               spellcheck="false"
             />
@@ -339,28 +366,28 @@
         </div>
 
         <div class="setting-group">
-          <div class="setting-group-title">Clock</div>
+          <div class="setting-group-title" data-i18n="settings.clock.title">Clock</div>
 
           <div class="setting-item">
             <div>
-              <strong>Time format</strong>
-              <span>Choose how the clock is displayed</span>
+              <strong data-i18n="settings.clock.timeFormat">Time format</strong>
+              <span data-i18n="settings.clock.timeFormatDescription">Choose how the clock is displayed</span>
             </div>
 
             <select id="timeFormatSetting" class="setting-select">
-              <option value="12h">12-hour</option>
-              <option value="24h">24-hour</option>
+              <option value="12h" data-i18n="settings.clock.twelveHour">12-hour</option>
+              <option value="24h" data-i18n="settings.clock.twentyFourHour">24-hour</option>
             </select>
           </div>
         </div>
 
         <div class="setting-group">
-          <div class="setting-group-title">Appearance</div>
+          <div class="setting-group-title" data-i18n="settings.appearance.title">Appearance</div>
 
           <div class="setting-item">
             <div>
-              <strong>Search focus effect</strong>
-              <span>Dim and blur wallpaper when searching</span>
+              <strong data-i18n="settings.appearance.searchFocusEffect">Search focus effect</strong>
+              <span data-i18n="settings.appearance.searchFocusEffectDescription">Dim and blur wallpaper when searching</span>
             </div>
 
             <label class="switch">
@@ -371,8 +398,8 @@
 
           <div class="setting-item setting-item--stacked">
             <div>
-              <strong>Overlay strength</strong>
-              <span>Darkens the wallpaper so text stays readable</span>
+              <strong data-i18n="settings.appearance.overlayStrength">Overlay strength</strong>
+              <span data-i18n="settings.appearance.overlayStrengthDescription">Darkens the wallpaper so text stays readable</span>
             </div>
 
             <div class="setting-item-row">
@@ -392,12 +419,13 @@
         </div>
 
         <div class="setting-group danger-group">
-          <div class="setting-group-title">Reset</div>
+          <div class="setting-group-title" data-i18n="settings.reset.title">Reset</div>
 
           <button
             type="button"
             class="reset-settings-button"
             id="resetSettingsButton"
+            data-i18n="settings.reset.button"
           >
             Reset settings
           </button>
