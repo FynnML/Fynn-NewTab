@@ -1,7 +1,5 @@
 /**
  * db.js — IndexedDB connection + tiny promise helpers.
- * Wallpapers and Notes both go through these, so the transaction/request
- * boilerplate lives in one place.
  */
 
 export const STORES = Object.freeze({
@@ -11,6 +9,8 @@ export const STORES = Object.freeze({
 
 const DB_NAME = "FynnNewTabDB";
 const DB_VERSION = 2;
+
+const DB_OPEN_TIMEOUT_MS = 15 * 1000;
 
 let db = null;
 
@@ -26,6 +26,7 @@ export function openDatabase() {
       }
 
       settled = true;
+      clearTimeout(timeoutId);
       db = database;
 
       db.onversionchange = () => {
@@ -39,8 +40,13 @@ export function openDatabase() {
     const rejectOnce = (error) => {
       if (settled) return;
       settled = true;
+      clearTimeout(timeoutId);
       reject(error);
     };
+
+    const timeoutId = setTimeout(() => {
+      rejectOnce(new Error("Timed out while opening the local database."));
+    }, DB_OPEN_TIMEOUT_MS);
 
     request.onupgradeneeded = (event) => {
       const database = event.target.result;
@@ -61,6 +67,10 @@ export function openDatabase() {
     };
 
     request.onblocked = () => {
+      console.warn(
+        "IndexedDB open is blocked: another New Tab tab is keeping the old " +
+          "database connection open. Close the other tabs and reload this page.",
+      );
       rejectOnce(new Error("IndexedDB upgrade is blocked by another open tab."));
     };
   });
