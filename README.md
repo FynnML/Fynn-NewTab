@@ -198,7 +198,7 @@ Fynn-NewTab/
 There is no build step. Edit the files, then reload the extension from the extensions page.
 
 - **Built-in wallpaper:** replace `assets/wallpapers/default.mp4` with your own. A reasonably sized MP4 keeps the extension small and startup fast. To use a different file name or format, update `DEFAULT_WALLPAPER_SRC` near the top of `newtab/JS/wallpaper.js`. If the file is missing, the page falls back to a plain dark background.
-- **Greeting phrases:** edit the `GREETINGS` lists in `newtab/JS/greeting.js`, or change the period boundaries in `PERIODS`.
+- **Greeting phrases:** edit the `GREETINGS` lists in `newtab/JS/i18n/locales/`, or change the period boundaries in `PERIODS`.
 - **Add a search engine:** add an entry to `ENGINES` in `newtab/JS/search.js`, a matching `.engine-option` button and a `#searchEngineSetting` option in `newtab/index.html`, and an icon in `assets/icons/`.
 - **Day/Night hours:** change `getScheduledWallpaperMode()` in `newtab/JS/wallpaper.js`.
 
