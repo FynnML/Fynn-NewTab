@@ -17,6 +17,30 @@ let db = null;
 export function openDatabase() {
   return new Promise((resolve, reject) => {
     const request = indexedDB.open(DB_NAME, DB_VERSION);
+    let settled = false;
+
+    const resolveOnce = (database) => {
+      if (settled) {
+        database.close();
+        return;
+      }
+
+      settled = true;
+      db = database;
+
+      db.onversionchange = () => {
+        db.close();
+        console.warn("IndexedDB version changed. Database connection closed.");
+      };
+
+      resolve(db);
+    };
+
+    const rejectOnce = (error) => {
+      if (settled) return;
+      settled = true;
+      reject(error);
+    };
 
     request.onupgradeneeded = (event) => {
       const database = event.target.result;
@@ -29,18 +53,15 @@ export function openDatabase() {
     };
 
     request.onsuccess = () => {
-      db = request.result;
-
-      db.onversionchange = () => {
-        db.close();
-        console.warn("IndexedDB version changed. Database connection closed.");
-      };
-
-      resolve(db);
+      resolveOnce(request.result);
     };
 
     request.onerror = () => {
-      reject(request.error);
+      rejectOnce(request.error);
+    };
+
+    request.onblocked = () => {
+      rejectOnce(new Error("IndexedDB upgrade is blocked by another open tab."));
     };
   });
 }

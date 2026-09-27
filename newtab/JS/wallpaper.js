@@ -213,8 +213,15 @@ async function handleWallpaperUpload(event) {
       thumbnailBlob = await extractVideoThumbnail(file);
     }
 
-    if (navigator.storage && navigator.storage.persist) {
-      await navigator.storage.persist();
+    if (navigator.storage && typeof navigator.storage.persist === "function") {
+      try {
+        await navigator.storage.persist();
+      } catch (error) {
+        console.warn(
+          "Storage persistence request failed; continuing upload:",
+          error,
+        );
+      }
     }
 
     const wallpaper = {
