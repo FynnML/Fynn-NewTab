@@ -2,6 +2,9 @@ export const vi = {
   app: {
     name: "Fynn New Tab",
     githubLabel: "Fynn New Tab trên GitHub",
+    initErrorTitle: "Có lỗi xảy ra",
+    initErrorMessage:
+      "Một số tính năng không khởi động được. Hãy thử tải lại trang.",
   },
 
   db: {
@@ -75,15 +78,21 @@ export const vi = {
 
     errors: {
       invalidFileType: "Vui lòng chọn một hình ảnh hoặc video hợp lệ.",
+      invalidFile:
+        "Tệp này có vẻ bị hỏng hoặc không thể giải mã. Vui lòng chọn hình ảnh hoặc video khác.",
       fileTooLarge:
         "Tệp vượt quá giới hạn {maxSize}MB. Vui lòng chọn tệp nhỏ hơn.",
       uploadFailed: "Không thể lưu hình nền.",
+      loadFailed:
+        "Không thể tải hình nền hiện tại, nên một hình nền khác đang được hiển thị.",
     },
 
     dialogs: {
       invalidFileTypeTitle: "Định dạng tệp không hợp lệ",
+      invalidFileTitle: "Tệp hình nền không hợp lệ",
       fileTooLargeTitle: "Tệp quá lớn",
       deleteConfirmation: "Bạn có chắc chắn muốn xóa hình nền này không?",
+      loadFailedTitle: "Không tải được hình nền",
     },
   },
 

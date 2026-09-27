@@ -2,6 +2,9 @@ export const en = {
   app: {
     name: "Fynn New Tab",
     githubLabel: "Fynn New Tab on GitHub",
+    initErrorTitle: "Something went wrong",
+    initErrorMessage:
+      "Some features could not be started. Try reloading the New Tab page.",
   },
 
   db: {
@@ -74,15 +77,21 @@ export const en = {
 
     errors: {
       invalidFileType: "Please select a valid image or video.",
+      invalidFile:
+        "This file appears to be corrupted or cannot be decoded. Please choose a different image or video.",
       fileTooLarge:
         "File size exceeds {maxSize}MB limit. Please choose a smaller file.",
       uploadFailed: "Failed to save wallpaper.",
+      loadFailed:
+        "Your current wallpaper could not be loaded, so another wallpaper is being shown instead.",
     },
 
     dialogs: {
       invalidFileTypeTitle: "Invalid File Type",
+      invalidFileTitle: "Invalid Wallpaper File",
       fileTooLargeTitle: "File Too Large",
       deleteConfirmation: "Are you sure you want to delete this wallpaper?",
+      loadFailedTitle: "Wallpaper Unavailable",
     },
   },
 

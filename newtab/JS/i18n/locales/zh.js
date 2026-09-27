@@ -2,6 +2,8 @@ export const zh = {
   app: {
     name: "Fynn New Tab",
     githubLabel: "在 GitHub 上查看 Fynn New Tab",
+    initErrorTitle: "出现问题",
+    initErrorMessage: "部分功能无法启动，请尝试重新加载新标签页。",
   },
 
   db: {
@@ -74,15 +76,19 @@ export const zh = {
 
     errors: {
       invalidFileType: "请选择有效的图片或视频文件。",
+      invalidFile: "此文件似乎已损坏或无法解码，请选择其他图片或视频。",
       fileTooLarge:
         "文件大小超过 {maxSize}MB 限制，请选择较小的文件。",
       uploadFailed: "无法保存壁纸。",
+      loadFailed: "当前壁纸无法加载，已改用其他壁纸。",
     },
 
     dialogs: {
       invalidFileTypeTitle: "文件类型无效",
+      invalidFileTitle: "壁纸文件无效",
       fileTooLargeTitle: "文件过大",
       deleteConfirmation: "确定要删除这张壁纸吗？",
+      loadFailedTitle: "壁纸加载失败",
     },
   },
 

@@ -14,7 +14,7 @@ const SCHEDULE_INTERVAL_MS = 60 * 1000;
 
 const OVERLAY_STRENGTH_KEY = "fynn-overlay-strength";
 const DEFAULT_OVERLAY_STRENGTH = 100; // percent
-const MIN_OVERLAY_STRENGTH = 50;
+const MIN_OVERLAY_STRENGTH = 75;
 const MAX_OVERLAY_STRENGTH = 180;
 
 const WALLPAPER_MODES = {
@@ -25,6 +25,8 @@ const WALLPAPER_MODES = {
 };
 
 const VALID_WALLPAPER_MODES = Object.values(WALLPAPER_MODES);
+
+const MEDIA_VALIDATION_TIMEOUT_MS = 10 * 1000;
 
 const wallpaperInput = document.querySelector("#wallpaperInput");
 const wallpaperList = document.querySelector("#wallpaperList");
@@ -37,6 +39,14 @@ let activeWallpaperId = null;
 let wallpaperScheduleTimer = null;
 let applyToken = 0;
 const wallpaperPreviewUrls = new Set();
+
+// Runtime-only bookkeeping for broken user wallpapers. A wallpaper that
+// fails to decode is excluded from the active-wallpaper resolution for the
+// rest of the session; the IndexedDB record is kept so the user can still
+// see and delete it from the dashboard.
+const failedWallpaperIds = new Set();
+let wallpaperRecoveryInProgress = false;
+let wallpaperFallbackNoticeShown = false;
 
 // --- Overlay strength ---
 
@@ -120,6 +130,109 @@ function getActiveWallpaper(wallpapers) {
   );
 }
 
+// --- Upload validation ---
+
+/**
+ * Verifies that an image file can actually be decoded by the browser.
+ * Resolves once decoding succeeds, rejects on decode failure or timeout.
+ */
+function validateImageFile(file) {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file);
+
+    const finish = (error) => {
+      URL.revokeObjectURL(url);
+      if (error) reject(error);
+      else resolve();
+    };
+
+    const timeoutId = setTimeout(() => {
+      finish(new Error("Image validation timed out."));
+    }, MEDIA_VALIDATION_TIMEOUT_MS);
+
+    if (typeof createImageBitmap === "function") {
+      createImageBitmap(file)
+        .then((bitmap) => {
+          clearTimeout(timeoutId);
+          bitmap.close();
+          finish(null);
+        })
+        .catch(() => {
+          clearTimeout(timeoutId);
+          finish(new Error("Image could not be decoded."));
+        });
+      return;
+    }
+
+    const image = new Image();
+    image.onload = () => {
+      clearTimeout(timeoutId);
+      finish(null);
+    };
+    image.onerror = () => {
+      clearTimeout(timeoutId);
+      finish(new Error("Image could not be decoded."));
+    };
+    image.src = url;
+  });
+}
+
+/**
+ * Verifies that a video file can actually be decoded by the browser.
+ * Resolves on loadedmetadata with a usable duration, rejects on media
+ * error, invalid metadata or timeout.
+ */
+function validateVideoFile(file) {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file);
+    const video = document.createElement("video");
+    video.preload = "metadata";
+    video.muted = true;
+    video.playsInline = true;
+
+    const cleanup = () => {
+      video.onloadedmetadata = null;
+      video.onerror = null;
+      video.removeAttribute("src");
+      video.load();
+      video.remove();
+      URL.revokeObjectURL(url);
+    };
+
+    const timeoutId = setTimeout(() => {
+      cleanup();
+      reject(new Error("Video validation timed out."));
+    }, MEDIA_VALIDATION_TIMEOUT_MS);
+
+    video.onloadedmetadata = () => {
+      clearTimeout(timeoutId);
+
+      const { duration, videoWidth, videoHeight } = video;
+      if (
+        !Number.isFinite(duration) ||
+        duration <= 0 ||
+        !videoWidth ||
+        !videoHeight
+      ) {
+        cleanup();
+        reject(new Error("Video metadata is invalid."));
+        return;
+      }
+
+      cleanup();
+      resolve();
+    };
+
+    video.onerror = () => {
+      clearTimeout(timeoutId);
+      cleanup();
+      reject(new Error("Video could not be decoded."));
+    };
+
+    video.src = url;
+  });
+}
+
 // --- Upload & Processing ---
 
 function extractVideoThumbnail(file) {
@@ -189,6 +302,15 @@ async function handleWallpaperUpload(event) {
     const file = event.target.files[0];
     if (!file) return;
 
+    if (file.size === 0) {
+      await showAlertDialog(
+        t("wallpapers.errors.invalidFile"),
+        t("wallpapers.dialogs.invalidFileTitle"),
+      );
+      wallpaperInput.value = "";
+      return;
+    }
+
     if (!file.type.startsWith("video/") && !file.type.startsWith("image/")) {
       await showAlertDialog(
         t("wallpapers.errors.invalidFileType"),
@@ -202,6 +324,23 @@ async function handleWallpaperUpload(event) {
       await showAlertDialog(
         t("wallpapers.errors.fileTooLarge", { maxSize: MAX_SIZE_MB }),
         t("wallpapers.dialogs.fileTooLargeTitle"),
+      );
+      wallpaperInput.value = "";
+      return;
+    }
+
+    // Never save a file the browser cannot actually decode.
+    try {
+      if (file.type.startsWith("video/")) {
+        await validateVideoFile(file);
+      } else {
+        await validateImageFile(file);
+      }
+    } catch (error) {
+      console.error("Wallpaper file validation failed:", error);
+      await showAlertDialog(
+        t("wallpapers.errors.invalidFile"),
+        t("wallpapers.dialogs.invalidFileTitle"),
       );
       wallpaperInput.value = "";
       return;
@@ -414,7 +553,9 @@ function updateVideoPlayback({ recover = false } = {}) {
 
 async function applyActiveWallpaper(wallpapers) {
   const token = ++applyToken;
-  const list = wallpapers ?? (await getWallpapers());
+  const list = (wallpapers ?? (await getWallpapers())).filter(
+    (wallpaper) => !failedWallpaperIds.has(wallpaper.id),
+  );
   if (token !== applyToken) return;
 
   const activeWallpaper = getActiveWallpaper(list);
@@ -445,6 +586,62 @@ async function applyActiveWallpaper(wallpapers) {
   } else {
     backgroundImage.src = currentWallpaperUrl;
     backgroundImage.classList.add("active");
+  }
+}
+
+/**
+ * Handles a background media element failing to load. The built-in
+ * wallpaper keeps its existing fail-safe (plain dark background). A broken
+ * user wallpaper is excluded from the candidates for this session and the
+ * active-wallpaper resolution re-runs, ending at the built-in wallpaper.
+ * Broken records stay in IndexedDB so the user can delete them normally.
+ */
+async function handleBackgroundMediaError(mediaElement, mediaKind) {
+  // Ignore stale errors from media that was already replaced or detached.
+  if (!mediaElement.classList.contains("active") || !mediaElement.getAttribute("src")) {
+    return;
+  }
+
+  if (activeWallpaperId === BUILTIN_WALLPAPER_ID) {
+    // Bundled default missing or unreadable → keep the plain dark background.
+    console.error(
+      "Built-in wallpaper failed to load:",
+      mediaElement.error ?? null,
+    );
+
+    mediaElement.classList.remove("active");
+    mediaElement.removeAttribute("src");
+    if (mediaKind === "video") mediaElement.load();
+    return;
+  }
+
+  const failedId = activeWallpaperId;
+
+  // Detach the broken media immediately so the page never stays blank.
+  clearBackgroundMedia();
+
+  // Guard against re-entrant error events while recovering. Since every
+  // failure permanently marks its wallpaper as failed for this session,
+  // the fallback chain is bounded and cannot loop forever.
+  if (!failedId || wallpaperRecoveryInProgress) return;
+
+  wallpaperRecoveryInProgress = true;
+  failedWallpaperIds.add(failedId);
+
+  try {
+    await applyActiveWallpaper();
+  } catch (error) {
+    console.error("Wallpaper fallback failed:", error);
+  } finally {
+    wallpaperRecoveryInProgress = false;
+  }
+
+  if (!wallpaperFallbackNoticeShown) {
+    wallpaperFallbackNoticeShown = true;
+    showAlertDialog(
+      t("wallpapers.errors.loadFailed"),
+      t("wallpapers.dialogs.loadFailedTitle"),
+    ).catch(() => {});
   }
 }
 
@@ -502,6 +699,7 @@ async function setWallpaperMode(id, mode) {
 
 async function removeWallpaper(id) {
   await deleteWallpaper(id);
+  failedWallpaperIds.delete(id);
 
   if (activeWallpaperId === id) {
     activeWallpaperId = null;
@@ -547,18 +745,12 @@ function bindWallpaperEvents() {
     updateVideoPlayback();
   });
 
-  // Bundled default missing or unreadable → keep the plain dark background.
   backgroundVideo.addEventListener("error", () => {
-    if (activeWallpaperId !== BUILTIN_WALLPAPER_ID) return;
+    handleBackgroundMediaError(backgroundVideo, "video");
+  });
 
-    console.error(
-      "Built-in wallpaper failed to load:",
-      backgroundVideo.error,
-    );
-
-    backgroundVideo.classList.remove("active");
-    backgroundVideo.removeAttribute("src");
-    backgroundVideo.load();
+  backgroundImage.addEventListener("error", () => {
+    handleBackgroundMediaError(backgroundImage, "image");
   });
 }
 

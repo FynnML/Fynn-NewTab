@@ -14,70 +14,54 @@ import { showAlertDialog } from "./JS/dialog.js";
 import { t } from "./JS/i18n/i18n.js";
 
 async function start() {
-  // LocalStorage-only features first (no waiting on IndexedDB).
-  // Each module gets its own try/catch so one throwing can't block the rest.
-  try {
-    initI18n();
-  } catch (error) {
-    console.error("i18n initialization failed:", error);
-  }
+  // Failed modules are collected and reported together so the user gets
+  // exactly one dialog, while each try/catch still keeps one broken module
+  // from blocking the others.
+  const initFailures = [];
 
-  try {
+  const runInit = async (name, init) => {
+    try {
+      await init();
+    } catch (error) {
+      console.error(`${name} initialization failed:`, error);
+      initFailures.push(name);
+    }
+  };
+
+  // LocalStorage-only features first (no waiting on IndexedDB).
+  await runInit("i18n", initI18n);
+  await runInit("Greeting", () =>
     initGreeting({
       el: document.getElementById("greeting"),
-    });
-  } catch (error) {
-    console.error("Greeting initialization failed:", error);
-  }
-
-  try {
-    initClock();
-  } catch (error) {
-    console.error("Clock initialization failed:", error);
-  }
-
-  try {
-    initSearch();
-  } catch (error) {
-    console.error("Search initialization failed:", error);
-  }
-
-  try {
-    initOverlayStrength();
-  } catch (error) {
-    console.error("Overlay strength initialization failed:", error);
-  }
-
-  try {
-    initDashboard();
-  } catch (error) {
-    console.error("Dashboard initialization failed:", error);
-  }
+    }),
+  );
+  await runInit("Clock", initClock);
+  await runInit("Search", initSearch);
+  await runInit("Overlay strength", initOverlayStrength);
+  await runInit("Dashboard", initDashboard);
 
   // IndexedDB-backed features.
   let dbReady = false;
-  try {
+  await runInit("IndexedDB", async () => {
     await openDatabase();
     dbReady = true;
-  } catch (error) {
-    console.error("IndexedDB initialization failed:", error);
-    showAlertDialog(t("db.errorMessage"), t("db.errorTitle"));
-  }
+  });
 
   if (dbReady) {
-    try {
-      await initWallpaper();
-    } catch (error) {
-      console.error("Wallpaper initialization failed:", error);
-    }
+    await runInit("Wallpaper", initWallpaper);
+    await runInit("Notes", initNotes);
+  }
 
-    try {
-      await initNotes();
-    } catch (error) {
-      console.error("Notes initialization failed:", error);
-    }
+  if (initFailures.length === 0) return;
+
+  // ONE user-facing dialog for all initialization failures. Technical
+  // details stay in the console above; the database keeps its specific
+  // message when it is the only failure.
+  if (initFailures.length === 1 && initFailures[0] === "IndexedDB") {
+    showAlertDialog(t("db.errorMessage"), t("db.errorTitle"));
+  } else {
+    showAlertDialog(t("app.initErrorMessage"), t("app.initErrorTitle"));
   }
 }
 
 start();
-
