@@ -319,7 +319,7 @@ async function handleWallpaperUpload(event) {
       return;
     }
 
-    const MAX_SIZE_MB = 50;
+    const MAX_SIZE_MB = 500;
     if (file.size > MAX_SIZE_MB * 1024 * 1024) {
       await showAlertDialog(
         t("wallpapers.errors.fileTooLarge", { maxSize: MAX_SIZE_MB }),

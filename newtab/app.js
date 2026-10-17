@@ -12,6 +12,11 @@ import { initNotes } from "./JS/notes.js";
 import { initI18n } from "./JS/i18n/i18n.js";
 import { showAlertDialog } from "./JS/dialog.js";
 import { t } from "./JS/i18n/i18n.js";
+import { initSettings } from './JS/settings.js';
+import { initThemePanel } from './JS/theme.js';
+
+
+initSettings();
 
 async function start() {
   // Failed modules are collected and reported together so the user gets
@@ -39,6 +44,9 @@ async function start() {
   await runInit("Search", initSearch);
   await runInit("Overlay strength", initOverlayStrength);
   await runInit("Dashboard", initDashboard);
+  await runInit("Theme panel", () =>
+    initThemePanel(document.getElementById("themePanel")),
+  );
 
   // IndexedDB-backed features.
   let dbReady = false;

@@ -52,8 +52,13 @@ export const en = {
     tabs: {
       wallpapers: "Wallpapers",
       widgets: "Widgets",
+      theme: "Theme",
       settings: "Settings",
     },
+  },
+
+  theme: {
+    title: "Theme",
   },
 
   wallpapers: {

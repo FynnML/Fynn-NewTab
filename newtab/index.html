@@ -216,6 +216,17 @@
           <button
             type="button"
             class="dashboard-tab"
+            data-tab="theme"
+            aria-controls="theme"
+            aria-selected="false"
+            data-i18n="dashboard.tabs.theme"
+          >
+            Theme
+          </button>
+
+          <button
+            type="button"
+            class="dashboard-tab"
             data-tab="settings"
             aria-controls="settings"
             aria-selected="false"
@@ -304,6 +315,12 @@
             <span class="slider"></span>
           </label>
         </div>
+      </section>
+
+      <!-- Theme -->
+      <section class="dashboard-content" id="theme">
+        <h2 data-i18n="theme.title">Theme</h2>
+        <div id="themePanel"></div>
       </section>
 
       <!-- Settings -->

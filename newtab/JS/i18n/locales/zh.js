@@ -51,8 +51,13 @@ export const zh = {
     tabs: {
       wallpapers: "壁纸",
       widgets: "小组件",
+      theme: "主题",
       settings: "设置",
     },
+  },
+
+  theme: {
+    title: "主题",
   },
 
   wallpapers: {

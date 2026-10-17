@@ -52,8 +52,13 @@ export const vi = {
     tabs: {
       wallpapers: "Hình nền",
       widgets: "Tiện ích",
+      theme: "Giao diện",
       settings: "Cài đặt",
     },
+  },
+
+  theme: {
+    title: "Giao diện",
   },
 
   wallpapers: {

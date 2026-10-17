@@ -38,6 +38,7 @@ const dashboardContents = document.querySelectorAll(".dashboard-content");
 const appRoot = document.querySelector(".app");
 
 function setDashboardOpen(isOpen) {
+  if (!dashboard || !dashboardToggle || !appRoot) return;
   const wasOpen = dashboard.classList.contains("open");
 
   dashboard.classList.toggle("open", isOpen);
@@ -67,6 +68,7 @@ function setDashboardOpen(isOpen) {
 }
 
 function selectTab(tab) {
+  if (!tab) return;
   const target = tab.dataset.tab;
 
   dashboardTabs.forEach((item) => {
@@ -81,7 +83,10 @@ function selectTab(tab) {
     content.classList.remove("active");
   });
 
-  document.querySelector(`#${target}`).classList.add("active");
+  const targetContent = document.querySelector(`#${target}`);
+  if (targetContent) {
+    targetContent.classList.add("active");
+  }
 
   const tabsContainer = document.querySelector(".dashboard-tabs");
   if (tabsContainer) {
@@ -91,6 +96,8 @@ function selectTab(tab) {
 }
 
 function initPanel() {
+  if (!dashboard || !dashboardToggle) return;
+
   dashboard.setAttribute("inert", "");
   dashboard.setAttribute("aria-hidden", "true");
 
@@ -109,6 +116,7 @@ function initPanel() {
   }
 
   onLanguageChange(() => {
+    if (!dashboard || !dashboardToggle) return;
     dashboardToggle.setAttribute(
       "aria-label",
       dashboard.classList.contains("open") ? t("dashboard.close") : t("dashboard.open")
@@ -117,6 +125,7 @@ function initPanel() {
 
   // Click outside the dashboard closes it
   document.addEventListener("click", (event) => {
+    if (!dashboard || !dashboardToggle) return;
     if (!dashboard.classList.contains("open")) return;
     if (document.querySelector(".custom-dialog-overlay.active")) return;
 
@@ -135,9 +144,9 @@ function initPanel() {
 
     if (closeEngineMenu({ restoreFocus: true })) return;
 
-    if (dashboard.classList.contains("open")) {
+    if (dashboard && dashboard.classList.contains("open")) {
       setDashboardOpen(false);
-      dashboardToggle.focus();
+      dashboardToggle?.focus();
     }
   });
 }
@@ -271,59 +280,65 @@ function initSettings() {
 
   // Custom engine URL only matters once "Custom" is picked.
   const syncCustomEngineVisibility = () => {
-    customEngineUrlItem.classList.toggle(
-      "hidden",
-      searchEngineSetting.value !== "custom",
-    );
+    if (customEngineUrlItem && searchEngineSetting) {
+      customEngineUrlItem.classList.toggle(
+        "hidden",
+        searchEngineSetting.value !== "custom",
+      );
+    }
   };
 
   // Reflect the saved values in the form controls.
   const syncControls = () => {
-    languageSetting.value = getLanguage();
-    searchEngineSetting.value = getSearchEngine();
-    timeFormatSetting.value = getTimeFormat();
-    searchFocusEffectSetting.checked = isSearchFocusEffectEnabled();
-    customEngineUrlSetting.value = getCustomEngineUrl();
+    if (languageSetting) languageSetting.value = getLanguage();
+    if (searchEngineSetting) searchEngineSetting.value = getSearchEngine();
+    if (timeFormatSetting) timeFormatSetting.value = getTimeFormat();
+    if (searchFocusEffectSetting) searchFocusEffectSetting.checked = isSearchFocusEffectEnabled();
+    if (customEngineUrlSetting) customEngineUrlSetting.value = getCustomEngineUrl();
 
-    const overlayStrength = getOverlayStrength();
-    overlayStrengthSetting.value = overlayStrength;
-    overlayStrengthValue.textContent = t("settings.appearance.overlayStrengthValue", { value: overlayStrength });
+    if (overlayStrengthSetting && overlayStrengthValue) {
+      const overlayStrength = getOverlayStrength();
+      overlayStrengthSetting.value = overlayStrength;
+      overlayStrengthValue.textContent = t("settings.appearance.overlayStrengthValue", { value: overlayStrength });
+    }
 
     syncCustomEngineVisibility();
   };
 
   syncControls();
 
-  languageSetting.addEventListener("change", () => {
+  languageSetting?.addEventListener("change", () => {
     setLanguage(languageSetting.value);
   });
 
-  searchEngineSetting.addEventListener("change", () => {
+  searchEngineSetting?.addEventListener("change", () => {
     setSearchEngine(searchEngineSetting.value);
     syncCustomEngineVisibility();
   });
 
-  timeFormatSetting.addEventListener("change", () => {
+  timeFormatSetting?.addEventListener("change", () => {
     setTimeFormat(timeFormatSetting.value);
   });
 
-  searchFocusEffectSetting.addEventListener("change", () => {
+  searchFocusEffectSetting?.addEventListener("change", () => {
     setSearchFocusEffect(searchFocusEffectSetting.checked);
   });
 
-  customEngineUrlSetting.addEventListener("change", () => {
+  customEngineUrlSetting?.addEventListener("change", () => {
     setCustomEngineUrl(customEngineUrlSetting.value);
     customEngineUrlSetting.value = getCustomEngineUrl();
   });
 
-  overlayStrengthSetting.addEventListener("input", () => {
+  overlayStrengthSetting?.addEventListener("input", () => {
     const value = Number(overlayStrengthSetting.value);
 
     setOverlayStrength(value);
-    overlayStrengthValue.textContent = t("settings.appearance.overlayStrengthValue", { value });
+    if (overlayStrengthValue) {
+      overlayStrengthValue.textContent = t("settings.appearance.overlayStrengthValue", { value });
+    }
   });
 
-  resetSettingsButton.addEventListener("click", async () => {
+  resetSettingsButton?.addEventListener("click", async () => {
     const confirmed = await showConfirmDialog(
       t("settings.reset.confirmation"),
       t("settings.reset.title"),
@@ -341,16 +356,16 @@ function initSettings() {
     syncControls();
   });
 
-  exportDataButton.addEventListener("click", () => {
+  exportDataButton?.addEventListener("click", () => {
     exportData();
   });
 
-  importDataButton.addEventListener("click", () => {
-    importDataInput.click();
+  importDataButton?.addEventListener("click", () => {
+    importDataInput?.click();
   });
 
-  importDataInput.addEventListener("change", (event) => {
-    const file = event.target.files[0];
+  importDataInput?.addEventListener("change", (event) => {
+    const file = event.target.files?.[0];
     if (!file) return;
     importData(file);
     // Reset value so the same file can be selected again
