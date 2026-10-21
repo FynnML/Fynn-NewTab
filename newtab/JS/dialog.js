@@ -1,7 +1,3 @@
-/**
- * dialog.js — Custom modal dialogs to replace native browser prompts.
- */
-
 import { t } from "./i18n/i18n.js";
 
 function setupA11y(overlay, cancelCallback) {
@@ -36,7 +32,6 @@ function setupA11y(overlay, cancelCallback) {
 
   document.addEventListener("keydown", handleKeyDown);
 
-  // Set timeout to ensure the visibility transition has applied so element is focusable
   setTimeout(() => {
     if (firstFocusableEl) {
       firstFocusableEl.focus();
@@ -51,7 +46,7 @@ function setupA11y(overlay, cancelCallback) {
   };
 }
 
-export function showConfirmDialog(message, title, confirmLabel) {
+export function showConfirmDialog(message, title, confirmLabel, { isDestructive = true } = {}) {
   return new Promise((resolve) => {
     let overlay = document.getElementById("customDialogOverlay");
     
@@ -65,7 +60,7 @@ export function showConfirmDialog(message, title, confirmLabel) {
           <p class="custom-dialog-message" id="customDialogMessage"></p>
           <div class="custom-dialog-actions">
             <button class="custom-dialog-button cancel" id="customDialogCancel"></button>
-            <button class="custom-dialog-button confirm" id="customDialogConfirm"></button>
+            <button class="custom-dialog-button" id="customDialogConfirm"></button>
           </div>
         </div>
       `;
@@ -81,6 +76,7 @@ export function showConfirmDialog(message, title, confirmLabel) {
     messageEl.textContent = message;
     cancelBtn.textContent = t("dialogs.cancel");
     confirmBtn.textContent = confirmLabel || t("dialogs.confirmAction");
+    confirmBtn.className = `custom-dialog-button ${isDestructive ? "danger" : "primary"}`;
     
     let a11yCleanup;
 
@@ -124,7 +120,7 @@ export function showAlertDialog(message, title) {
           <h3 class="custom-dialog-title" id="customAlertDialogTitle"></h3>
           <p class="custom-dialog-message" id="customAlertDialogMessage"></p>
           <div class="custom-dialog-actions">
-            <button class="custom-dialog-button confirm" id="customAlertDialogConfirm"></button>
+            <button class="custom-dialog-button primary" id="customAlertDialogConfirm"></button>
           </div>
         </div>
       `;

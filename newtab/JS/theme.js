@@ -1,197 +1,155 @@
-// settings.js — nguồn dữ liệu duy nhất cho mọi tùy chỉnh giao diện.
-// Lưu trong localStorage (key `fynn-settings`) và áp dụng bằng CSS variables / data-attribute,
-// nên đổi giá trị là thấy ngay, không cần render lại DOM.
+import { get, update, reset, subscribe, RANGES } from "./settings.js";
+import { tArray, applyI18n, onLanguageChange } from "./i18n/i18n.js";
 
-const STORAGE_KEY = 'fynn-settings';
-const VERSION = 1;
+const ACCENT_PRESETS = [
+  [210, 85, 60],
+  [265, 70, 65],
+  [330, 75, 65],
+  [0, 75, 60],
+  [28, 90, 58],
+  [145, 60, 50],
+  [175, 65, 45],
+];
 
-export const DEFAULTS = {
-  version: VERSION,
-  theme: { mode: 'dark', hue: 210, saturation: 85, lightness: 60 },
-  header: { align: 'center', clockSize: 100 }, // clockSize: %
-  wallpaper: { blur: 0, brightness: 100, grayscale: 0 },
-};
-
-// Whitelist: chỉ những path này mới được ghi. Giá trị sai sẽ bị từ chối / về mặc định.
-export const RANGES = {
-  'theme.hue': [0, 360],
-  'theme.saturation': [0, 100],
-  'theme.lightness': [25, 80],
-  'header.clockSize': [60, 160],
-  'wallpaper.blur': [0, 20],
-  'wallpaper.brightness': [40, 120],
-  'wallpaper.grayscale': [0, 100],
-};
-
-export const ENUMS = {
-  'theme.mode': ['dark', 'light', 'auto'],
-  'header.align': ['left', 'center', 'right'],
-};
-
-const mq = window.matchMedia('(prefers-color-scheme: dark)');
-const listeners = new Set();
-let state = load();
-let saveTimer = 0;
-let started = false;
-
-/* ---------- helpers ---------- */
-
-// Dùng function declaration (được hoist) vì `let state = load()` ở trên chạy trước dòng này.
-function isObject(v) {
-  return v !== null && typeof v === 'object' && !Array.isArray(v);
+function el(tag, className, attrs = {}) {
+  const node = document.createElement(tag);
+  if (className) node.className = className;
+  for (const [key, value] of Object.entries(attrs)) node.setAttribute(key, value);
+  return node;
 }
 
-function getIn(obj, path) {
-  return path.split('.').reduce((o, k) => o?.[k], obj);
-}
-
-function setIn(obj, path, value) {
-  const keys = path.split('.');
-  const last = keys.pop();
-  const target = keys.reduce((o, k) => o[k], obj);
-  target[last] = value;
-}
-
-function sanitize(path, value) {
-  if (path in RANGES) {
-    const n = Number(value);
-    if (!Number.isFinite(n)) return undefined;
-    const [min, max] = RANGES[path];
-    return Math.round(Math.min(max, Math.max(min, n)));
-  }
-  if (path in ENUMS) return ENUMS[path].includes(value) ? value : undefined;
-  return undefined; // path không có trong whitelist
-}
-
-// Gộp dữ liệu đã lưu với mặc định: khóa mới thêm ở bản sau sẽ tự có giá trị mặc định.
-function merge(base, saved) {
-  const out = {};
-  for (const key of Object.keys(base)) {
-    if (isObject(base[key])) {
-      out[key] = merge(base[key], isObject(saved?.[key]) ? saved[key] : {});
-    } else {
-      out[key] = typeof saved?.[key] === typeof base[key] ? saved[key] : base[key];
-    }
-  }
-  return out;
-}
-
-function normalize(s) {
-  for (const path of [...Object.keys(RANGES), ...Object.keys(ENUMS)]) {
-    const clean = sanitize(path, getIn(s, path));
-    setIn(s, path, clean === undefined ? getIn(DEFAULTS, path) : clean);
-  }
-  s.version = VERSION;
-  return s;
-}
-
-function load() {
-  let saved = {};
-  try {
-    saved = JSON.parse(localStorage.getItem(STORAGE_KEY)) ?? {};
-  } catch {
-    saved = {};
-  }
-  return normalize(merge(DEFAULTS, saved));
-}
-
-function save() {
-  clearTimeout(saveTimer);
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-  } catch {
-    /* hết quota hoặc bị chặn: bỏ qua, giao diện vẫn hoạt động trong phiên này */
-  }
-}
-
-function scheduleSave() {
-  clearTimeout(saveTimer);
-  saveTimer = setTimeout(save, 150);
-}
-
-function notify() {
-  listeners.forEach((fn) => fn(state));
-}
-
-/* ---------- áp dụng lên giao diện ---------- */
-
-function apply() {
-  const root = document.documentElement;
-  const { theme, header, wallpaper } = state;
-
-  const resolved = theme.mode === 'auto' ? (mq.matches ? 'dark' : 'light') : theme.mode;
-  root.dataset.theme = resolved;
-
-  root.style.setProperty('--accent-h', String(theme.hue));
-  root.style.setProperty('--accent-s', `${theme.saturation}%`);
-  root.style.setProperty('--accent-l', `${theme.lightness}%`);
-  root.style.setProperty('--accent', `hsl(${theme.hue} ${theme.saturation}% ${theme.lightness}%)`);
-
-  root.dataset.headerAlign = header.align;
-  root.style.setProperty('--clock-scale', String(header.clockSize / 100));
-
-  root.style.setProperty(
-    '--wallpaper-filter',
-    `blur(${wallpaper.blur}px) brightness(${wallpaper.brightness}%) grayscale(${wallpaper.grayscale}%)`
-  );
-  // Phóng nhẹ khi blur để viền ảnh không bị lộ nền trong suốt.
-  root.style.setProperty('--wallpaper-scale', wallpaper.blur > 0 ? '1.06' : '1');
-}
-
-/* ---------- API công khai ---------- */
-
-export const get = (path) => getIn(state, path);
-
-// Ghi nhiều giá trị cùng lúc: { 'theme.hue': 18, 'theme.saturation': 90 }
-export function update(patch) {
-  let changed = false;
-  for (const [path, raw] of Object.entries(patch)) {
-    const value = sanitize(path, raw);
-    if (value === undefined || getIn(state, path) === value) continue;
-    setIn(state, path, value);
-    changed = true;
-  }
-  if (!changed) return;
-  apply();
-  scheduleSave();
-  notify();
-}
-
-export const set = (path, value) => update({ [path]: value });
-
-export function reset() {
-  state = normalize(merge(DEFAULTS, {}));
-  apply();
-  save();
-  notify();
-}
-
-export function subscribe(fn) {
-  listeners.add(fn);
-  return () => listeners.delete(fn);
-}
-
-// Gọi sớm nhất có thể trong app.js để tránh nháy giao diện lúc mở tab.
-export function initSettings() {
-  if (started) return;
-  started = true;
-  apply();
-
-  mq.addEventListener('change', () => {
-    if (state.theme.mode === 'auto') apply();
-  });
-
-  // Đồng bộ giữa các tab New Tab đang mở.
-  window.addEventListener('storage', (e) => {
-    if (e.key !== STORAGE_KEY) return;
-    state = load();
-    apply();
-    notify();
-  });
-
-  window.addEventListener('pagehide', save);
+function section(titleKey) {
+  const wrap = el("div", "tp-section");
+  const title = el("h3", "tp-title", { "data-i18n": titleKey });
+  wrap.appendChild(title);
+  return wrap;
 }
 
 export function initThemePanel(container) {
   if (!container) return;
+  container.textContent = "";
+
+  const refreshers = [];
+
+  function addSlider(parent, { path, labelKey, unit = "", extraClass = "" }) {
+    const [min, max] = RANGES[path];
+    const row = el("div", "tp-row");
+    const label = el("label", "tp-label", { "data-i18n": labelKey });
+    const input = el("input", `tp-range ${extraClass}`.trim(), {
+      type: "range",
+      min,
+      max,
+      step: 1,
+    });
+    const value = el("span", "tp-value");
+    const id = `tp-${path.replace(".", "-")}`;
+    input.id = id;
+    label.setAttribute("for", id);
+
+    input.addEventListener("input", () => update({ [path]: input.value }));
+
+    row.append(label, input, value);
+    parent.appendChild(row);
+
+    refreshers.push(() => {
+      const current = get(path);
+      input.value = current;
+      value.textContent = `${current}${unit}`;
+    });
+  }
+
+  function addSegmented(parent, { path, labelKey, options }) {
+    const row = el("div", "tp-row tp-row--stack");
+    const label = el("span", "tp-label", { "data-i18n": labelKey });
+    const group = el("div", "tp-segmented", { role: "radiogroup" });
+    const buttons = options.map(({ value, key }) => {
+      const button = el("button", "tp-seg", {
+        type: "button",
+        role: "radio",
+        "data-i18n": key,
+      });
+      button.addEventListener("click", () => update({ [path]: value }));
+      group.appendChild(button);
+      return { button, value };
+    });
+    row.append(label, group);
+    parent.appendChild(row);
+
+    refreshers.push(() => {
+      const current = get(path);
+      buttons.forEach(({ button, value }) => {
+        button.setAttribute("aria-checked", String(value === current));
+      });
+    });
+  }
+
+  const modeSection = section("theme.mode.title");
+  addSegmented(modeSection, {
+    path: "theme.mode",
+    labelKey: "theme.mode.title",
+    options: [
+      { value: "dark", key: "theme.mode.dark" },
+      { value: "light", key: "theme.mode.light" },
+      { value: "auto", key: "theme.mode.auto" },
+    ],
+  });
+  modeSection.querySelector(".tp-row .tp-label").remove();
+
+  const accentSection = section("theme.accent.title");
+
+  const presets = el("div", "tp-presets", {
+    role: "group",
+    "data-i18n-attr": "aria-label:theme.accent.presets",
+  });
+  const presetButtons = ACCENT_PRESETS.map(([h, s, l], index) => {
+    const button = el("button", "tp-preset", { type: "button" });
+    button.style.setProperty("--swatch", `hsl(${h} ${s}% ${l}%)`);
+    button.addEventListener("click", () =>
+      update({ "theme.hue": h, "theme.saturation": s, "theme.lightness": l }),
+    );
+    presets.appendChild(button);
+    return { button, h, s, l, index };
+  });
+  accentSection.appendChild(presets);
+
+  addSlider(accentSection, {
+    path: "theme.hue",
+    labelKey: "theme.accent.hue",
+    unit: "°",
+    extraClass: "tp-range--hue",
+  });
+  addSlider(accentSection, { path: "theme.saturation", labelKey: "theme.accent.saturation", unit: "%" });
+  addSlider(accentSection, { path: "theme.lightness", labelKey: "theme.accent.lightness", unit: "%" });
+
+  refreshers.push(() => {
+    const names = tArray("theme.accent.names");
+    presetButtons.forEach(({ button, h, s, l, index }) => {
+      const active =
+        get("theme.hue") === h && get("theme.saturation") === s && get("theme.lightness") === l;
+      button.setAttribute("aria-pressed", String(active));
+      button.setAttribute("aria-label", names[index] ?? `#${index + 1}`);
+      button.title = names[index] ?? "";
+    });
+  });
+
+  const headerSection = section("theme.header.title");
+  addSlider(headerSection, { path: "header.clockSize", labelKey: "theme.header.clockSize", unit: "%" });
+
+  const wallpaperSection = section("theme.wallpaper.title");
+  addSlider(wallpaperSection, { path: "wallpaper.blur", labelKey: "theme.wallpaper.blur", unit: "px" });
+  addSlider(wallpaperSection, { path: "wallpaper.brightness", labelKey: "theme.wallpaper.brightness", unit: "%" });
+  addSlider(wallpaperSection, { path: "wallpaper.grayscale", labelKey: "theme.wallpaper.grayscale", unit: "%" });
+
+  const resetButton = el("button", "tp-reset", { type: "button", "data-i18n": "theme.reset" });
+  resetButton.addEventListener("click", () => reset());
+
+  container.append(modeSection, accentSection, headerSection, wallpaperSection, resetButton);
+
+  const sync = () => refreshers.forEach((fn) => fn());
+
+  applyI18n(container);
+  sync();
+
+  subscribe(sync);
+  onLanguageChange(sync);
 }

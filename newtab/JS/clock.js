@@ -1,8 +1,3 @@
-/**
- * clock.js — Clock + Date widget.
- * Owns the 12h/24h setting (saved in LocalStorage).
- */
-
 import { getLanguage, onLanguageChange } from "./i18n/i18n.js";
 
 const TIME_FORMAT_KEY = "fynn-time-format";
@@ -42,8 +37,6 @@ function updateClock() {
   dateElement.textContent = date;
 }
 
-// --- Settings API (used by the dashboard's Settings tab) ---
-
 export function getTimeFormat() {
   return timeFormat;
 }
@@ -62,8 +55,6 @@ export function resetTimeFormat() {
   timeFormat = DEFAULT_TIME_FORMAT;
   updateClock();
 }
-
-// --- Init ---
 
 export function initClock() {
   updateClock();

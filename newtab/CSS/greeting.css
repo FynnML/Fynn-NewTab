@@ -1,5 +1,3 @@
-/* greeting.css — chỉnh font/màu cho hợp với giao diện hiện có của Fynn New Tab */
-
 .greeting {
   position: absolute;
   left: 4.5%;
@@ -22,14 +20,15 @@
 #greetingText,
 .greeting h3 {
   margin: 0;
+  padding: 4px 0;
 
-  font-family: "Great Vibes", cursive;
+  font-family: "Great Vibes", "Dancing Script", cursive, "Inter", sans-serif;
   font-size: clamp(30px, 3.2vw, 50px);
   font-weight: 400;
   font-style: normal;
 
   letter-spacing: 0.2px;
-  line-height: 1.15;
+  line-height: 1.25;
 
   color: #f4f4f1;
 
@@ -38,21 +37,20 @@
     0 8px 30px rgba(0, 0, 0, 0.6);
 }
 
-
-/* =========================
-   Greeting transition
-   ========================= */
-
-#greeting.is-changing,
-.greeting.is-changing {
-  opacity: 0;
-  transform: translateY(5px);
+#greetingText {
+  min-height: 1.25em;
 }
 
-
-/* =========================
-   Greeting icon
-   ========================= */
+#greetingText.is-typing::after {
+  content: "";
+  display: inline-block;
+  width: 2px;
+  height: 0.8em;
+  margin-left: 4px;
+  vertical-align: -0.05em;
+  background: currentColor;
+  animation: greeting-caret 0.9s steps(1) infinite;
+}
 
 .greeting__icon {
   display: inline-block;
@@ -63,11 +61,6 @@
 
   transform: translateY(-0.04em);
 }
-
-
-/* =========================
-   Period accent
-   ========================= */
 
 #greeting[data-period="morning"] {
   --greeting-accent: #ffd59a;
@@ -90,31 +83,20 @@
   --greeting-accent: #9fb8ff;
 }
 
-
-/* =========================
-   Reduced motion
-   ========================= */
-
 @media (prefers-reduced-motion: reduce) {
   .greeting {
     transition: none;
   }
 
-  #greeting.is-changing,
-  .greeting.is-changing {
-    transform: none;
+  #greetingText.is-typing::after {
+    animation: none;
   }
 }
-
-
-/* =========================
-   Smaller screens
-   ========================= */
-
 @media (max-width: 700px) {
   .greeting {
     left: 28px;
     bottom: 24px;
+    max-width: calc(100% - 90px);
   }
 
   #greetingText,

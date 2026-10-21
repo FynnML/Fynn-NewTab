@@ -1,12 +1,4 @@
-/* ==========================================================================
-   Components — Brand logo, Search bar
-   ========================================================================== */
 
-/* ==========================================================================
-   Brand — Fynn logo (top-left)
-   ========================================================================== */
-
-/* Block: fixed anchor in the top-left corner */
 .brand-logo {
   position: fixed;
   top: 24px;
@@ -15,11 +7,10 @@
 
   display: inline-flex;
 
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   outline: none;
 }
 
-/* Element: the image only handles size and hover feedback */
 .brand-logo__image {
   display: block;
   height: 34px;
@@ -44,10 +35,6 @@
   outline: 2px solid rgba(255, 255, 255, 0.7);
   outline-offset: 6px;
 }
-
-/* ==========================================================================
-   Search — premium glass bar
-   ========================================================================== */
 
 .search-container {
   position: relative;
@@ -96,8 +83,6 @@
   transform: scale(1.01);
 }
 
-/* Engine button */
-
 .engine-button {
   width: 36px;
   height: 36px;
@@ -128,8 +113,6 @@
   object-fit: contain;
 }
 
-/* Search input */
-
 #searchInput {
   flex: 1;
   min-width: 0;
@@ -152,11 +135,10 @@
 }
 
 #searchInput::placeholder {
-  color: rgba(240, 240, 240, 0.55);
+  color: var(--text-secondary);
+  opacity: 0.85;
   font-weight: 400;
 }
-
-/* Search button — styled for inline SVG icon */
 
 .search-button {
   width: 36px;
@@ -188,8 +170,6 @@
   width: 16px;
   height: 16px;
 }
-
-/* Engine menu */
 
 .engine-menu {
   position: absolute;
@@ -283,23 +263,23 @@
   font-weight: 500;
 }
 
-/* ==========================================================================
-   Autocomplete Suggestions & Quick Links
-   ========================================================================== */
-
 .search-suggestions {
   position: absolute;
   top: calc(100% + 8px);
   left: 0;
   width: 100%;
   
-  border: 1px solid var(--glass-border);
-  border-radius: var(--radius-md);
+  padding: 6px;
   
-  background: var(--glass-bg-panel);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  
+  background: rgba(14, 14, 16, 0.82);
   backdrop-filter: var(--blur-lg);
   -webkit-backdrop-filter: var(--blur-lg);
-  box-shadow: inset 1px 1px 0 rgba(255, 255, 255, 0.1), var(--shadow-strong);
+  box-shadow: inset 1px 1px 0 rgba(255, 255, 255, 0.1), 0 20px 48px -8px rgba(0, 0, 0, 0.55);
+  
+  text-align: left;
   
   opacity: 0;
   visibility: hidden;
@@ -316,21 +296,53 @@
   transform: translateY(0);
 }
 
+.suggestions-header {
+  display: flex;
+  align-items: center;
+  padding: 6px 10px 4px;
+  text-align: left;
+}
+
+.suggestions-header span {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.suggestions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-height: min(320px, 45vh);
+  overflow-y: auto;
+}
+
 .suggestion-item {
   display: flex;
   align-items: center;
-  padding: 10px 16px;
+  gap: 10px;
+  height: 38px;
+  padding: 0 10px;
+  border-radius: var(--radius-sm);
   color: var(--text-secondary);
-  font-size: 14px;
+  font-size: 13px;
+  text-align: left;
   cursor: pointer;
   transition: background var(--transition-fast), color var(--transition-fast);
 }
 
-.suggestion-item svg {
-  width: 14px;
-  height: 14px;
-  margin-right: 12px;
-  opacity: 0.5;
+.suggestion-icon {
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  opacity: 0.65;
+  flex-shrink: 0;
+  transition: color var(--transition-fast), opacity var(--transition-fast);
 }
 
 .suggestion-item:hover,
@@ -339,17 +351,26 @@
   color: var(--text-primary);
 }
 
+.suggestion-item:hover .suggestion-icon,
+.suggestion-item.selected .suggestion-icon {
+  color: var(--accent);
+  opacity: 1;
+}
+
 .suggestion-label {
   flex: 1;
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  text-align: left;
+  font-weight: 500;
+  letter-spacing: 0.1px;
 }
 
 .suggestion-remove {
-  width: 22px;
-  height: 22px;
+  width: 24px;
+  height: 24px;
   flex-shrink: 0;
 
   display: flex;
@@ -357,13 +378,11 @@
   justify-content: center;
 
   border: none;
-  border-radius: 50%;
+  border-radius: var(--radius-sm);
 
   background: transparent;
   color: var(--text-muted);
 
-  font-size: 16px;
-  line-height: 1;
   cursor: pointer;
 
   opacity: 0;
@@ -371,30 +390,62 @@
 }
 
 .suggestion-item:hover .suggestion-remove {
-  opacity: 1;
+  opacity: 0.7;
+}
+
+.suggestion-remove:focus-visible {
+  opacity: 1 !important;
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
 }
 
 .suggestion-remove:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: var(--text-primary);
+  opacity: 1 !important;
+  background: var(--color-danger-subtle);
+  color: var(--color-danger);
 }
 
+.suggestions-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 6px 10px 4px;
+  margin-top: 4px;
+  border-top: 1px solid var(--glass-border-soft);
+  font-size: 11px;
+  color: var(--text-dim);
+  text-align: right;
+  user-select: none;
+}
 
-/* ==========================================================================
-   Responsive — components
-   ========================================================================== */
+.suggestions-footer .shortcut-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.suggestions-footer kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  font-family: inherit;
+  font-size: 10px;
+  font-weight: 600;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-secondary);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
 
 @media (max-width: 768px) {
   .search-container {
     width: min(420px, 90vw);
   }
 }
-
-
-
-/* ==========================================================================
-   Custom Dialog Modal
-   ========================================================================== */
 
 .custom-dialog-overlay {
   position: fixed;
@@ -458,30 +509,51 @@
 }
 
 .custom-dialog-button {
-  padding: 8px 16px;
+  height: 34px;
+  padding: 0 16px;
   border: none;
   border-radius: var(--radius-sm);
+  font-family: inherit;
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
-  transition: background 0.2s;
+  transition:
+    background var(--transition-fast),
+    color var(--transition-fast),
+    border-color var(--transition-fast),
+    opacity var(--transition-fast);
 }
 
 .custom-dialog-button.cancel {
-  background: transparent;
-  color: var(--text-primary);
-  border: 1px solid var(--glass-border);
+  background: var(--surface-glass);
+  color: var(--text-secondary);
+  border: 1px solid var(--glass-border-soft);
 }
 
 .custom-dialog-button.cancel:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--surface-interactive);
+  border-color: var(--glass-border);
+  color: var(--text-primary);
 }
 
+.custom-dialog-button.primary {
+  background: var(--accent);
+  color: var(--accent-contrast);
+  font-weight: 600;
+}
+
+.custom-dialog-button.primary:hover {
+  opacity: 0.88;
+}
+
+.custom-dialog-button.danger,
 .custom-dialog-button.confirm {
-  background: rgba(255, 60, 60, 0.8);
-  color: #fff;
+  background: var(--color-danger);
+  color: #ffffff;
+  font-weight: 500;
 }
 
+.custom-dialog-button.danger:hover,
 .custom-dialog-button.confirm:hover {
-  background: rgba(255, 60, 60, 1);
+  background: var(--color-danger-hover);
 }

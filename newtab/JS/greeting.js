@@ -1,15 +1,5 @@
-/**
- * greeting.js — Lời chào ngẫu nhiên theo buổi cho Fynn New Tab
- * Vanilla JS ES module, không cần thư viện, tương thích Manifest V3.
- *
- * Cách dùng:
- *   import { initGreeting } from './greeting.js';
- *   initGreeting({ el: document.getElementById('greeting') });
- */
-
 import { tArray, onLanguageChange } from './i18n/i18n.js';
 
-// Mốc giờ bắt đầu của từng buổi (theo giờ 24h)
 export const PERIODS = [
   { id: 'night',     from: 0,  label: 'Khuya'  },
   { id: 'morning',   from: 5,  label: 'Sáng'   },
@@ -19,8 +9,6 @@ export const PERIODS = [
   { id: 'late',      from: 22, label: 'Khuya'  },
 ];
 
-
-/** Trả về buổi tương ứng với thời điểm `date`. */
 export function getPeriod(date = new Date()) {
   const h = date.getHours();
   let current = PERIODS[0];
@@ -31,10 +19,6 @@ export function getPeriod(date = new Date()) {
 
   return current;
 }
-
-// ---------------------------------------------------------------------------
-// Chọn câu ngẫu nhiên (tránh lặp lại đúng câu của lần mở tab trước)
-// ---------------------------------------------------------------------------
 
 const LAST_KEY = 'fynn:greeting:last';
 
@@ -51,12 +35,9 @@ function saveLast(periodId, text) {
     const all = readLast();
     all[periodId] = text;
     localStorage.setItem(LAST_KEY, JSON.stringify(all));
-  } catch {
-    /* localStorage không dùng được thì bỏ qua */
-  }
+  } catch {}
 }
 
-/** Chọn ngẫu nhiên một câu chào trong buổi, khác câu lần trước. */
 function getRandomGreeting(periodId) {
   let list = tArray(`greeting.${periodId}`);
   if (!list || list.length === 0) list = ['Hello'];
@@ -68,31 +49,22 @@ function getRandomGreeting(periodId) {
   return pick;
 }
 
-/**
- * Tạo câu chào hoàn chỉnh.
- * `customText` cho phép truyền sẵn một câu (để giữ nguyên câu đã chọn).
- */
 export function getGreetingText(date = new Date(), customText = null) {
   const period = getPeriod(date);
   return customText || getRandomGreeting(period.id);
 }
 
-/** Số ms còn lại đến mốc đổi buổi kế tiếp. */
 function msUntilNextPeriod(now = new Date()) {
   const h = now.getHours();
   const next = PERIODS.find((p) => p.from > h);
 
   const target = new Date(now);
-  target.setHours(next ? next.from : 24, 0, 0, 0); // 24 => 00:00 hôm sau
+  target.setHours(next ? next.from : 24, 0, 0, 0);
 
   return target - now + 1000;
 }
 
 /**
- * Gắn lời chào vào một phần tử và tự cập nhật khi đổi buổi.
- * `el` là section bọc ngoài (dùng để toggle class/data-period cho CSS);
- * chữ thật sự được ghi vào `#greetingText` bên trong nó.
- *
  * @param {Object}      opts
  * @param {HTMLElement} opts.el
  *
@@ -110,15 +82,53 @@ export function initGreeting({ el } = {}) {
   }
 
   let timer = null;
-  let swapTimer = null;
+  let typeTimer = null;
   let lastId = null;
   let currentGreeting = null;
+  let shownText = null;
 
-  /**
-   * Câu mới chỉ được random khi:
-   *  - New Tab được mở lần đầu
-   *  - Buổi trong ngày thay đổi
-   */
+  const prefersReducedMotion = () =>
+    window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+
+  const splitChars = (text) =>
+    typeof Intl !== 'undefined' && typeof Intl.Segmenter === 'function'
+      ? Array.from(new Intl.Segmenter(undefined, { granularity: 'grapheme' }).segment(text), (s) => s.segment)
+      : Array.from(text);
+
+  const typeText = (text, startDelay = 0) => {
+    clearTimeout(typeTimer);
+
+    if (prefersReducedMotion()) {
+      textEl.textContent = text;
+      textEl.classList.remove('is-typing');
+      textEl.removeAttribute('aria-label');
+      return;
+    }
+
+    const chars = splitChars(text);
+    const step = Math.min(70, Math.max(30, 1800 / chars.length));
+    let i = 0;
+
+    textEl.textContent = '';
+    textEl.classList.add('is-typing');
+    textEl.setAttribute('aria-label', text);
+
+    const tick = () => {
+      i += 1;
+      textEl.textContent = chars.slice(0, i).join('');
+      if (i < chars.length) {
+        typeTimer = setTimeout(tick, step);
+      } else {
+        typeTimer = setTimeout(() => {
+          textEl.classList.remove('is-typing');
+          textEl.removeAttribute('aria-label');
+        }, 1400);
+      }
+    };
+
+    typeTimer = setTimeout(tick, startDelay);
+  };
+
   const render = (animate = true, forceNew = false) => {
     const now = new Date();
     const period = getPeriod(now);
@@ -129,20 +139,11 @@ export function initGreeting({ el } = {}) {
 
     const text = currentGreeting;
 
-    const apply = () => {
-      textEl.textContent = text;
-      el.dataset.period = period.id;
-      el.classList.remove('is-changing');
-    };
+    el.dataset.period = period.id;
 
-    clearTimeout(swapTimer);
-
-    // Chỉ chạy hiệu ứng khi đổi buổi.
-    if (animate && lastId && lastId !== period.id) {
-      el.classList.add('is-changing');
-      swapTimer = setTimeout(apply, 250);
-    } else {
-      apply();
+    if (text !== shownText) {
+      typeText(text, animate ? 0 : 350);
+      shownText = text;
     }
 
     lastId = period.id;
@@ -157,8 +158,6 @@ export function initGreeting({ el } = {}) {
     }, msUntilNextPeriod());
   };
 
-  // Tab bị ngủ / máy sleep thì timer có thể trễ.
-  // Khi quay lại tab sẽ cập nhật lại.
   const onVisible = () => {
     if (document.visibilityState === 'visible') {
       render();
@@ -175,14 +174,13 @@ export function initGreeting({ el } = {}) {
     el.dataset.hasI18nListener = 'true';
   }
 
-  // Mở New Tab → chọn random một câu.
   render(false);
   schedule();
 
   return {
     destroy() {
       clearTimeout(timer);
-      clearTimeout(swapTimer);
+      clearTimeout(typeTimer);
       document.removeEventListener('visibilitychange', onVisible);
     },
   };

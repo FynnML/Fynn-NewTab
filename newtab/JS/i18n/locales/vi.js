@@ -36,6 +36,12 @@ export const vi = {
     chooseEngine: "Chọn công cụ tìm kiếm",
     searchWith: "Tìm kiếm bằng {engine}",
     removeRecentSearch: 'Xóa "{query}"',
+    recentTitle: "Tìm kiếm gần đây",
+    hints: {
+      navigate: "di chuyển",
+      select: "tìm kiếm",
+      close: "đóng",
+    },
 
     engines: {
       brave: "Brave",
@@ -59,11 +65,45 @@ export const vi = {
 
   theme: {
     title: "Giao diện",
+    mode: {
+      title: "Chế độ",
+      dark: "Tối",
+      light: "Sáng",
+      auto: "Tự động (theo hệ thống)",
+    },
+    accent: {
+      title: "Màu nhấn",
+      presets: "Màu có sẵn",
+      hue: "Sắc độ",
+      saturation: "Độ bão hòa",
+      lightness: "Độ sáng",
+      names: [
+      "Xanh dương",
+      "Tím",
+      "Hồng",
+      "Đỏ",
+      "Cam",
+      "Xanh lá",
+      "Xanh ngọc",
+      ],
+    },
+    header: {
+      title: "Phần đầu trang",
+      clockSize: "Cỡ đồng hồ",
+    },
+    wallpaper: {
+      title: "Hiệu ứng hình nền",
+      blur: "Làm mờ",
+      brightness: "Độ sáng",
+      grayscale: "Thang xám",
+    },
+    reset: "Đặt lại giao diện",
   },
 
   wallpapers: {
     title: "Hình nền",
     upload: "Tải lên hình nền",
+    active: "Đang dùng",
 
     delete: "Xóa",
     mode: "Chế độ hình nền",
@@ -268,7 +308,7 @@ greeting: {
       "Sẵn sàng cho ngày mới chưa?",
       "Chúc hôm nay mọi thứ đều ổn nha.",
       "Hôm nay bạn sẽ tạo ra điều gì hay ho nào?",
-      "Mặt trời lên rồi — tỏa sáng thôi nào!",
+      "Mặt trời lên rồi, tỏa sáng thôi nào!",
       "Bắt đầu ngày mới suôn sẻ đúng giờ luôn!",
       "Uống cà phê trước, rồi chinh phục thế giới sau.",
       "Ngày mới, nhiều cơ hội mới lắm đây!",
@@ -293,7 +333,7 @@ greeting: {
       "Tập trung ghê nhỉ? Cứ giữ đà này tiếp nha!",
       "Ăn trưa vui vẻ thì mới ngon miệng đúng không.",
       "Rời màn hình một chút đi bạn.",
-      "Động lực quan trọng lắm — bạn đang làm rất tốt đó!",
+      "Động lực quan trọng lắm, bạn đang làm rất tốt đó!",
       "Buồn ngủ giữa trưa không có cửa thắng bạn đâu.",
       "Nửa ngày qua rồi, nửa còn lại còn hay hơn nữa!",
     ],
@@ -305,14 +345,14 @@ greeting: {
       "Vẫn khỏe mạnh chiến đấu hả?",
       "Nghỉ ngơi chút cũng không sao đâu.",
       "Sắp đến giờ vàng rồi đó bạn!",
-      "Đến được đây rồi — quá xịn sò!",
+      "Đến được đây rồi - quá đỉnh!",
       "Cố chút nữa thôi rồi được nghỉ liền!",
       "Chiều là lúc làm cho ngày trọn vẹn đó.",
       "Đừng để cơn buồn ngủ làm chậm bước bạn nha.",
       "Chúc bạn buổi chiều ấm áp và thật vui!",
-      "Sắp xong rồi đó — giữ tốc độ nha!",
+      "Sắp xong rồi đó, giữ tốc độ nha!",
       "Vươn vai một chút thấy khỏe ngay đó.",
-      "Năng lượng mới sắp đến rồi nha ⚡",
+      "Năng lượng mới sắp đến rồi nha",
       "Phần thưởng cho buổi tối đang chờ bạn đó.",
     ],
 
@@ -327,7 +367,7 @@ greeting: {
       "Hoàng hôn nói bạn đã làm rất tốt.",
       "Chậm lại, tận hưởng khoảnh khắc bình yên này.",
       "Đến giờ ăn tối rồi? Thưởng thức bữa ăn nha!",
-      "Ngày sống ý nghĩa lắm — xứng đáng được khen đó.",
+      "Ngày sống ý nghĩa lắm, xứng đáng được khen đó.",
       "Chúc đêm mang lại bình yên cho bạn.",
       "Phần tuyệt vời nhất của ngày mới bắt đầu thôi!",
       "Pha đồ uống ấm rồi thư giãn thôi nào.",
@@ -336,7 +376,7 @@ greeting: {
 
     late: [
       "Muộn rồi đó bạn.",
-      "Đến lúc kết thúc ngày chưa ạ?",
+      "Đến lúc kết thúc ngày chưa?",
       "Đừng thức quá khuya nha.",
       "Ngủ ngon tối nay nha.",
       "Ngủ ngon, mơ đẹp!",
@@ -347,9 +387,9 @@ greeting: {
       "Giường ấm đang chờ bạn đó.",
       "Chuẩn bị nghỉ ngơi à? Lựa chọn quá đúng!",
       "Giữ sức cho ngày mai nữa đó.",
-      "Chính thức kết thúc ngày rồi — bạn xứng đáng được nghỉ ngơi.",
+      "Chính thức kết thúc ngày rồi, bạn xứng đáng được nghỉ ngơi.",
       "Ngủ ngon, mơ thật đẹp nha.",
-      "Đêm vẫn thuộc về bạn — nhưng không còn lâu lắm đâu.",
+      "Đêm vẫn thuộc về bạn, nhưng không còn lâu lắm đâu.",
     ],
   },
 };

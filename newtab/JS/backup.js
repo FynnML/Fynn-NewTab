@@ -1,7 +1,3 @@
-/**
- * backup.js — Export / import notes and settings as a JSON file.
- */
-
 import { STORES, dbGetAll, dbPut } from "./db.js";
 import { showAlertDialog, showConfirmDialog } from "./dialog.js";
 import { t } from "./i18n/i18n.js";
@@ -38,7 +34,6 @@ function downloadJson(payload) {
   URL.revokeObjectURL(url);
 }
 
-/** Triggered directly by the Export button — no confirmation needed, it only reads data. */
 export async function exportData() {
   let notes;
   try {
@@ -86,7 +81,6 @@ async function restoreSettings(settings) {
         localStorage.setItem(key, value);
       }
     } catch {
-      /* quota or private-mode error — skip this key, keep going */
     }
   }
 }
@@ -98,7 +92,6 @@ async function restoreNotes(notes) {
   }
 }
 
-/** Triggered from the Import button's hidden file input's `change` event. */
 export async function importData(file) {
   let payload;
   try {
@@ -122,8 +115,6 @@ export async function importData(file) {
   if (!confirmed) return;
 
   try {
-    // Notes go through IndexedDB first: if the database isn't ready yet,
-    // fail before touching localStorage so nothing is left half-restored.
     await restoreNotes(payload.notes);
   } catch (error) {
     console.error("Backup import failed:", error);

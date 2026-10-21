@@ -88,26 +88,27 @@
               autocomplete="off"
             />
 
-            <button class="search-button" id="searchButton"></button>
+            <button type="button" class="search-button" id="searchButton" aria-label="Search" data-i18n-attr="aria-label:search.search"></button>
 
             <!-- Search engine menu -->
-            <div class="engine-menu" id="engineMenu">
-              <button class="engine-option" data-engine="brave">
-                <img src="../assets/icons/brave.png" alt="Brave" />
+            <div class="engine-menu" id="engineMenu" role="menu" aria-label="Search engines">
+              <button type="button" class="engine-option" data-engine="brave" role="menuitemradio" aria-checked="true">
+                <img src="../assets/icons/brave.png" alt="" />
                 <span data-i18n="search.engines.brave">Brave</span>
               </button>
 
-              <button class="engine-option" data-engine="google">
-                <img src="../assets/icons/google.png" alt="Google" />
+              <button type="button" class="engine-option" data-engine="google" role="menuitemradio" aria-checked="false">
+                <img src="../assets/icons/google.png" alt="" />
                 <span data-i18n="search.engines.google">Google</span>
               </button>
 
-              <button class="engine-option" data-engine="duckduckgo">
-                <img src="../assets/icons/duckduckgo.png" alt="DuckDuckGo" />
+              <button type="button" class="engine-option" data-engine="duckduckgo" role="menuitemradio" aria-checked="false">
+                <img src="../assets/icons/duckduckgo.png" alt="" />
                 <span data-i18n="search.engines.duckduckgo">DuckDuckGo</span>
               </button>
 
-              <button class="engine-option" data-engine="custom">
+              <button type="button" class="engine-option" data-engine="custom" role="menuitemradio" aria-checked="false">
+                <img class="engine-custom-icon" src="" alt="" />
                 <span data-i18n="search.engines.custom">Custom</span>
               </button>
             </div>
@@ -190,10 +191,12 @@
     <!-- Dashboard -->
     <aside class="dashboard" id="dashboard">
       <div class="dashboard-header">
-        <div class="dashboard-tabs">
+        <div class="dashboard-tabs" role="tablist" aria-label="Dashboard sections">
           <button
             type="button"
             class="dashboard-tab active"
+            id="tab-wallpapers"
+            role="tab"
             data-tab="wallpapers"
             aria-controls="wallpapers"
             aria-selected="true"
@@ -205,6 +208,8 @@
           <button
             type="button"
             class="dashboard-tab"
+            id="tab-widgets"
+            role="tab"
             data-tab="widgets"
             aria-controls="widgets"
             aria-selected="false"
@@ -216,6 +221,8 @@
           <button
             type="button"
             class="dashboard-tab"
+            id="tab-theme"
+            role="tab"
             data-tab="theme"
             aria-controls="theme"
             aria-selected="false"
@@ -227,6 +234,8 @@
           <button
             type="button"
             class="dashboard-tab"
+            id="tab-settings"
+            role="tab"
             data-tab="settings"
             aria-controls="settings"
             aria-selected="false"
@@ -238,7 +247,7 @@
       </div>
 
       <!-- Wallpapers -->
-      <section class="dashboard-content active" id="wallpapers">
+      <section class="dashboard-content active" id="wallpapers" role="tabpanel" aria-labelledby="tab-wallpapers">
         <h2 data-i18n="wallpapers.title">Wallpapers</h2>
         <label class="upload-wallpaper">
           <input
@@ -253,7 +262,7 @@
       </section>
 
       <!-- Widgets -->
-      <section class="dashboard-content" id="widgets">
+      <section class="dashboard-content" id="widgets" role="tabpanel" aria-labelledby="tab-widgets">
         <h2 data-i18n="widgets.title">Widgets</h2>
 
         <div class="widget-setting">
@@ -263,6 +272,8 @@
               type="checkbox"
               class="widget-toggle"
               data-widget="clock"
+              aria-label="Clock"
+              data-i18n-attr="aria-label:widgets.clock"
               checked
             />
             <span class="slider"></span>
@@ -276,6 +287,8 @@
               type="checkbox"
               class="widget-toggle"
               data-widget="date"
+              aria-label="Date"
+              data-i18n-attr="aria-label:widgets.date"
               checked
             />
             <span class="slider"></span>
@@ -289,6 +302,8 @@
               type="checkbox"
               class="widget-toggle"
               data-widget="greeting"
+              aria-label="Greeting"
+              data-i18n-attr="aria-label:widgets.greeting"
               checked
             />
             <span class="slider"></span>
@@ -298,7 +313,13 @@
         <div class="widget-setting">
           <span data-i18n="widgets.notes">Notes</span>
           <label class="switch">
-            <input type="checkbox" class="widget-toggle" data-widget="notes" />
+            <input
+              type="checkbox"
+              class="widget-toggle"
+              data-widget="notes"
+              aria-label="Notes"
+              data-i18n-attr="aria-label:widgets.notes"
+            />
             <span class="slider"></span>
           </label>
         </div>
@@ -310,6 +331,8 @@
               type="checkbox"
               class="widget-toggle"
               data-widget="search"
+              aria-label="Search"
+              data-i18n-attr="aria-label:widgets.search"
               checked
             />
             <span class="slider"></span>
@@ -318,13 +341,13 @@
       </section>
 
       <!-- Theme -->
-      <section class="dashboard-content" id="theme">
+      <section class="dashboard-content" id="theme" role="tabpanel" aria-labelledby="tab-theme">
         <h2 data-i18n="theme.title">Theme</h2>
         <div id="themePanel"></div>
       </section>
 
       <!-- Settings -->
-      <section class="dashboard-content" id="settings">
+      <section class="dashboard-content" id="settings" role="tabpanel" aria-labelledby="tab-settings">
         <h2 data-i18n="settings.title">Settings</h2>
 
         <div class="setting-group">
@@ -336,7 +359,7 @@
               <span data-i18n="settings.language.description">Choose your preferred language</span>
             </div>
 
-            <select id="languageSetting" class="setting-select">
+            <select id="languageSetting" class="setting-select" aria-label="Language" data-i18n-attr="aria-label:settings.language.title">
               <option value="en" data-i18n="settings.language.en">English</option>
               <option value="vi" data-i18n="settings.language.vi">Tiếng Việt</option>
               <option value="zh" data-i18n="settings.language.zh">中文</option>
@@ -353,7 +376,7 @@
               <span data-i18n="settings.search.defaultEngineDescription">Used when you open a new tab</span>
             </div>
 
-            <select id="searchEngineSetting" class="setting-select">
+            <select id="searchEngineSetting" class="setting-select" aria-label="Default search engine" data-i18n-attr="aria-label:settings.search.defaultEngine">
               <option value="brave" data-i18n="search.engines.brave">Brave</option>
               <option value="google" data-i18n="search.engines.google">Google</option>
               <option value="duckduckgo" data-i18n="search.engines.duckduckgo">DuckDuckGo</option>
@@ -375,7 +398,8 @@
               id="customEngineUrlSetting"
               class="setting-text-input"
               placeholder="https://example.com/search?q=%s"
-              data-i18n-attr="placeholder:settings.search.customEngineUrlPlaceholder"
+              data-i18n-attr="placeholder:settings.search.customEngineUrlPlaceholder,aria-label:settings.search.customEngineUrl"
+              aria-label="Custom engine URL"
               autocomplete="off"
               spellcheck="false"
             />
@@ -391,7 +415,7 @@
               <span data-i18n="settings.clock.timeFormatDescription">Choose how the clock is displayed</span>
             </div>
 
-            <select id="timeFormatSetting" class="setting-select">
+            <select id="timeFormatSetting" class="setting-select" aria-label="Time format" data-i18n-attr="aria-label:settings.clock.timeFormat">
               <option value="12h" data-i18n="settings.clock.twelveHour">12-hour</option>
               <option value="24h" data-i18n="settings.clock.twentyFourHour">24-hour</option>
             </select>
@@ -408,7 +432,7 @@
             </div>
 
             <label class="switch">
-              <input type="checkbox" id="searchFocusEffectSetting" />
+              <input type="checkbox" id="searchFocusEffectSetting" aria-label="Search focus effect" data-i18n-attr="aria-label:settings.appearance.searchFocusEffect" />
               <span class="slider"></span>
             </label>
           </div>
@@ -427,6 +451,8 @@
                 min="75"
                 max="180"
                 step="10"
+                aria-label="Overlay strength"
+                data-i18n-attr="aria-label:settings.appearance.overlayStrength"
               />
               <span class="setting-range-value" id="overlayStrengthValue"
                 >100%</span
@@ -473,6 +499,7 @@
               id="importDataInput"
               class="setting-file-input"
               accept="application/json,.json"
+              aria-label="Import backup file"
             />
           </div>
         </div>

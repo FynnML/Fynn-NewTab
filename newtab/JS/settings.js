@@ -1,18 +1,13 @@
-// settings.js — nguồn dữ liệu duy nhất cho mọi tùy chỉnh giao diện.
-// Lưu trong localStorage (key `fynn-settings`) và áp dụng bằng CSS variables / data-attribute,
-// nên đổi giá trị là thấy ngay, không cần render lại DOM.
-
 const STORAGE_KEY = 'fynn-settings';
 const VERSION = 1;
 
 export const DEFAULTS = {
   version: VERSION,
   theme: { mode: 'dark', hue: 210, saturation: 85, lightness: 60 },
-  header: { align: 'center', clockSize: 100 }, // clockSize: %
+  header: { clockSize: 100 }, // clockSize: %
   wallpaper: { blur: 0, brightness: 100, grayscale: 0 },
 };
 
-// Whitelist: chỉ những path này mới được ghi. Giá trị sai sẽ bị từ chối / về mặc định.
 export const RANGES = {
   'theme.hue': [0, 360],
   'theme.saturation': [0, 100],
@@ -25,7 +20,6 @@ export const RANGES = {
 
 export const ENUMS = {
   'theme.mode': ['dark', 'light', 'auto'],
-  'header.align': ['left', 'center', 'right'],
 };
 
 const mq = window.matchMedia('(prefers-color-scheme: dark)');
@@ -34,9 +28,6 @@ let state = load();
 let saveTimer = 0;
 let started = false;
 
-/* ---------- helpers ---------- */
-
-// Dùng function declaration (được hoist) vì `let state = load()` ở trên chạy trước dòng này.
 function isObject(v) {
   return v !== null && typeof v === 'object' && !Array.isArray(v);
 }
@@ -63,7 +54,6 @@ function sanitize(path, value) {
   return undefined; // path không có trong whitelist
 }
 
-// Gộp dữ liệu đã lưu với mặc định: khóa mới thêm ở bản sau sẽ tự có giá trị mặc định.
 function merge(base, saved) {
   if (!isObject(base)) return base;
   const s = isObject(saved) ? saved : {};
@@ -103,7 +93,6 @@ function save() {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
   } catch {
-    /* hết quota hoặc bị chặn: bỏ qua, giao diện vẫn hoạt động trong phiên này */
   }
 }
 
@@ -115,8 +104,6 @@ function scheduleSave() {
 function notify() {
   listeners.forEach((fn) => fn(state));
 }
-
-/* ---------- áp dụng lên giao diện ---------- */
 
 function apply() {
   const root = document.documentElement;
@@ -130,22 +117,17 @@ function apply() {
   root.style.setProperty('--accent-l', `${theme.lightness}%`);
   root.style.setProperty('--accent', `hsl(${theme.hue} ${theme.saturation}% ${theme.lightness}%)`);
 
-  root.dataset.headerAlign = header.align;
   root.style.setProperty('--clock-scale', String(header.clockSize / 100));
 
   root.style.setProperty(
     '--wallpaper-filter',
     `blur(${wallpaper.blur}px) brightness(${wallpaper.brightness}%) grayscale(${wallpaper.grayscale}%)`
   );
-  // Phóng nhẹ khi blur để viền ảnh không bị lộ nền trong suốt.
   root.style.setProperty('--wallpaper-scale', wallpaper.blur > 0 ? '1.06' : '1');
 }
 
-/* ---------- API công khai ---------- */
-
 export const get = (path) => getIn(state, path);
 
-// Ghi nhiều giá trị cùng lúc: { 'theme.hue': 18, 'theme.saturation': 90 }
 export function update(patch) {
   let changed = false;
   for (const [path, raw] of Object.entries(patch)) {
@@ -174,7 +156,6 @@ export function subscribe(fn) {
   return () => listeners.delete(fn);
 }
 
-// Gọi sớm nhất có thể trong app.js để tránh nháy giao diện lúc mở tab.
 export function initSettings() {
   if (started) return;
   started = true;
@@ -184,7 +165,6 @@ export function initSettings() {
     if (state.theme.mode === 'auto') apply();
   });
 
-  // Đồng bộ giữa các tab New Tab đang mở.
   window.addEventListener('storage', (e) => {
     if (e.key !== STORAGE_KEY) return;
     state = load();

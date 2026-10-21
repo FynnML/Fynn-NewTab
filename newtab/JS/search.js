@@ -1,9 +1,3 @@
-/**
- * search.js — Search widget: engine picker (Brave / Google), submit, and
- * the dim/blur wallpaper effect while the search box is hovered/focused.
- * Owns the search-engine and focus-effect settings (LocalStorage).
- */
-
 import { t, onLanguageChange } from "./i18n/i18n.js";
 
 const SEARCH_ENGINE_KEY = "fynn-search-engine";
@@ -17,18 +11,14 @@ const PROTOCOL_PATTERN = /^https?:\/\//i;
 
 const SEARCH_ICON = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>`;
 
-/* Inline icon for "Custom" — no local asset needed */
 const CUSTOM_ENGINE_ICON = `data:image/svg+xml,${encodeURIComponent(
   '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#f0f0f0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3c2.5 2.8 4 6.2 4 9s-1.5 6.2-4 9c-2.5-2.8-4-6.2-4-9s1.5-6.2 4-9z"/></svg>',
 )}`;
-
-// --- Custom engine URL ---
 
 export function getCustomEngineUrl() {
   return localStorage.getItem(CUSTOM_ENGINE_URL_KEY) || DEFAULT_CUSTOM_ENGINE_URL;
 }
 
-/** Saves the custom engine URL template. Expects a %s placeholder for the query. */
 export function setCustomEngineUrl(url) {
   const trimmed = (url || "").trim();
   const finalUrl = PROTOCOL_PATTERN.test(trimmed) ? trimmed : DEFAULT_CUSTOM_ENGINE_URL;
@@ -76,11 +66,8 @@ const searchContainer = document.querySelector("#searchContainer");
 const backgroundDim = document.querySelector("#backgroundDim");
 const searchSuggestions = document.querySelector("#searchSuggestions");
 
-// --- Autocomplete State ---
 let currentSuggestions = [];
 let selectedSuggestionIndex = -1;
-
-// --- Engine ---
 
 const isValidEngine = (engine) => Object.hasOwn(ENGINES, engine);
 
@@ -102,11 +89,12 @@ function applySearchEngine(engine) {
   searchInput.placeholder = t("search.searchWith", { engine: t(`search.engines.${engine}`) });
 
   engineOptions.forEach((option) => {
-    option.classList.toggle("selected", option.dataset.engine === engine);
+    const isSelected = option.dataset.engine === engine;
+    option.classList.toggle("selected", isSelected);
+    option.setAttribute("aria-checked", String(isSelected));
   });
 }
 
-/** Applies + saves the engine. Used by the dropdown and the Settings tab. */
 export function setSearchEngine(engine) {
   if (!isValidEngine(engine)) return;
 
@@ -114,10 +102,6 @@ export function setSearchEngine(engine) {
   localStorage.setItem(SEARCH_ENGINE_KEY, engine);
 }
 
-/**
- * Closes the engine dropdown. Returns true if it was open, so the global
- * Escape handler knows whether the key press was consumed.
- */
 export function closeEngineMenu({ restoreFocus = false } = {}) {
   if (!engineMenu.classList.contains("active")) return false;
 
@@ -127,8 +111,6 @@ export function closeEngineMenu({ restoreFocus = false } = {}) {
   if (restoreFocus) engineButton.focus();
   return true;
 }
-
-// --- Focus effect setting ---
 
 export function isSearchFocusEffectEnabled() {
   const saved = localStorage.getItem(SEARCH_FOCUS_EFFECT_KEY);
@@ -144,7 +126,6 @@ export function setSearchFocusEffect(enabled) {
   localStorage.setItem(SEARCH_FOCUS_EFFECT_KEY, String(enabled));
 }
 
-/** Clears all search settings and re-applies the defaults. */
 export function resetSearchSettings() {
   localStorage.removeItem(SEARCH_ENGINE_KEY);
   localStorage.removeItem(SEARCH_FOCUS_EFFECT_KEY);
@@ -154,21 +135,12 @@ export function resetSearchSettings() {
 }
 
 // --- URL detection ---
-//
-// If the query looks like a URL or a bare domain, navigate straight to it
-// instead of searching. Only a curated TLD list is treated as a domain
-// ending, so real search phrases with a dot (e.g. "node.js", "e.g. foo")
-// aren't misfired into a broken navigation. Extend COMMON_TLDS if you hit
-// a domain that isn't recognized.
 const COMMON_TLDS = new Set([
   "com", "net", "org", "io", "dev", "app", "co", "ai", "me", "info",
   "biz", "xyz", "tv", "us", "uk", "de", "jp", "cn", "ca", "au",
   "vn", "edu", "gov", "gg", "sh", "to", "so", "ly", "im",
 ]);
 
-// Only http/https are treated as direct navigation. Anything else
-// (javascript:, data:, file:, chrome:, etc.) falls through to a normal
-// search instead of being navigated to directly.
 const IPV4_PATTERN = /^(\d{1,3}\.){3}\d{1,3}(:\d+)?(\/\S*)?$/;
 const LOCALHOST_PATTERN = /^localhost(:\d+)?(\/\S*)?$/i;
 const DOMAIN_PATTERN = /^([a-z0-9]([a-z0-9-]*[a-z0-9])?\.)+([a-z]{2,})(:\d+)?(\/\S*)?$/i;
@@ -189,8 +161,6 @@ function resolveDirectUrl(input) {
   return null;
 }
 
-// --- Submit ---
-
 function performSearch() {
   const query = searchInput.value.trim();
 
@@ -202,21 +172,16 @@ function performSearch() {
   const directUrl = resolveDirectUrl(query);
 
   if (directUrl) {
-    // Direct navigations aren't search queries, so they don't belong in
-    // the recent-searches list.
     window.location.href = directUrl;
     return;
   }
 
-  // Lưu từ khoá vào lịch sử tìm kiếm gần đây
   saveRecentSearch(query);
 
   window.location.href = ENGINES[currentEngine].buildUrl(
     encodeURIComponent(query),
   );
 }
-
-// --- Init ---
 
 function initFocusEffect() {
   searchContainer.addEventListener("mouseenter", () => {
@@ -226,7 +191,6 @@ function initFocusEffect() {
   });
 
   searchContainer.addEventListener("mouseleave", () => {
-    // Keep the dim effect while the search input is focused.
     if (document.activeElement !== searchInput) {
       backgroundDim.classList.remove("active");
     }
@@ -243,18 +207,12 @@ function initFocusEffect() {
   });
 }
 
-/**
- * Typing anywhere on the page (when nothing else is focused) jumps straight
- * into the search box, like Brave/Chrome's own New Tab.
- */
 function initTypeToSearch() {
   const dashboard = document.querySelector("#dashboard");
 
   document.addEventListener("keydown", (event) => {
-    // Modifier combos are browser/OS shortcuts (Ctrl+T, Cmd+L, ...) — leave them alone.
     if (event.ctrlKey || event.metaKey || event.altKey) return;
 
-    // Only single printable characters; ignores Tab, Escape, arrows, F-keys, etc.
     if (event.key.length !== 1) return;
 
     const active = document.activeElement;
@@ -269,11 +227,8 @@ function initTypeToSearch() {
     if (document.querySelector(".custom-dialog-overlay.active")) return;
 
     searchInput.focus();
-    // Don't preventDefault: let this same keystroke land in the input.
   });
 }
-
-// --- Recent Searches ---
 
 const RECENT_SEARCHES_KEY = "fynn-recent-searches";
 const MAX_RECENT = 8;
@@ -291,11 +246,9 @@ function saveRecentSearch(query) {
 
   let recent = getRecentSearches();
 
-  // Xoá nếu đã tồn tại (tránh trùng), đẩy lên đầu
   recent = recent.filter((item) => item !== query);
   recent.unshift(query);
 
-  // Giới hạn tối đa MAX_RECENT mục
   if (recent.length > MAX_RECENT) recent = recent.slice(0, MAX_RECENT);
 
   localStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify(recent));
@@ -313,8 +266,13 @@ function hideRecentSearches() {
   currentSuggestions = [];
 }
 
-function showRecentSearches() {
-  const recent = getRecentSearches();
+function showRecentSearches(filterQuery = "") {
+  let recent = getRecentSearches();
+
+  if (filterQuery && filterQuery.trim() !== "") {
+    const q = filterQuery.trim().toLowerCase();
+    recent = recent.filter((text) => text.toLowerCase().includes(q));
+  }
 
   if (recent.length === 0) {
     hideRecentSearches();
@@ -325,26 +283,34 @@ function showRecentSearches() {
   selectedSuggestionIndex = -1;
   searchSuggestions.innerHTML = "";
 
+  const header = document.createElement("div");
+  header.className = "suggestions-header";
+  header.innerHTML = `<span>${t("search.recentTitle")}</span>`;
+  searchSuggestions.appendChild(header);
+
+  const itemsContainer = document.createElement("div");
+  itemsContainer.className = "suggestions-list";
+
   recent.forEach((text, index) => {
     const item = document.createElement("div");
     item.className = "suggestion-item";
     item.dataset.index = index;
 
-    // Icon đồng hồ (history) thay vì kính lúp
-    const historyIcon = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`;
+    const historyIcon = `<span class="suggestion-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span>`;
 
     const label = document.createElement("span");
     label.className = "suggestion-label";
     label.textContent = text;
 
     const removeBtn = document.createElement("button");
+    removeBtn.type = "button";
     removeBtn.className = "suggestion-remove";
-    removeBtn.innerHTML = "×";
+    removeBtn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>`;
     removeBtn.setAttribute("aria-label", t("search.removeRecentSearch", { query: text }));
     removeBtn.addEventListener("click", (e) => {
       e.stopPropagation();
       removeRecentSearch(text);
-      showRecentSearches();
+      showRecentSearches(searchInput.value);
       searchInput.focus();
     });
 
@@ -358,8 +324,19 @@ function showRecentSearches() {
       performSearch();
     });
 
-    searchSuggestions.appendChild(item);
+    itemsContainer.appendChild(item);
   });
+
+  searchSuggestions.appendChild(itemsContainer);
+
+  const footer = document.createElement("div");
+  footer.className = "suggestions-footer";
+  footer.innerHTML = `
+    <span class="shortcut-hint"><kbd>↑↓</kbd>${t("search.hints.navigate")}</span>
+    <span class="shortcut-hint"><kbd>↵</kbd>${t("search.hints.select")}</span>
+    <span class="shortcut-hint"><kbd>esc</kbd>${t("search.hints.close")}</span>
+  `;
+  searchSuggestions.appendChild(footer);
 
   searchSuggestions.classList.add("active");
 }
@@ -372,25 +349,21 @@ function updateSuggestionHighlight() {
 }
 
 function initRecentSearches() {
-  // Hiển thị khi ô search được focus VÀ đang trống
   searchInput.addEventListener("focus", () => {
-    if (searchInput.value.trim() === "") {
-      showRecentSearches();
-    }
+    showRecentSearches(searchInput.value);
   });
 
-  // Ẩn khi người dùng bắt đầu gõ chữ
   searchInput.addEventListener("input", () => {
-    if (searchInput.value.trim() !== "") {
-      hideRecentSearches();
-    } else {
-      showRecentSearches();
-    }
+    showRecentSearches(searchInput.value);
   });
 
-  // Điều hướng bằng bàn phím
   searchInput.addEventListener("keydown", (event) => {
-    if (!searchSuggestions.classList.contains("active")) return;
+    if (!searchSuggestions.classList.contains("active")) {
+      if (event.key === "Escape" && searchInput.value) {
+        searchInput.value = "";
+      }
+      return;
+    }
 
     if (event.key === "ArrowDown") {
       event.preventDefault();
@@ -409,18 +382,17 @@ function initRecentSearches() {
       hideRecentSearches();
       performSearch();
     } else if (event.key === "Escape") {
+      event.preventDefault();
       hideRecentSearches();
     }
   });
 
-  // Ẩn khi click bên ngoài
   document.addEventListener("click", (e) => {
     if (!searchContainer.contains(e.target)) {
       hideRecentSearches();
     }
   });
 
-  // Ẩn khi blur, nhưng cho phép click vào mục gợi ý trước
   searchInput.addEventListener("blur", (e) => {
     if (e.relatedTarget && searchContainer.contains(e.relatedTarget)) return;
     setTimeout(hideRecentSearches, 150);
@@ -428,16 +400,20 @@ function initRecentSearches() {
 }
 
 export function initSearch() {
-  // Clean inline SVG icon instead of an emoji
   searchButton.innerHTML = SEARCH_ICON;
   searchButton.setAttribute("aria-label", t("search.search"));
+
+  const customOptionIcon = document.querySelector(".engine-custom-icon");
+  if (customOptionIcon) {
+    customOptionIcon.src = CUSTOM_ENGINE_ICON;
+  }
 
   applySearchEngine(currentEngine);
 
   onLanguageChange(() => {
     searchButton.setAttribute("aria-label", t("search.search"));
     applySearchEngine(currentEngine);
-    if (searchSuggestions.classList.contains("active")) showRecentSearches();
+    if (searchSuggestions.classList.contains("active")) showRecentSearches(searchInput.value);
   });
 
   engineButton.addEventListener("click", (event) => {
@@ -447,21 +423,47 @@ export function initSearch() {
     engineButton.setAttribute("aria-expanded", String(isOpen));
   });
 
-  engineOptions.forEach((option) => {
+  engineButton.addEventListener("keydown", (event) => {
+    if (event.key === "ArrowDown" || event.key === "Enter" || event.key === " ") {
+      if (!engineMenu.classList.contains("active")) {
+        event.preventDefault();
+        engineMenu.classList.add("active");
+        engineButton.setAttribute("aria-expanded", "true");
+        const selected = engineMenu.querySelector(".engine-option.selected") || engineOptions[0];
+        selected?.focus();
+      }
+    }
+  });
+
+  engineOptions.forEach((option, index) => {
     option.addEventListener("click", () => {
       setSearchEngine(option.dataset.engine);
       closeEngineMenu();
       searchInput.focus();
+    });
+
+    option.addEventListener("keydown", (event) => {
+      if (event.key === "ArrowDown") {
+        event.preventDefault();
+        const next = engineOptions[(index + 1) % engineOptions.length];
+        next?.focus();
+      } else if (event.key === "ArrowUp") {
+        event.preventDefault();
+        const prev = engineOptions[(index - 1 + engineOptions.length) % engineOptions.length];
+        prev?.focus();
+      } else if (event.key === "Escape") {
+        event.preventDefault();
+        closeEngineMenu({ restoreFocus: true });
+      }
     });
   });
 
   searchButton.addEventListener("click", performSearch);
 
   searchInput.addEventListener("keydown", (event) => {
-    if (event.key === "Enter") performSearch();
+    if (event.key === "Enter" && !event.defaultPrevented) performSearch();
   });
 
-  // Click anywhere else closes the dropdown.
   document.addEventListener("click", () => {
     closeEngineMenu();
   });

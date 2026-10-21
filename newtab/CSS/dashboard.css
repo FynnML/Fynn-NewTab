@@ -1,11 +1,3 @@
-/* ==========================================================================
-   Dashboard — toggle, backdrop, side panel, tabs, widget settings, settings
-   ========================================================================== */
-
-/* ==========================================================================
-   Dashboard toggle
-   ========================================================================== */
-
 .dashboard-toggle {
   position: fixed;
 
@@ -56,12 +48,6 @@
   transform: rotate(180deg);
 }
 
-/* ==========================================================================
-   Dashboard backdrop / scrim — darkens the page when dashboard is open.
-   Uses ::after pseudo on .app to avoid editing index.html.
-   pointer-events: none so click-outside logic still works.
-   ========================================================================== */
-
 .app::after {
   content: "";
   position: fixed;
@@ -78,10 +64,6 @@
 .app.dashboard-open::after {
   background: rgba(0, 0, 0, 0.35);
 }
-
-/* ==========================================================================
-   Dashboard — premium glass side panel
-   ========================================================================== */
 
 .dashboard {
   position: fixed;
@@ -113,7 +95,6 @@
   transform: translateX(0);
 }
 
-/* Subtle scrollbar */
 .dashboard::-webkit-scrollbar {
   width: 4px;
 }
@@ -131,8 +112,6 @@
   background: rgba(255, 255, 255, 0.08);
 }
 
-/* Dashboard tabs */
-
 .dashboard-tabs {
   position: relative;
   display: flex;
@@ -142,7 +121,6 @@
   border-bottom: 1px solid var(--glass-border-soft);
 }
 
-/* Sliding tab indicator */
 .dashboard-tabs::after {
   content: "";
   position: absolute;
@@ -187,8 +165,6 @@
   color: var(--text-primary);
 }
 
-/* Dashboard content */
-
 .dashboard-content {
   display: none;
   padding-top: var(--space-md);
@@ -222,11 +198,8 @@
 
 .empty-state span {
   font-size: 12px;
+  color: var(--text-secondary);
 }
-
-/* ==========================================================================
-   Widget settings
-   ========================================================================== */
 
 .widget-setting,
 .setting-item {
@@ -251,8 +224,6 @@
 .setting-item:hover {
   background: var(--surface-interactive);
 }
-
-/* Switch toggle */
 
 .switch {
   position: relative;
@@ -286,7 +257,7 @@
   position: absolute;
   inset: 0;
 
-  border-radius: 20px;
+  border-radius: var(--radius-xl);
   background: rgba(255, 255, 255, 0.12);
 
   cursor: pointer;
@@ -316,10 +287,6 @@
   transform: translateX(18px);
   background: white;
 }
-
-/* ==========================================================================
-   Settings
-   ========================================================================== */
 
 .setting-group {
   margin-bottom: var(--space-lg);
@@ -355,7 +322,7 @@
 }
 
 .setting-item span {
-  color: var(--text-muted);
+  color: var(--text-secondary);
   font-size: 11px;
   line-height: 1.4;
 }
@@ -371,16 +338,36 @@
 
   outline: none;
 
-  background: var(--surface-glass);
+  background-color: var(--surface-glass);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='rgba(240, 240, 240, 0.65)' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  appearance: none;
+  -webkit-appearance: none;
+
   color: var(--text-primary);
 
   font-family: inherit;
   font-size: 12px;
 
   cursor: pointer;
+  transition:
+    background-color var(--transition-fast),
+    border-color var(--transition-fast);
 }
 
-.setting-select:focus {
+.setting-select:hover {
+  background-color: var(--surface-interactive);
+  border-color: var(--glass-border);
+}
+
+.setting-select:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+  border-color: transparent;
+}
+
+.setting-select:focus:not(:focus-visible) {
   border-color: var(--glass-border);
 }
 
@@ -392,8 +379,6 @@
 .setting-item.hidden {
   display: none !important;
 }
-
-/* Custom engine URL — a full-width row under the engine picker */
 
 .setting-item--stacked {
   flex-direction: column;
@@ -431,8 +416,6 @@
 .setting-text-input::placeholder {
   color: var(--text-dim);
 }
-
-/* Overlay strength slider */
 
 .setting-item--stacked .setting-item-row {
   display: flex;
@@ -548,15 +531,11 @@
   color: var(--text-primary);
 }
 
-
-/* ==========================================================================
-   Responsive — dashboard
-   ========================================================================== */
-
 @media (max-width: 768px) {
   .dashboard-toggle {
     bottom: 24px;
     right: 28px;
+    border-radius: var(--radius-md);
   }
 }
 

@@ -1,12 +1,8 @@
-/* ==========================================================================
-   Notes widget (opt-in, off by default)
-   ========================================================================== */
-
 .notes-widget {
   width: min(280px, 84vw);
   max-height: 70vh;
-  right: 5%;
-  bottom: 8%;
+  right: 28px;
+  bottom: 76px;
 
   display: flex;
   flex-direction: column;
@@ -47,10 +43,8 @@
   margin-top: 2px;
 
   font-size: 11px;
-  color: var(--text-dim);
+  color: var(--text-secondary);
 }
-
-/* Add note button */
 
 .notes-add {
   width: 26px;
@@ -83,13 +77,10 @@
   color: var(--text-primary);
 }
 
-/* Notes list */
-
 .notes-list {
   overflow-y: auto;
 }
 
-/* Subtle custom scrollbar for notes */
 .notes-list::-webkit-scrollbar {
   width: 4px;
 }
@@ -106,8 +97,6 @@
 .notes-list:hover::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.1);
 }
-
-/* Individual note */
 
 .note-item {
   position: relative;
@@ -135,8 +124,6 @@
   border-left-color: var(--accent);
   background: rgba(255, 255, 255, 0.06);
 }
-
-/* Grid: checkbox left column, title + content right column */
 
 .note-content {
   display: grid;
@@ -179,7 +166,7 @@
 .note-title.completed {
   color: var(--text-muted);
   font-weight: 400;
-  text-decoration-color: rgba(255, 255, 255, 0.2);
+  text-decoration-color: rgba(255, 255, 255, 0.45);
 }
 
 .note-text {
@@ -202,10 +189,8 @@
 
 .note-text.completed {
   color: var(--text-muted);
-  text-decoration-color: rgba(255, 255, 255, 0.2);
+  text-decoration-color: rgba(255, 255, 255, 0.45);
 }
-
-/* Note actions — ghost buttons */
 
 .note-actions {
   display: flex;
@@ -217,7 +202,8 @@
   transition: opacity var(--transition-fast);
 }
 
-.note-item:hover .note-actions {
+.note-item:hover .note-actions,
+.note-item:focus-within .note-actions {
   opacity: 1;
 }
 
@@ -226,7 +212,7 @@
   padding: 0 8px;
 
   border: none;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
 
   background: transparent;
   color: var(--text-muted);
@@ -248,12 +234,10 @@
 .note-empty {
   padding: var(--space-lg) var(--space-sm);
 
-  color: var(--text-dim);
+  color: var(--text-secondary);
   font-size: 12px;
   text-align: center;
 }
-
-/* Note editor */
 
 .note-editor {
   display: none;
@@ -350,10 +334,6 @@
 .note-editor-button.save:hover {
   opacity: 0.85;
 }
-
-/* ==========================================================================
-   Responsive — notes
-   ========================================================================== */
 
 @media (max-width: 768px) {
   .notes-widget {

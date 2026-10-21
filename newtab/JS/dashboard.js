@@ -1,12 +1,3 @@
-/**
- * dashboard.js — Everything inside the slide-out dashboard:
- *   1. Panel      open/close, tabs, click-outside, Escape
- *   2. Widgets    visibility toggles + widget layout (LocalStorage)
- *   3. Settings   language, search engine, time format, focus effect, overlay, reset
- *
- * (The Wallpapers tab content is rendered by wallpaper.js.)
- */
-
 import { getTimeFormat, setTimeFormat, resetTimeFormat } from "./clock.js";
 import {
   closeEngineMenu,
@@ -26,10 +17,7 @@ import {
 import { showConfirmDialog } from "./dialog.js";
 import { t, onLanguageChange, getLanguage, setLanguage, resetLanguage } from "./i18n/i18n.js";
 import { exportData, importData } from "./backup.js";
-
-/* ==========================================================================
-   1. PANEL
-   ========================================================================== */
+import { reset as resetTheme } from "./settings.js";
 
 const dashboard = document.querySelector("#dashboard");
 const dashboardToggle = document.querySelector("#dashboardToggle");
@@ -105,15 +93,40 @@ function initPanel() {
     setDashboardOpen(!dashboard.classList.contains("open"));
   });
 
-  dashboardTabs.forEach((tab) => {
+  dashboardTabs.forEach((tab, index) => {
     tab.addEventListener("click", () => selectTab(tab));
+
+    tab.addEventListener("keydown", (event) => {
+      let targetIndex = -1;
+      if (event.key === "ArrowRight") {
+        targetIndex = (index + 1) % dashboardTabs.length;
+      } else if (event.key === "ArrowLeft") {
+        targetIndex = (index - 1 + dashboardTabs.length) % dashboardTabs.length;
+      }
+      if (targetIndex >= 0) {
+        event.preventDefault();
+        const nextTab = dashboardTabs[targetIndex];
+        selectTab(nextTab);
+        nextTab.focus();
+      }
+    });
   });
 
-  // Init sliding indicator position
   const activeTab = document.querySelector(".dashboard-tab.active");
   if (activeTab) {
     requestAnimationFrame(() => selectTab(activeTab));
   }
+
+  window.addEventListener("resize", () => {
+    const currentActiveTab = document.querySelector(".dashboard-tab.active");
+    if (currentActiveTab) {
+      const tabsContainer = document.querySelector(".dashboard-tabs");
+      if (tabsContainer) {
+        tabsContainer.style.setProperty("--tab-left", currentActiveTab.offsetLeft + "px");
+        tabsContainer.style.setProperty("--tab-width", currentActiveTab.offsetWidth + "px");
+      }
+    }
+  });
 
   onLanguageChange(() => {
     if (!dashboard || !dashboardToggle) return;
@@ -123,7 +136,6 @@ function initPanel() {
     );
   });
 
-  // Click outside the dashboard closes it
   document.addEventListener("click", (event) => {
     if (!dashboard || !dashboardToggle) return;
     if (!dashboard.classList.contains("open")) return;
@@ -137,7 +149,6 @@ function initPanel() {
     }
   });
 
-  // Escape closes the innermost open layer first: engine dropdown, then dashboard.
   document.addEventListener("keydown", (event) => {
     if (event.key !== "Escape") return;
     if (document.querySelector(".custom-dialog-overlay.active")) return;
@@ -151,15 +162,9 @@ function initPanel() {
   });
 }
 
-/* ==========================================================================
-   2. WIDGETS TAB — visibility + layout
-   ========================================================================== */
-
 const WIDGET_SETTINGS_KEY = "fynn-widget-settings";
 
 const widgetToggles = document.querySelectorAll(".widget-toggle");
-
-// --- 2.1 Visibility ---
 
 const defaultWidgetSettings = {
   clock: true,
@@ -254,10 +259,6 @@ function resetWidgets() {
   });
 }
 
-/* ==========================================================================
-   3. SETTINGS TAB
-   ========================================================================== */
-
 function initSettings() {
   const languageSetting = document.querySelector("#languageSetting");
   const searchEngineSetting = document.querySelector("#searchEngineSetting");
@@ -278,7 +279,6 @@ function initSettings() {
   const importDataButton = document.querySelector("#importDataButton");
   const importDataInput = document.querySelector("#importDataInput");
 
-  // Custom engine URL only matters once "Custom" is picked.
   const syncCustomEngineVisibility = () => {
     if (customEngineUrlItem && searchEngineSetting) {
       customEngineUrlItem.classList.toggle(
@@ -288,7 +288,6 @@ function initSettings() {
     }
   };
 
-  // Reflect the saved values in the form controls.
   const syncControls = () => {
     if (languageSetting) languageSetting.value = getLanguage();
     if (searchEngineSetting) searchEngineSetting.value = getSearchEngine();
@@ -352,6 +351,7 @@ function initSettings() {
     resetTimeFormat();
     resetOverlayStrength();
     resetWidgets();
+    resetTheme();
 
     syncControls();
   });
@@ -368,20 +368,10 @@ function initSettings() {
     const file = event.target.files?.[0];
     if (!file) return;
     importData(file);
-    // Reset value so the same file can be selected again
     event.target.value = "";
   });
 }
 
-/* ==========================================================================
-   INIT
-   ========================================================================== */
-
-/*
- * Everything here only needs LocalStorage / the DOM, so it runs BEFORE
- * IndexedDB opens. This prevents hidden widgets from flashing on screen
- * while the database is still opening.
- */
 export function initDashboard() {
   initWidgetToggles();
   initSettings();

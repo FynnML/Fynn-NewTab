@@ -1,7 +1,3 @@
-/**
- * i18n.js — Hệ thống đa ngôn ngữ cho Fynn New Tab.
- */
-
 import { en } from "./locales/en.js";
 import { vi } from "./locales/vi.js";
 import { zh } from "./locales/zh.js";
@@ -15,16 +11,15 @@ const VALID_LANGUAGES = Object.keys(LOCALES);
 
 const isValidLanguage = (lang) => VALID_LANGUAGES.includes(lang);
 
-// --- Storage adapter (fix #4: localStorage có thể throw) ---
 const storage = {
   get(key) {
     try { return localStorage.getItem(key); } catch { return null; }
   },
   set(key, value) {
-    try { localStorage.setItem(key, value); } catch { /* bỏ qua */ }
+    try { localStorage.setItem(key, value); } catch { }
   },
   remove(key) {
-    try { localStorage.removeItem(key); } catch { /* bỏ qua */ }
+    try { localStorage.removeItem(key); } catch { }
   },
 };
 
@@ -44,7 +39,6 @@ export function getLanguage() {
 
 let currentLanguage = getLanguage();
 
-// --- Lookup helpers ---
 function resolve(locale, key) {
   return key
     .split(".")
@@ -93,7 +87,6 @@ export function t(key, params) {
   return interpolate(value, params);
 }
 
-/** Fix #2: tArray luôn trả array; t() không còn lộ mảng/object ra ngoài. */
 export function tArray(key) {
   const v = resolve(LOCALES[currentLanguage], key) ?? resolve(LOCALES[FALLBACK_LANGUAGE], key);
   if (Array.isArray(v)) return v;
@@ -101,13 +94,11 @@ export function tArray(key) {
   return [];
 }
 
-/** Nếu sau này cần object (vd. search.engines cho dropdown động). */
 export function tObject(key) {
   const v = resolve(LOCALES[currentLanguage], key) ?? resolve(LOCALES[FALLBACK_LANGUAGE], key);
   return v && typeof v === "object" && !Array.isArray(v) ? v : {};
 }
 
-// --- Settings API ---
 export function setLanguage(lang) {
   if (!isValidLanguage(lang) || lang === currentLanguage) return;
   currentLanguage = lang;
@@ -134,7 +125,6 @@ export function applyI18n(root = document) {
   });
 
   root.querySelectorAll("[data-i18n-attr]").forEach((el) => {
-    // định dạng: "placeholder:settings.search.customEngineUrlPlaceholder"
     for (const pair of el.dataset.i18nAttr.split(";")) {
       const [attr, key] = pair.split(":").map((s) => s.trim());
       if (attr && key) el.setAttribute(attr, t(key));
@@ -142,14 +132,13 @@ export function applyI18n(root = document) {
   });
 }
 
-// --- Init ---
 export function initI18n() {
   document.documentElement.lang = currentLanguage;
-  applyI18n(); // re-render toàn bộ phần static
+  applyI18n();
 
   onLanguageChange((event) => {
     document.documentElement.lang = event.detail.language;
-    applyI18n(); // re-render toàn bộ phần static
+    applyI18n();
   });
 
   window.addEventListener("storage", (e) => {

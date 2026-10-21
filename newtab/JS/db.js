@@ -1,7 +1,3 @@
-/**
- * db.js — IndexedDB connection + tiny promise helpers.
- */
-
 export const STORES = Object.freeze({
   wallpapers: "wallpapers",
   notes: "notes",
@@ -90,7 +86,6 @@ function promisify(request) {
   });
 }
 
-// `async` so a synchronous throw (e.g. DB not open) becomes a rejected promise.
 export async function dbGetAll(storeName) {
   return promisify(getStore(storeName, "readonly").getAll());
 }

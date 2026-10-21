@@ -1,8 +1,3 @@
-/**
- * notes.js — Notes widget: IndexedDB storage, list rendering,
- * editor (add/edit), pin, complete, delete.
- */
-
 import { STORES, dbGetAll, dbPut, dbDelete } from "./db.js";
 import { showConfirmDialog, showAlertDialog } from "./dialog.js";
 import { t, onLanguageChange } from "./i18n/i18n.js";
@@ -11,7 +6,6 @@ const notesList = document.querySelector("#notesList");
 const notesCount = document.querySelector("#notesCount");
 const addNoteButton = document.querySelector("#addNoteButton");
 
-// Note editor elements
 const noteEditor = document.querySelector("#noteEditor");
 const noteTitle = document.querySelector("#noteTitle");
 const noteContent = document.querySelector("#noteContent");
@@ -19,8 +13,6 @@ const saveNoteButton = document.querySelector("#saveNoteButton");
 const cancelNoteButton = document.querySelector("#cancelNoteButton");
 
 let editingNoteId = null;
-
-// --- DB Operations ---
 
 const getNotes = () => dbGetAll(STORES.notes);
 const saveNote = (note) => dbPut(STORES.notes, note);
@@ -30,8 +22,6 @@ async function findNote(id) {
   const notes = await getNotes();
   return notes.find((item) => item.id === id);
 }
-
-// --- UI Rendering ---
 
 async function renderNotes() {
   const notes = await getNotes();
@@ -56,19 +46,31 @@ async function renderNotes() {
 
     item.innerHTML = `
       <div class="note-content">
-        <input type="checkbox" class="note-check" data-complete="${note.id}" ${note.completed ? "checked" : ""}>
+        <input type="checkbox" class="note-check" data-complete ${note.completed ? "checked" : ""}>
         <div class="note-title ${note.completed ? "completed" : ""}"></div>
         <div class="note-text ${note.completed ? "completed" : ""}"></div>
       </div>
       <div class="note-actions">
-        <button class="note-action" data-pin="${note.id}">${note.pinned ? t("notes.unpin") : t("notes.pin")}</button>
-        <button class="note-action" data-edit="${note.id}">${t("notes.edit")}</button>
-        <button class="note-action" data-delete-note="${note.id}">${t("notes.delete")}</button>
+        <button class="note-action" data-pin>${note.pinned ? t("notes.unpin") : t("notes.pin")}</button>
+        <button class="note-action" data-edit>${t("notes.edit")}</button>
+        <button class="note-action" data-delete-note>${t("notes.delete")}</button>
       </div>
     `;
-    // User-provided text goes in via textContent (no HTML escaping needed).
     item.querySelector(".note-title").textContent = note.title ?? "";
     item.querySelector(".note-text").textContent = note.content ?? "";
+
+    const noteId = String(note.id);
+    const checkEl = item.querySelector("[data-complete]");
+    checkEl.dataset.complete = noteId;
+    const noteLabel = note.title || note.content || "";
+    checkEl.setAttribute(
+      "aria-label",
+      noteLabel ? `${t("notes.todo")}: ${noteLabel}` : t("notes.todo"),
+    );
+
+    item.querySelector("[data-pin]").dataset.pin = noteId;
+    item.querySelector("[data-edit]").dataset.edit = noteId;
+    item.querySelector("[data-delete-note]").dataset.deleteNote = noteId;
 
     notesList.appendChild(item);
   });
@@ -110,8 +112,6 @@ function attachNoteActions() {
   });
 }
 
-// --- Editor ---
-
 function openNoteEditor(note = null) {
   editingNoteId = note ? note.id : null;
   noteTitle.value = note?.title || "";
@@ -133,7 +133,6 @@ function closeNoteEditor() {
   noteEditor.classList.remove("active");
 }
 
-// Save note (new or edit)
 async function handleSaveNote() {
   try {
     const title = noteTitle.value.trim();
@@ -170,8 +169,6 @@ async function handleSaveNote() {
   }
 }
 
-// --- State Management ---
-
 async function editNote(id) {
   const note = await findNote(id);
   if (!note) return;
@@ -207,20 +204,25 @@ async function removeNote(id) {
   await renderNotes();
 }
 
-// --- Init ---
-
 function bindNoteEditor() {
   addNoteButton.addEventListener("click", () => openNoteEditor());
   saveNoteButton.addEventListener("click", handleSaveNote);
   cancelNoteButton.addEventListener("click", closeNoteEditor);
   
+  noteEditor.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") {
+      event.stopPropagation();
+      closeNoteEditor();
+      addNoteButton.focus();
+    }
+  });
+
   noteContent.addEventListener("input", function() {
     this.style.height = "auto";
     this.style.height = this.scrollHeight + "px";
   });
 }
 
-/** Requires openDatabase() to have resolved. */
 export async function initNotes() {
   bindNoteEditor();
   await renderNotes();

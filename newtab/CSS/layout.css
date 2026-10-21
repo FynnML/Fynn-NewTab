@@ -1,9 +1,3 @@
-/* ==========================================================================
-   Layout — Reset, base, widget system, hero, animations, a11y, responsive
-   ========================================================================== */
-
-/* --- Reset & base --- */
-
 * {
   box-sizing: border-box;
 }
@@ -31,8 +25,6 @@ body {
   overflow: hidden;
 }
 
-/* --- Widget base — generic position system --- */
-
 .widget {
   position: absolute;
 }
@@ -45,13 +37,6 @@ body {
   display: none !important;
 }
 
-/* ==========================================================================
-   Hero — Clock + Date + Search, one centered column.
-   This container ignores the generic widget position system on purpose:
-   its children are always laid out top-to-bottom, so nothing below can
-   overlap the search bar regardless of viewport size.
-   ========================================================================== */
-
 .hero {
   position: absolute;
   inset: 0;
@@ -63,18 +48,14 @@ body {
   align-items: center;
   justify-content: center;
 
-  /* Push composition slightly above true center for visual balance */
   padding-bottom: 12vh;
 
   pointer-events: none;
 }
 
-/* Re-enable pointer events on interactive children */
 .hero > * {
   pointer-events: auto;
 }
-
-/* Clock + Date group */
 
 .clock-group {
   position: relative;
@@ -85,15 +66,12 @@ body {
   gap: 4px;
 }
 
-/* Override widget positioning for hero children — they flow in flexbox */
 #clockGroup .clock-container,
 #clockGroup .date-widget {
   position: relative;
   inset: auto;
   transform: none;
 }
-
-/* --- Clock --- */
 
 .clock-container h1 {
   margin: 0;
@@ -115,10 +93,7 @@ body {
   vertical-align: super;
 
   color: var(--text-secondary);
-  opacity: 0.7;
 }
-
-/* --- Date --- */
 
 .date-widget {
   margin: 0;
@@ -136,52 +111,15 @@ body {
   text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6), 0 4px 16px rgba(0, 0, 0, 0.4);
 }
 
-/* ==========================================================================
-   Animations — subtle entrance & transitions
-   ========================================================================== */
-
-/* Uses the individual `translate` property (not `transform`) so the entrance
-   animation never overrides the `transform` used by .widget[data-position]. */
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    translate: 0 12px;
-  }
-  to {
-    opacity: 1;
-    translate: 0 0;
-  }
-}
-
-/* Staggered entrance for hero elements */
-.clock-group {
-  animation: fadeInUp 0.6s var(--ease) both;
-}
-
-.search-container {
-  animation: fadeInUp 0.6s var(--ease) 0.1s both;
-}
-
-.greeting {
-  animation: fadeInUp 0.5s var(--ease) 0.2s both;
-}
-
-/* ==========================================================================
-   Accessibility — focus-visible & reduced motion
-   ========================================================================== */
-
-/* Keyboard-only focus indicator */
 :focus-visible {
-  outline: none;
-  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.2);
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 
-/* Remove focus outline for mouse clicks */
 :focus:not(:focus-visible) {
   outline: none;
 }
 
-/* Reduce motion for users who prefer it */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -192,12 +130,14 @@ body {
   }
 }
 
-/* ==========================================================================
-   Responsive — layout-specific
-   ========================================================================== */
-
 @media (max-width: 768px) {
   .hero {
     padding-bottom: 8vh;
+  }
+}
+
+@media (max-height: 640px) {
+  .hero {
+    padding-bottom: 4vh;
   }
 }

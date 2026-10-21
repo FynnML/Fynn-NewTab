@@ -1,9 +1,3 @@
-/**
- * wallpaper.js — Wallpaper system: IndexedDB storage, upload, dashboard
- * list, wallpaper modes (default/primary/day/night) and the active
- * wallpaper scheduler.
- */
-
 import { STORES, dbGetAll, dbPut, dbDelete } from "./db.js";
 import { showConfirmDialog, showAlertDialog } from "./dialog.js";
 import { t, onLanguageChange } from "./i18n/i18n.js";
@@ -39,16 +33,10 @@ let activeWallpaperId = null;
 let wallpaperScheduleTimer = null;
 let applyToken = 0;
 const wallpaperPreviewUrls = new Set();
-
-// Runtime-only bookkeeping for broken user wallpapers. A wallpaper that
-// fails to decode is excluded from the active-wallpaper resolution for the
-// rest of the session; the IndexedDB record is kept so the user can still
-// see and delete it from the dashboard.
 const failedWallpaperIds = new Set();
 let wallpaperRecoveryInProgress = false;
 let wallpaperFallbackNoticeShown = false;
 
-// --- Overlay strength ---
 
 const clampOverlayStrength = (value) =>
   Math.min(MAX_OVERLAY_STRENGTH, Math.max(MIN_OVERLAY_STRENGTH, value));
@@ -67,7 +55,6 @@ function applyOverlayStrength(percent) {
   );
 }
 
-/** Applies + saves the overlay strength. Used by the Settings tab. */
 export function setOverlayStrength(percent) {
   const clamped = clampOverlayStrength(percent);
 
@@ -80,25 +67,19 @@ export function resetOverlayStrength() {
   applyOverlayStrength(DEFAULT_OVERLAY_STRENGTH);
 }
 
-/** LocalStorage-only — call this early, before openDatabase(). */
 export function initOverlayStrength() {
   applyOverlayStrength(getOverlayStrength());
 }
 
-// --- DB Operations ---
-
 const saveWallpaper = (wallpaper) => dbPut(STORES.wallpapers, wallpaper);
 const getWallpapers = () => dbGetAll(STORES.wallpapers);
 const deleteWallpaper = (id) => dbDelete(STORES.wallpapers, id);
-
-// --- Mode helpers ---
 
 function getWallpaperMode(wallpaper) {
   if (wallpaper.mode && VALID_WALLPAPER_MODES.includes(wallpaper.mode)) {
     return wallpaper.mode;
   }
 
-  // Backward compatibility for old wallpaper records.
   return wallpaper.primary ? WALLPAPER_MODES.PRIMARY : WALLPAPER_MODES.DEFAULT;
 }
 
@@ -130,12 +111,6 @@ function getActiveWallpaper(wallpapers) {
   );
 }
 
-// --- Upload validation ---
-
-/**
- * Verifies that an image file can actually be decoded by the browser.
- * Resolves once decoding succeeds, rejects on decode failure or timeout.
- */
 function validateImageFile(file) {
   return new Promise((resolve, reject) => {
     const url = URL.createObjectURL(file);
@@ -177,11 +152,6 @@ function validateImageFile(file) {
   });
 }
 
-/**
- * Verifies that a video file can actually be decoded by the browser.
- * Resolves on loadedmetadata with a usable duration, rejects on media
- * error, invalid metadata or timeout.
- */
 function validateVideoFile(file) {
   return new Promise((resolve, reject) => {
     const url = URL.createObjectURL(file);
@@ -232,8 +202,6 @@ function validateVideoFile(file) {
     video.src = url;
   });
 }
-
-// --- Upload & Processing ---
 
 function extractVideoThumbnail(file) {
   return new Promise((resolve) => {
@@ -316,6 +284,7 @@ async function handleWallpaperUpload(event) {
         t("wallpapers.errors.invalidFileType"),
         t("wallpapers.dialogs.invalidFileTypeTitle"),
       );
+      wallpaperInput.value = "";
       return;
     }
 
@@ -329,7 +298,6 @@ async function handleWallpaperUpload(event) {
       return;
     }
 
-    // Never save a file the browser cannot actually decode.
     try {
       if (file.type.startsWith("video/")) {
         await validateVideoFile(file);
@@ -384,10 +352,9 @@ async function handleWallpaperUpload(event) {
   } catch (error) {
     console.error("Wallpaper upload failed:", error);
     await showAlertDialog(t("wallpapers.errors.uploadFailed"), t("common.error"));
+    wallpaperInput.value = "";
   }
 }
-
-// --- UI Rendering ---
 
 function revokeWallpaperPreviewUrls() {
   for (const url of wallpaperPreviewUrls) {
@@ -424,12 +391,13 @@ async function renderWallpapers(wallpapers) {
   list.forEach((wallpaper) => {
     const currentMode = getWallpaperMode(wallpaper);
     const isPrimary = currentMode === WALLPAPER_MODES.PRIMARY;
+    const isActive = wallpaper.id === activeWallpaperId;
 
     const url = URL.createObjectURL(wallpaper.blob);
     wallpaperPreviewUrls.add(url);
 
     const card = document.createElement("div");
-    card.className = `wallpaper-card ${isPrimary ? "primary" : ""}`;
+    card.className = `wallpaper-card ${isPrimary ? "primary" : ""} ${isActive ? "active-wallpaper" : ""}`.trim();
 
     let previewUrl = url;
 
@@ -449,7 +417,10 @@ async function renderWallpapers(wallpapers) {
     ).join("");
 
     card.innerHTML = `
-      <div class="wallpaper-preview">${preview}</div>
+      <div class="wallpaper-preview">
+        ${preview}
+        ${isActive ? `<span class="wallpaper-active-badge">${t("wallpapers.active")}</span>` : ""}
+      </div>
 
       <div class="wallpaper-info">
         <span class="wallpaper-name"></span>
@@ -473,7 +444,6 @@ async function renderWallpapers(wallpapers) {
       </div>
     `;
 
-    // User-provided text goes in via textContent (no HTML escaping needed).
     card.querySelector(".wallpaper-name").textContent = wallpaper.name;
 
     const previewImage = card.querySelector(".wallpaper-preview img");
@@ -509,8 +479,6 @@ function attachWallpaperActions() {
   });
 }
 
-// --- Playback ---
-
 function clearBackgroundMedia() {
   backgroundVideo.pause();
   backgroundVideo.removeAttribute("src");
@@ -520,7 +488,6 @@ function clearBackgroundMedia() {
   backgroundImage.removeAttribute("src");
   backgroundImage.classList.remove("active");
 
-  // Revoke after detaching src so the element never holds a dead blob URL.
   if (currentWallpaperUrl) {
     URL.revokeObjectURL(currentWallpaperUrl);
     currentWallpaperUrl = null;
@@ -539,8 +506,6 @@ function updateVideoPlayback({ recover = false } = {}) {
   if (!attempt) return;
 
   attempt.catch(() => {
-    // Chromium may discard the decoder after a long time in the background.
-    // Reload once, then give up silently — a looping wallpaper can restart.
     if (!recover) return;
     if (document.hidden || reducedMotionQuery.matches) return;
     if (!backgroundVideo.classList.contains("active")) return;
@@ -561,13 +526,30 @@ async function applyActiveWallpaper(wallpapers) {
   const activeWallpaper = getActiveWallpaper(list);
   const nextWallpaperId = activeWallpaper?.id || BUILTIN_WALLPAPER_ID;
 
-  // Same wallpaper: still resume/pause to match current visibility.
   if (nextWallpaperId === activeWallpaperId) {
     updateVideoPlayback();
     return;
   }
 
   activeWallpaperId = nextWallpaperId;
+
+  wallpaperList.querySelectorAll(".wallpaper-card").forEach((card) => {
+    const isNowActive = card.querySelector(`[data-delete="${nextWallpaperId}"]`) !== null;
+    card.classList.toggle("active-wallpaper", isNowActive);
+    const existingBadge = card.querySelector(".wallpaper-active-badge");
+    if (isNowActive && !existingBadge) {
+      const previewEl = card.querySelector(".wallpaper-preview");
+      if (previewEl) {
+        const badge = document.createElement("span");
+        badge.className = "wallpaper-active-badge";
+        badge.textContent = t("wallpapers.active");
+        previewEl.appendChild(badge);
+      }
+    } else if (!isNowActive && existingBadge) {
+      existingBadge.remove();
+    }
+  });
+
   clearBackgroundMedia();
 
   if (!activeWallpaper) {
@@ -589,13 +571,6 @@ async function applyActiveWallpaper(wallpapers) {
   }
 }
 
-/**
- * Handles a background media element failing to load. The built-in
- * wallpaper keeps its existing fail-safe (plain dark background). A broken
- * user wallpaper is excluded from the candidates for this session and the
- * active-wallpaper resolution re-runs, ending at the built-in wallpaper.
- * Broken records stay in IndexedDB so the user can delete them normally.
- */
 async function handleBackgroundMediaError(mediaElement, mediaKind) {
   // Ignore stale errors from media that was already replaced or detached.
   if (!mediaElement.classList.contains("active") || !mediaElement.getAttribute("src")) {
@@ -603,7 +578,6 @@ async function handleBackgroundMediaError(mediaElement, mediaKind) {
   }
 
   if (activeWallpaperId === BUILTIN_WALLPAPER_ID) {
-    // Bundled default missing or unreadable → keep the plain dark background.
     console.error(
       "Built-in wallpaper failed to load:",
       mediaElement.error ?? null,
@@ -617,12 +591,7 @@ async function handleBackgroundMediaError(mediaElement, mediaKind) {
 
   const failedId = activeWallpaperId;
 
-  // Detach the broken media immediately so the page never stays blank.
   clearBackgroundMedia();
-
-  // Guard against re-entrant error events while recovering. Since every
-  // failure permanently marks its wallpaper as failed for this session,
-  // the fallback chain is bounded and cannot loop forever.
   if (!failedId || wallpaperRecoveryInProgress) return;
 
   wallpaperRecoveryInProgress = true;
@@ -681,18 +650,14 @@ async function setWallpaperMode(id, mode) {
       currentMode === WALLPAPER_MODES.PRIMARY &&
       mode === WALLPAPER_MODES.PRIMARY
     ) {
-      // Only one wallpaper can be primary at a time
       wallpaper.mode = WALLPAPER_MODES.DEFAULT;
       wallpaper.primary = false;
       changed.push(wallpaper);
     }
   }
 
-  // Only write the records that actually changed, instead of rewriting
-  // every wallpaper on every mode change.
   await Promise.all(changed.map((wallpaper) => saveWallpaper(wallpaper)));
 
-  // In-memory records are already updated; reuse them instead of re-reading.
   await applyActiveWallpaper(wallpapers);
   await renderWallpapers(wallpapers);
 }
@@ -710,8 +675,6 @@ async function removeWallpaper(id) {
   await renderWallpapers(wallpapers);
 }
 
-// --- Init ---
-
 function bindWallpaperEvents() {
   wallpaperInput.addEventListener("change", handleWallpaperUpload);
 
@@ -723,7 +686,6 @@ function bindWallpaperEvents() {
   document.addEventListener("visibilitychange", () => {
     const isVisible = document.visibilityState === "visible";
 
-    // Resume/pause immediately — do not wait on IndexedDB.
     updateVideoPlayback({ recover: isVisible });
 
     if (isVisible) {
@@ -754,7 +716,6 @@ function bindWallpaperEvents() {
   });
 }
 
-/** Requires openDatabase() to have resolved. */
 export async function initWallpaper() {
   bindWallpaperEvents();
 

@@ -1,7 +1,3 @@
-/**
- * app.js — Entry point. Starts every system of Fynn New Tab.
- */
-
 import { initGreeting } from "./JS/greeting.js";
 import { initClock } from "./JS/clock.js";
 import { initSearch } from "./JS/search.js";
@@ -19,9 +15,6 @@ import { initThemePanel } from './JS/theme.js';
 initSettings();
 
 async function start() {
-  // Failed modules are collected and reported together so the user gets
-  // exactly one dialog, while each try/catch still keeps one broken module
-  // from blocking the others.
   const initFailures = [];
 
   const runInit = async (name, init) => {
@@ -33,7 +26,6 @@ async function start() {
     }
   };
 
-  // LocalStorage-only features first (no waiting on IndexedDB).
   await runInit("i18n", initI18n);
   await runInit("Greeting", () =>
     initGreeting({
@@ -48,7 +40,6 @@ async function start() {
     initThemePanel(document.getElementById("themePanel")),
   );
 
-  // IndexedDB-backed features.
   let dbReady = false;
   await runInit("IndexedDB", async () => {
     await openDatabase();
@@ -61,10 +52,6 @@ async function start() {
   }
 
   if (initFailures.length === 0) return;
-
-  // ONE user-facing dialog for all initialization failures. Technical
-  // details stay in the console above; the database keeps its specific
-  // message when it is the only failure.
   if (initFailures.length === 1 && initFailures[0] === "IndexedDB") {
     showAlertDialog(t("db.errorMessage"), t("db.errorTitle"));
   } else {
