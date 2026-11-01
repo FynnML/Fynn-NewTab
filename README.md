@@ -14,13 +14,13 @@ Built with plain HTML, CSS and JavaScript (ES modules) on Chrome Extension **Man
 
 ## Features
 
-- **Wallpapers** — JPEG, PNG, WebP or MP4 video (up to 50 MB each), stored locally. Pin one, or let Day/Night wallpapers switch automatically. See [Wallpaper modes](#wallpaper-modes).
+- **Wallpapers** — JPEG, PNG, WebP or MP4 video (up to 500 MB each), stored locally. Pin one, or let Day/Night wallpapers switch automatically. See [Wallpaper modes](#wallpaper-modes).
 - **Search** — Brave, Google, DuckDuckGo or your own engine. Typing a URL or domain opens it directly, and your last 8 searches are one keystroke away. See [Search](#search).
 - **Widgets** — Clock (12h/24h), Date, Greeting, Search and Notes. Each one can be switched on or off.
 - **Greeting** — a random phrase for the time of day, re-picked only when the period changes.
 - **Notes** — create, edit, pin, mark as done and delete short notes.
 - **Dashboard** — a slide-out panel with *Wallpapers*, *Widgets* and *Settings* tabs.
-- **Readability controls** — an overlay-strength slider (50–180%) and an optional dim/blur effect while you search.
+- **Readability controls** — an overlay-strength slider (75–180%) and an optional dim/blur effect while you search.
 - **Accessibility** — focus-trapped dialogs, keyboard-navigable menus, and video that pauses in background tabs or when the OS asks for reduced motion.
 - **Multilingual** — fully translated into English, Vietnamese, and Chinese, with instant runtime switching.
 - **Private and offline** — no analytics, no accounts, no background script. The only outgoing request is the search you submit. Fonts are bundled, so nothing is loaded from a CDN.
@@ -91,7 +91,7 @@ Open the dashboard with the gear button at the bottom of the right edge. Click o
 | Custom engine URL | Bing | Only shown when *Custom* is selected |
 | Time format | 12-hour | Clock display |
 | Search focus effect | On | Dims and blurs the wallpaper while the search box is hovered or focused |
-| Overlay strength | 100% | Darkens the wallpaper so text stays readable (50–180%) |
+| Overlay strength | 100% | Darkens the wallpaper so text stays readable (75–180%) |
 | Export data | — | Downloads your notes and settings as a JSON file |
 | Import data | — | Restores notes and settings from a previously exported JSON file |
 | Reset settings | — | Restores every setting and widget toggle above to its default |

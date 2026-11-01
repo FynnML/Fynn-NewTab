@@ -14,13 +14,13 @@ Viết bằng HTML, CSS và JavaScript thuần (ES modules) trên Chrome Extensi
 
 ## Tính năng
 
-- **Hình nền** — JPEG, PNG, WebP hoặc video MP4 (tối đa 50 MB mỗi tệp), lưu cục bộ. Ghim một hình nền, hoặc để hình nền Ngày/Đêm tự động chuyển đổi. Xem [Chế độ hình nền](#chế-độ-hình-nền).
+- **Hình nền** — JPEG, PNG, WebP hoặc video MP4 (tối đa 500 MB mỗi tệp), lưu cục bộ. Ghim một hình nền, hoặc để hình nền Ngày/Đêm tự động chuyển đổi. Xem [Chế độ hình nền](#chế-độ-hình-nền).
 - **Tìm kiếm** — Brave, Google, DuckDuckGo hoặc công cụ tìm kiếm do bạn tự đặt. Gõ URL hoặc tên miền sẽ mở thẳng trang đó, và 8 lượt tìm gần nhất luôn sẵn sàng. Xem [Tìm kiếm](#tìm-kiếm).
 - **Widget** — Đồng hồ (12h/24h), Ngày, Lời chào, Tìm kiếm và Ghi chú. Mỗi widget đều bật/tắt được.
 - **Lời chào** — câu chào ngẫu nhiên theo buổi trong ngày, chỉ chọn lại khi sang buổi mới.
 - **Ghi chú** — tạo, sửa, ghim, đánh dấu hoàn thành và xóa các ghi chú ngắn.
 - **Dashboard** — bảng trượt ra với các tab *Wallpapers*, *Widgets* và *Settings*.
-- **Tùy chỉnh độ dễ đọc** — thanh chỉnh độ đậm lớp phủ (50–180%) và hiệu ứng làm tối/mờ nền khi đang tìm kiếm.
+- **Tùy chỉnh độ dễ đọc** — thanh chỉnh độ đậm lớp phủ (75–180%) và hiệu ứng làm tối/mờ nền khi đang tìm kiếm.
 - **Trợ năng** — hộp thoại giữ focus, menu điều khiển được bằng bàn phím, video tự tạm dừng khi tab bị ẩn hoặc khi hệ điều hành yêu cầu giảm chuyển động.
 - **Đa ngôn ngữ** — hỗ trợ hoàn chỉnh tiếng Anh, tiếng Việt, và tiếng Trung với tính năng chuyển đổi ngôn ngữ tức thời.
 - **Riêng tư và offline** — không analytics, không tài khoản, không background script. Yêu cầu mạng duy nhất là lượt tìm kiếm bạn gửi đi. Font được đóng gói sẵn nên không tải gì từ CDN.
@@ -91,7 +91,7 @@ Mở dashboard bằng nút hình bánh răng ở cuối cạnh phải màn hình
 | Custom engine URL | Bing | Chỉ hiện khi chọn *Custom* |
 | Time format | 12-hour | Cách hiển thị đồng hồ |
 | Search focus effect | Bật | Làm tối và mờ hình nền khi rê chuột vào hoặc focus ô tìm kiếm |
-| Overlay strength | 100% | Làm tối hình nền để chữ dễ đọc (50–180%) |
+| Overlay strength | 100% | Làm tối hình nền để chữ dễ đọc (75–180%) |
 | Xuất dữ liệu | - | Xuất ghi chú và cài đặt của bạn xuống dưới dạng tệp JSON  |
 | Nhập dữ liệu | - | nhận file JSON ghi chú và cài đặt  |
 | Reset settings | — | Đưa mọi cài đặt và công tắc widget ở trên về mặc định |

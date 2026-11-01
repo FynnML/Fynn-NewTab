@@ -1,4 +1,4 @@
-import { STORES, dbGetAll, dbPut, dbDelete } from "./db.js";
+import { STORES, dbGetAll, dbGet, dbPut, dbDelete } from "./db.js";
 import { showConfirmDialog, showAlertDialog } from "./dialog.js";
 import { t, onLanguageChange } from "./i18n/i18n.js";
 
@@ -14,13 +14,15 @@ const cancelNoteButton = document.querySelector("#cancelNoteButton");
 
 let editingNoteId = null;
 
+export const NOTE_TITLE_MAX_LENGTH = noteTitle.maxLength;
+export const NOTE_CONTENT_MAX_LENGTH = noteContent.maxLength;
+
 const getNotes = () => dbGetAll(STORES.notes);
 const saveNote = (note) => dbPut(STORES.notes, note);
 const deleteNote = (id) => dbDelete(STORES.notes, id);
 
 async function findNote(id) {
-  const notes = await getNotes();
-  return notes.find((item) => item.id === id);
+  return dbGet(STORES.notes, id);
 }
 
 async function renderNotes() {

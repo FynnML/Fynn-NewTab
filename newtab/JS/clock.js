@@ -17,11 +17,12 @@ let timeFormat = loadTimeFormat();
 function updateClock() {
   const now = new Date();
 
-  const time = now.toLocaleTimeString(getLanguage(), {
+  const hour12 = timeFormat === "12h";
+  const timeParts = new Intl.DateTimeFormat(getLanguage(), {
     hour: "2-digit",
     minute: "2-digit",
-    hour12: timeFormat === "12h",
-  });
+    hour12,
+  }).formatToParts(now);
 
   const date = now.toLocaleDateString(getLanguage(), {
     weekday: "long",
@@ -29,11 +30,28 @@ function updateClock() {
     day: "numeric",
   });
 
-  clockElement.innerHTML = time.replace(
-    /(AM|PM|SA|CH|上午|下午)/i,
-    (match) => `<span>${match}</span>`
-  );
+  const fragment = document.createDocumentFragment();
+  let textBuffer = "";
 
+  const flushText = () => {
+    if (!textBuffer) return;
+    fragment.append(textBuffer);
+    textBuffer = "";
+  };
+
+  for (const part of timeParts) {
+    if (part.type === "dayPeriod") {
+      flushText();
+      const period = document.createElement("span");
+      period.textContent = part.value;
+      fragment.append(period);
+    } else {
+      textBuffer += part.value;
+    }
+  }
+  flushText();
+
+  clockElement.replaceChildren(fragment);
   dateElement.textContent = date;
 }
 

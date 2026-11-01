@@ -90,6 +90,10 @@ export async function dbGetAll(storeName) {
   return promisify(getStore(storeName, "readonly").getAll());
 }
 
+export async function dbGet(storeName, key) {
+  return promisify(getStore(storeName, "readonly").get(key));
+}
+
 export async function dbPut(storeName, value) {
   await promisify(getStore(storeName, "readwrite").put(value));
 }

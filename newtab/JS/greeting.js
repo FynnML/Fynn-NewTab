@@ -49,11 +49,6 @@ function getRandomGreeting(periodId) {
   return pick;
 }
 
-export function getGreetingText(date = new Date(), customText = null) {
-  const period = getPeriod(date);
-  return customText || getRandomGreeting(period.id);
-}
-
 function msUntilNextPeriod(now = new Date()) {
   const h = now.getHours();
   const next = PERIODS.find((p) => p.from > h);

@@ -1,6 +1,7 @@
 import { STORES, dbGetAll, dbPut } from "./db.js";
 import { showAlertDialog, showConfirmDialog } from "./dialog.js";
 import { t } from "./i18n/i18n.js";
+import { NOTE_CONTENT_MAX_LENGTH, NOTE_TITLE_MAX_LENGTH } from "./notes.js";
 import { setCustomEngineUrl } from "./search.js";
 
 const APP_ID = "fynn-new-tab";
@@ -88,7 +89,16 @@ async function restoreSettings(settings) {
 async function restoreNotes(notes) {
   for (const note of notes) {
     if (!isPlainObject(note) || typeof note.id === "undefined") continue;
-    await dbPut(STORES.notes, note);
+
+    const restored = { ...note };
+    if (typeof restored.title === "string") {
+      restored.title = restored.title.slice(0, NOTE_TITLE_MAX_LENGTH);
+    }
+    if (typeof restored.content === "string") {
+      restored.content = restored.content.slice(0, NOTE_CONTENT_MAX_LENGTH);
+    }
+
+    await dbPut(STORES.notes, restored);
   }
 }
 
