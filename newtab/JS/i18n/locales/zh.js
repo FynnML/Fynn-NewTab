@@ -65,7 +65,8 @@ export const zh = {
   theme: {
     title: "主题",
     mode: {
-      title: "模式",
+      title: "面板主题",
+      description: "仅作用于面板和对话框，主屏幕保持影院般的壁纸风格。",
       dark: "深色",
       light: "浅色",
       auto: "自动（跟随系统）",
@@ -91,10 +92,11 @@ export const zh = {
       clockSize: "时钟大小",
     },
     wallpaper: {
-      title: "壁纸效果",
+      title: "壁纸外观",
       blur: "模糊",
       brightness: "亮度",
       grayscale: "灰度",
+      overlay: "遮罩强度",
     },
     reset: "重置主题",
   },
@@ -158,6 +160,9 @@ export const zh = {
       customEngineUrl: "自定义搜索引擎网址",
       customEngineUrlDescription: "在搜索词所在位置使用 %s",
       customEngineUrlPlaceholder: "https://example.com/search?q=%s",
+
+      searchFocusEffect: "搜索时的聚焦效果",
+      searchFocusEffectDescription: "搜索时调暗并模糊壁纸",
     },
 
     clock: {
@@ -167,18 +172,6 @@ export const zh = {
 
       twelveHour: "12 小时制",
       twentyFourHour: "24 小时制",
-    },
-
-    appearance: {
-      title: "外观",
-
-      searchFocusEffect: "搜索时的聚焦效果",
-      searchFocusEffectDescription: "搜索时调暗并模糊壁纸",
-
-      overlayStrength: "遮罩强度",
-      overlayStrengthDescription: "调暗壁纸，让文字更易阅读",
-
-      overlayStrengthValue: "{value}%",
     },
 
     data: {

@@ -249,15 +249,20 @@
       <!-- Wallpapers -->
       <section class="dashboard-content active" id="wallpapers" role="tabpanel" aria-labelledby="tab-wallpapers">
         <h2 data-i18n="wallpapers.title">Wallpapers</h2>
-        <label class="upload-wallpaper">
-          <input
-            type="file"
-            id="wallpaperInput"
-            accept="video/mp4,image/jpeg,image/png,image/webp"
-            hidden
-          />
-          <span data-i18n="wallpapers.upload">Upload Wallpaper</span>
-        </label>
+        <button
+          type="button"
+          class="upload-wallpaper"
+          id="wallpaperUploadButton"
+          data-i18n="wallpapers.upload"
+        >
+          Upload Wallpaper
+        </button>
+        <input
+          type="file"
+          id="wallpaperInput"
+          accept="video/mp4,image/jpeg,image/png,image/webp"
+          hidden
+        />
         <div class="wallpaper-list" id="wallpaperList"></div>
       </section>
 
@@ -398,11 +403,23 @@
               id="customEngineUrlSetting"
               class="setting-text-input"
               placeholder="https://example.com/search?q=%s"
-              data-i18n-attr="placeholder:settings.search.customEngineUrlPlaceholder,aria-label:settings.search.customEngineUrl"
+              data-i18n-attr="placeholder:settings.search.customEngineUrlPlaceholder;aria-label:settings.search.customEngineUrl"
               aria-label="Custom engine URL"
               autocomplete="off"
               spellcheck="false"
             />
+          </div>
+
+          <div class="setting-item">
+            <div>
+              <strong data-i18n="settings.search.searchFocusEffect">Search focus effect</strong>
+              <span data-i18n="settings.search.searchFocusEffectDescription">Dim and blur wallpaper when searching</span>
+            </div>
+
+            <label class="switch">
+              <input type="checkbox" id="searchFocusEffectSetting" aria-label="Search focus effect" data-i18n-attr="aria-label:settings.search.searchFocusEffect" />
+              <span class="slider"></span>
+            </label>
           </div>
         </div>
 
@@ -419,45 +436,6 @@
               <option value="12h" data-i18n="settings.clock.twelveHour">12-hour</option>
               <option value="24h" data-i18n="settings.clock.twentyFourHour">24-hour</option>
             </select>
-          </div>
-        </div>
-
-        <div class="setting-group">
-          <div class="setting-group-title" data-i18n="settings.appearance.title">Appearance</div>
-
-          <div class="setting-item">
-            <div>
-              <strong data-i18n="settings.appearance.searchFocusEffect">Search focus effect</strong>
-              <span data-i18n="settings.appearance.searchFocusEffectDescription">Dim and blur wallpaper when searching</span>
-            </div>
-
-            <label class="switch">
-              <input type="checkbox" id="searchFocusEffectSetting" aria-label="Search focus effect" data-i18n-attr="aria-label:settings.appearance.searchFocusEffect" />
-              <span class="slider"></span>
-            </label>
-          </div>
-
-          <div class="setting-item setting-item--stacked">
-            <div>
-              <strong data-i18n="settings.appearance.overlayStrength">Overlay strength</strong>
-              <span data-i18n="settings.appearance.overlayStrengthDescription">Darkens the wallpaper so text stays readable</span>
-            </div>
-
-            <div class="setting-item-row">
-              <input
-                type="range"
-                id="overlayStrengthSetting"
-                class="setting-range"
-                min="75"
-                max="180"
-                step="10"
-                aria-label="Overlay strength"
-                data-i18n-attr="aria-label:settings.appearance.overlayStrength"
-              />
-              <span class="setting-range-value" id="overlayStrengthValue"
-                >100%</span
-              >
-            </div>
           </div>
         </div>
 

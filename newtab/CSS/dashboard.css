@@ -161,7 +161,7 @@
 }
 
 .dashboard-tab.active {
-  background: var(--surface-interactive);
+  background: var(--accent-subtle);
   color: var(--text-primary);
 }
 
@@ -249,7 +249,7 @@
 }
 
 .switch input:focus-visible + .slider {
-  outline: 2px solid rgba(255, 255, 255, 0.4);
+  outline: 2px solid var(--accent-border);
   outline-offset: 2px;
 }
 
@@ -258,7 +258,7 @@
   inset: 0;
 
   border-radius: var(--radius-xl);
-  background: rgba(255, 255, 255, 0.12);
+  background: var(--surface-interactive);
 
   cursor: pointer;
   transition: background var(--transition-normal);
@@ -274,18 +274,20 @@
   top: 3px;
 
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.6);
+  /* Decorative knob — uses the low "faint" token so the readability bump of
+     --text-muted/--text-dim does not make it glare (see variables.css). */
+  background: var(--text-faint);
 
   transition: transform var(--transition-normal), background var(--transition-normal);
 }
 
 .switch input:checked + .slider {
-  background: rgba(255, 255, 255, 0.35);
+  background: var(--accent);
 }
 
 .switch input:checked + .slider::before {
   transform: translateX(18px);
-  background: white;
+  background: var(--accent-contrast);
 }
 
 .setting-group {
@@ -368,7 +370,7 @@
 }
 
 .setting-select:focus:not(:focus-visible) {
-  border-color: var(--glass-border);
+  border-color: var(--accent-border);
 }
 
 .setting-select option {
@@ -410,7 +412,7 @@
 }
 
 .setting-text-input:focus {
-  border-color: var(--glass-border);
+  border-color: var(--accent-border);
 }
 
 .setting-text-input::placeholder {
@@ -508,10 +510,10 @@
   width: 100%;
   height: 42px;
 
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--glass-border-soft);
   border-radius: var(--radius-md);
 
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--surface-glass);
   color: var(--text-secondary);
 
   font-family: inherit;
@@ -526,8 +528,8 @@
 }
 
 .reset-settings-button:hover {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.14);
+  background: var(--surface-interactive);
+  border-color: var(--glass-border);
   color: var(--text-primary);
 }
 

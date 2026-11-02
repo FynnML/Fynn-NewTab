@@ -9,11 +9,6 @@ import {
   setCustomEngineUrl,
   resetSearchSettings,
 } from "./search.js";
-import {
-  getOverlayStrength,
-  setOverlayStrength,
-  resetOverlayStrength,
-} from "./wallpaper.js";
 import { showConfirmDialog } from "./dialog.js";
 import { t, onLanguageChange, getLanguage, setLanguage, resetLanguage } from "./i18n/i18n.js";
 import { exportData, importData } from "./backup.js";
@@ -137,6 +132,10 @@ function initPanel() {
   });
 
   document.addEventListener("click", (event) => {
+    // A dialog button removes ".active" before this handler sees the click,
+    // so the ".active" check below would miss it and the dashboard would
+    // treat the click as "outside". Ignore clicks born inside a dialog.
+    if (event.target.closest(".custom-dialog-overlay")) return;
     if (!dashboard || !dashboardToggle) return;
     if (!dashboard.classList.contains("open")) return;
     if (document.querySelector(".custom-dialog-overlay.active")) return;
@@ -270,10 +269,6 @@ function initSettings() {
   const customEngineUrlSetting = document.querySelector(
     "#customEngineUrlSetting",
   );
-  const overlayStrengthSetting = document.querySelector(
-    "#overlayStrengthSetting",
-  );
-  const overlayStrengthValue = document.querySelector("#overlayStrengthValue");
   const resetSettingsButton = document.querySelector("#resetSettingsButton");
   const exportDataButton = document.querySelector("#exportDataButton");
   const importDataButton = document.querySelector("#importDataButton");
@@ -294,12 +289,6 @@ function initSettings() {
     if (timeFormatSetting) timeFormatSetting.value = getTimeFormat();
     if (searchFocusEffectSetting) searchFocusEffectSetting.checked = isSearchFocusEffectEnabled();
     if (customEngineUrlSetting) customEngineUrlSetting.value = getCustomEngineUrl();
-
-    if (overlayStrengthSetting && overlayStrengthValue) {
-      const overlayStrength = getOverlayStrength();
-      overlayStrengthSetting.value = overlayStrength;
-      overlayStrengthValue.textContent = t("settings.appearance.overlayStrengthValue", { value: overlayStrength });
-    }
 
     syncCustomEngineVisibility();
   };
@@ -328,15 +317,6 @@ function initSettings() {
     customEngineUrlSetting.value = getCustomEngineUrl();
   });
 
-  overlayStrengthSetting?.addEventListener("input", () => {
-    const value = Number(overlayStrengthSetting.value);
-
-    setOverlayStrength(value);
-    if (overlayStrengthValue) {
-      overlayStrengthValue.textContent = t("settings.appearance.overlayStrengthValue", { value });
-    }
-  });
-
   resetSettingsButton?.addEventListener("click", async () => {
     const confirmed = await showConfirmDialog(
       t("settings.reset.confirmation"),
@@ -349,7 +329,6 @@ function initSettings() {
     resetLanguage();
     resetSearchSettings();
     resetTimeFormat();
-    resetOverlayStrength();
     resetWidgets();
     resetTheme();
 

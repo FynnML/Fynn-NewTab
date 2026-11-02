@@ -17,18 +17,34 @@ html:root #clockGroup {
   min-height: 1em;
 }
 
+/* ------------------------------------------------------------------ */
+/* Light dashboard theme                                                */
+/*                                                                      */
+/* Scope (option 1): the "Light" mode restyles the dashboard panel,     */
+/* dialogs and the controls inside them. The wallpaper screen itself    */
+/* (clock, search, notes, greeting...) intentionally keeps its          */
+/* cinematic dark look so the wallpaper stays the center of attention.  */
+/* The settings copy explains this scope to the user.                   */
+/* ------------------------------------------------------------------ */
+
+html[data-theme="dark"],
 html[data-theme="light"] {
-  color-scheme: light;
+  /* The page canvas is always dark; only panels switch. */
+  color-scheme: dark;
 }
 
 html[data-theme="light"] .dashboard,
 html[data-theme="light"] .custom-dialog {
+  color-scheme: light;
+
   --text-primary: #111113;
   --text-secondary: rgba(17, 17, 19, 0.72);
-  --text-muted: rgba(17, 17, 19, 0.5);
-  --text-dim: rgba(17, 17, 19, 0.35);
+  --text-muted: rgba(17, 17, 19, 0.62);
+  --text-dim: rgba(17, 17, 19, 0.47);
+  /* Decorative details only — intentionally kept low (see variables.css). */
+  --text-faint: rgba(17, 17, 19, 0.5);
 
-  --glass-bg-panel: rgba(246, 246, 248, 0.88);
+  --glass-bg-panel: rgba(246, 246, 248, 0.92);
   --glass-border: rgba(0, 0, 0, 0.12);
   --glass-border-soft: rgba(0, 0, 0, 0.08);
 
@@ -44,15 +60,40 @@ html[data-theme="light"] .custom-dialog {
 html[data-theme="light"] .dashboard {
   background: var(--glass-bg-panel);
   border-left-color: var(--glass-border-soft);
+  box-shadow:
+    inset 1px 1px 0 rgba(255, 255, 255, 0.7),
+    -12px 0 40px rgba(0, 0, 0, 0.16);
   color: var(--text-primary);
+}
+
+html[data-theme="light"] .dashboard:hover::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.18);
 }
 
 html[data-theme="light"] .custom-dialog {
-  background: rgba(255, 255, 255, 0.92);
+  background: rgba(255, 255, 255, 0.94);
   border-color: var(--glass-border);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.22);
   color: var(--text-primary);
 }
 
+/* The dark text shadow is only needed on the cinematic screen. */
+html[data-theme="light"] .dashboard .setting-group-title {
+  text-shadow: none;
+}
+
+/* Native dropdown arrows need a dark stroke to stay visible on light
+   surfaces (both selects only exist inside the dashboard). */
+html[data-theme="light"] .dashboard .setting-select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='rgba(17, 17, 19, 0.72)' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+}
+
+html[data-theme="light"] .dashboard .wallpaper-mode-select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='rgba(17, 17, 19, 0.72)' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+}
+
+/* The dashboard handle floats on the main screen but belongs to the
+   dashboard, so it follows the light mode as before. */
 html[data-theme="light"] .dashboard-toggle {
   background: rgba(240, 240, 242, 0.75);
   color: var(--text-secondary);
@@ -69,8 +110,13 @@ html[data-theme="light"] .wallpaper-mode-select option {
   color: #111113;
 }
 
-html[data-theme="dark"] {
-  color-scheme: dark;
+@media (max-width: 640px) {
+  /* Bottom-sheet variant of the dashboard on small screens. */
+  html[data-theme="light"] .dashboard {
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.7),
+      0 -12px 40px rgba(0, 0, 0, 0.16);
+  }
 }
 
 .tp-section {
@@ -126,6 +172,15 @@ html[data-theme="dark"] {
 
 .tp-row--stack:hover {
   background: transparent;
+}
+
+.tp-desc {
+  margin: 0;
+  padding: 0 var(--space-sm);
+
+  color: var(--text-muted);
+  font-size: 11px;
+  line-height: 1.5;
 }
 
 .tp-label {
@@ -251,8 +306,8 @@ html[data-theme="dark"] {
 }
 
 .tp-preset[aria-pressed="true"] {
-  border-color: #fff;
-  box-shadow: 0 0 0 2px var(--swatch);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-subtle);
 }
 
 .tp-reset {

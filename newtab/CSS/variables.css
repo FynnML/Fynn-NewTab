@@ -2,11 +2,20 @@
   /* --- Typography --- */
   --text-primary: #f0f0f0;
   --text-secondary: rgba(240, 240, 240, 0.65);
-  --text-muted: rgba(240, 240, 240, 0.4);
-  --text-dim: rgba(240, 240, 240, 0.25);
+  --text-muted: rgba(240, 240, 240, 0.55);
+  --text-dim: rgba(240, 240, 240, 0.45);
+  /* Decorative details only (switch knob, dividers) — intentionally kept low. */
+  --text-faint: rgba(240, 240, 240, 0.4);
 
+  /* Accent system — every value below is refreshed together by settings.js
+     whenever the accent color changes.
+     --accent           : main accent color (text, icons, fills)
+     --accent-subtle    : soft accent background (selected rows, hover tints)
+     --accent-border    : accent border for selected / focus states
+     --accent-contrast  : readable text color on top of --accent          */
   --accent: rgba(255, 255, 255, 0.88);
   --accent-subtle: rgba(255, 255, 255, 0.12);
+  --accent-border: rgba(255, 255, 255, 0.45);
   --accent-contrast: #0a0a0a;
 
   --color-danger: #e85050;

@@ -8,6 +8,20 @@ const APP_ID = "fynn-new-tab";
 const EXPORT_VERSION = 1;
 const STORAGE_PREFIX_RE = /^fynn[-:]/;
 
+// Only these keys are written back on import. Everything else found in a
+// backup file is ignored, so a hand-edited export cannot inject arbitrary
+// localStorage entries (runtime state and legacy keys stay out too).
+const RESTORE_WHITELIST = new Set([
+  "fynn-settings",
+  "fynn-widget-settings",
+  "fynn-time-format",
+  "fynn-search-engine",
+  "fynn-search-focus-effect",
+  "fynn-custom-engine-url",
+  "fynn-recent-searches",
+  "fynn-language",
+]);
+
 function collectSettings() {
   const settings = {};
   for (let i = 0; i < localStorage.length; i++) {
@@ -74,7 +88,7 @@ function isValidBackup(payload) {
 
 async function restoreSettings(settings) {
   for (const [key, value] of Object.entries(settings)) {
-    if (!STORAGE_PREFIX_RE.test(key) || typeof value !== "string") continue;
+    if (!RESTORE_WHITELIST.has(key) || typeof value !== "string") continue;
     try {
       if (key === "fynn-custom-engine-url") {
         setCustomEngineUrl(value);

@@ -66,7 +66,9 @@ export const en = {
   theme: {
     title: "Theme",
     mode: {
-      title: "Mode",
+      title: "Dashboard theme",
+      description:
+        "Affects the dashboard and dialogs. The wallpaper screen keeps its cinematic look.",
       dark: "Dark",
       light: "Light",
       auto: "Auto (system)",
@@ -92,10 +94,11 @@ export const en = {
       clockSize: "Clock size",
     },
     wallpaper: {
-      title: "Wallpaper effects",
+      title: "Wallpaper appearance",
       blur: "Blur",
       brightness: "Brightness",
       grayscale: "Grayscale",
+      overlay: "Overlay strength",
     },
     reset: "Reset theme",
   },
@@ -161,6 +164,9 @@ export const en = {
       customEngineUrl: "Custom engine URL",
       customEngineUrlDescription: "Use %s where the query should go",
       customEngineUrlPlaceholder: "https://example.com/search?q=%s",
+
+      searchFocusEffect: "Search focus effect",
+      searchFocusEffectDescription: "Dim and blur wallpaper when searching",
     },
 
     clock: {
@@ -170,20 +176,6 @@ export const en = {
 
       twelveHour: "12-hour",
       twentyFourHour: "24-hour",
-    },
-
-    appearance: {
-      title: "Appearance",
-
-      searchFocusEffect: "Search focus effect",
-      searchFocusEffectDescription:
-        "Dim and blur wallpaper when searching",
-
-      overlayStrength: "Overlay strength",
-      overlayStrengthDescription:
-        "Darkens the wallpaper so text stays readable",
-
-      overlayStrengthValue: "{value}%",
     },
 
     data: {

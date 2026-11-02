@@ -95,6 +95,10 @@ export function initThemePanel(container) {
   });
   modeSection.querySelector(".tp-row .tp-label").remove();
 
+  // Explain what the mode affects so the Light option is not mistaken for
+  // a full-page theme (the wallpaper screen keeps its cinematic look).
+  modeSection.appendChild(el("p", "tp-desc", { "data-i18n": "theme.mode.description" }));
+
   const accentSection = section("theme.accent.title");
 
   const presets = el("div", "tp-presets", {
@@ -139,6 +143,7 @@ export function initThemePanel(container) {
   addSlider(wallpaperSection, { path: "wallpaper.blur", labelKey: "theme.wallpaper.blur", unit: "px" });
   addSlider(wallpaperSection, { path: "wallpaper.brightness", labelKey: "theme.wallpaper.brightness", unit: "%" });
   addSlider(wallpaperSection, { path: "wallpaper.grayscale", labelKey: "theme.wallpaper.grayscale", unit: "%" });
+  addSlider(wallpaperSection, { path: "wallpaper.overlay", labelKey: "theme.wallpaper.overlay", unit: "%" });
 
   const resetButton = el("button", "tp-reset", { type: "button", "data-i18n": "theme.reset" });
   resetButton.addEventListener("click", () => reset());

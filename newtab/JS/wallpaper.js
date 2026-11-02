@@ -6,11 +6,6 @@ const DEFAULT_WALLPAPER_SRC = "../assets/wallpapers/default.mp4";
 const BUILTIN_WALLPAPER_ID = "__builtin-default__";
 const SCHEDULE_INTERVAL_MS = 60 * 1000;
 
-const OVERLAY_STRENGTH_KEY = "fynn-overlay-strength";
-const DEFAULT_OVERLAY_STRENGTH = 100; // percent
-const MIN_OVERLAY_STRENGTH = 75;
-const MAX_OVERLAY_STRENGTH = 180;
-
 const WALLPAPER_MODES = {
   DEFAULT: "default",
   PRIMARY: "primary",
@@ -23,6 +18,7 @@ const VALID_WALLPAPER_MODES = Object.values(WALLPAPER_MODES);
 const MEDIA_VALIDATION_TIMEOUT_MS = 10 * 1000;
 
 const wallpaperInput = document.querySelector("#wallpaperInput");
+const wallpaperUploadButton = document.querySelector("#wallpaperUploadButton");
 const wallpaperList = document.querySelector("#wallpaperList");
 const backgroundVideo = document.querySelector("#backgroundVideo");
 const backgroundImage = document.querySelector("#backgroundImage");
@@ -36,40 +32,6 @@ const wallpaperPreviewUrls = new Set();
 const failedWallpaperIds = new Set();
 let wallpaperRecoveryInProgress = false;
 let wallpaperFallbackNoticeShown = false;
-
-
-const clampOverlayStrength = (value) =>
-  Math.min(MAX_OVERLAY_STRENGTH, Math.max(MIN_OVERLAY_STRENGTH, value));
-
-export function getOverlayStrength() {
-  const saved = Number(localStorage.getItem(OVERLAY_STRENGTH_KEY));
-  return Number.isFinite(saved) && saved > 0
-    ? clampOverlayStrength(saved)
-    : DEFAULT_OVERLAY_STRENGTH;
-}
-
-function applyOverlayStrength(percent) {
-  document.documentElement.style.setProperty(
-    "--overlay-strength",
-    String(percent / 100),
-  );
-}
-
-export function setOverlayStrength(percent) {
-  const clamped = clampOverlayStrength(percent);
-
-  applyOverlayStrength(clamped);
-  localStorage.setItem(OVERLAY_STRENGTH_KEY, String(clamped));
-}
-
-export function resetOverlayStrength() {
-  localStorage.removeItem(OVERLAY_STRENGTH_KEY);
-  applyOverlayStrength(DEFAULT_OVERLAY_STRENGTH);
-}
-
-export function initOverlayStrength() {
-  applyOverlayStrength(getOverlayStrength());
-}
 
 const saveWallpaper = (wallpaper) => dbPut(STORES.wallpapers, wallpaper);
 const getWallpapers = () => dbGetAll(STORES.wallpapers);
@@ -676,6 +638,13 @@ async function removeWallpaper(id) {
 }
 
 function bindWallpaperEvents() {
+  // The upload control is a real <button> (not a <label> wrapping the hidden
+  // input) so it is reachable and activatable with the keyboard, mirroring the
+  // Import button in the settings tab.
+  wallpaperUploadButton?.addEventListener("click", () => {
+    wallpaperInput?.click();
+  });
+
   wallpaperInput.addEventListener("change", handleWallpaperUpload);
 
   backgroundVideo.muted = true;

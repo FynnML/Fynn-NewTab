@@ -259,7 +259,7 @@
 }
 
 .engine-option.selected {
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--accent-subtle);
   font-weight: 500;
 }
 
@@ -349,6 +349,11 @@
 .suggestion-item.selected {
   background: var(--surface-interactive);
   color: var(--text-primary);
+}
+
+/* Keyboard-selected suggestion stands out with the accent tint. */
+.suggestion-item.selected {
+  background: var(--accent-subtle);
 }
 
 .suggestion-item:hover .suggestion-icon,

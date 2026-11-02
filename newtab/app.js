@@ -3,7 +3,7 @@ import { initClock } from "./JS/clock.js";
 import { initSearch } from "./JS/search.js";
 import { initDashboard } from "./JS/dashboard.js";
 import { openDatabase } from "./JS/db.js";
-import { initWallpaper, initOverlayStrength } from "./JS/wallpaper.js";
+import { initWallpaper } from "./JS/wallpaper.js";
 import { initNotes } from "./JS/notes.js";
 import { initI18n } from "./JS/i18n/i18n.js";
 import { showAlertDialog } from "./JS/dialog.js";
@@ -34,7 +34,6 @@ async function start() {
   );
   await runInit("Clock", initClock);
   await runInit("Search", initSearch);
-  await runInit("Overlay strength", initOverlayStrength);
   await runInit("Dashboard", initDashboard);
   await runInit("Theme panel", () =>
     initThemePanel(document.getElementById("themePanel")),

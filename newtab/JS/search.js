@@ -235,7 +235,10 @@ const MAX_RECENT = 8;
 
 function getRecentSearches() {
   try {
-    return JSON.parse(localStorage.getItem(RECENT_SEARCHES_KEY)) || [];
+    const parsed = JSON.parse(localStorage.getItem(RECENT_SEARCHES_KEY));
+    return Array.isArray(parsed)
+      ? parsed.filter((item) => typeof item === "string")
+      : [];
   } catch {
     return [];
   }
@@ -357,35 +360,8 @@ function initRecentSearches() {
     showRecentSearches(searchInput.value);
   });
 
-  searchInput.addEventListener("keydown", (event) => {
-    if (!searchSuggestions.classList.contains("active")) {
-      if (event.key === "Escape" && searchInput.value) {
-        searchInput.value = "";
-      }
-      return;
-    }
-
-    if (event.key === "ArrowDown") {
-      event.preventDefault();
-      selectedSuggestionIndex = Math.min(
-        selectedSuggestionIndex + 1,
-        currentSuggestions.length - 1,
-      );
-      updateSuggestionHighlight();
-    } else if (event.key === "ArrowUp") {
-      event.preventDefault();
-      selectedSuggestionIndex = Math.max(selectedSuggestionIndex - 1, -1);
-      updateSuggestionHighlight();
-    } else if (event.key === "Enter" && selectedSuggestionIndex >= 0) {
-      event.preventDefault();
-      searchInput.value = currentSuggestions[selectedSuggestionIndex];
-      hideRecentSearches();
-      performSearch();
-    } else if (event.key === "Escape") {
-      event.preventDefault();
-      hideRecentSearches();
-    }
-  });
+  // Keyboard handling for the search input (Enter, ArrowUp/Down, Escape) is
+  // done by the single keydown listener attached in initSearch() below.
 
   document.addEventListener("click", (e) => {
     if (!searchContainer.contains(e.target)) {
@@ -460,8 +436,48 @@ export function initSearch() {
 
   searchButton.addEventListener("click", performSearch);
 
+  // The one and only Enter/keyboard handler for the search input. It must be
+  // a single listener: previously a second Enter listener ran BEFORE this one
+  // (this function runs after initRecentSearches attached the other one), so
+  // pressing Enter with a highlighted suggestion fired performSearch() twice
+  // and "event.defaultPrevented" could not help.
   searchInput.addEventListener("keydown", (event) => {
-    if (event.key === "Enter" && !event.defaultPrevented) performSearch();
+    if (event.isComposing) return;
+
+    if (event.key === "Enter") {
+      event.preventDefault();
+
+      if (selectedSuggestionIndex >= 0) {
+        searchInput.value = currentSuggestions[selectedSuggestionIndex];
+        hideRecentSearches();
+      }
+
+      performSearch();
+      return;
+    }
+
+    if (!searchSuggestions.classList.contains("active")) {
+      if (event.key === "Escape" && searchInput.value) {
+        searchInput.value = "";
+      }
+      return;
+    }
+
+    if (event.key === "ArrowDown") {
+      event.preventDefault();
+      selectedSuggestionIndex = Math.min(
+        selectedSuggestionIndex + 1,
+        currentSuggestions.length - 1,
+      );
+      updateSuggestionHighlight();
+    } else if (event.key === "ArrowUp") {
+      event.preventDefault();
+      selectedSuggestionIndex = Math.max(selectedSuggestionIndex - 1, -1);
+      updateSuggestionHighlight();
+    } else if (event.key === "Escape") {
+      event.preventDefault();
+      hideRecentSearches();
+    }
   });
 
   document.addEventListener("click", () => {

@@ -66,7 +66,9 @@ export const vi = {
   theme: {
     title: "Giao diện",
     mode: {
-      title: "Chế độ",
+      title: "Giao diện bảng điều khiển",
+      description:
+        "Áp dụng cho bảng điều khiển và hộp thoại. Màn hình chính vẫn giữ phong cách điện ảnh với hình nền.",
       dark: "Tối",
       light: "Sáng",
       auto: "Tự động (theo hệ thống)",
@@ -92,10 +94,11 @@ export const vi = {
       clockSize: "Cỡ đồng hồ",
     },
     wallpaper: {
-      title: "Hiệu ứng hình nền",
+      title: "Hiển thị hình nền",
       blur: "Làm mờ",
       brightness: "Độ sáng",
       grayscale: "Thang xám",
+      overlay: "Mức tối lớp phủ",
     },
     reset: "Đặt lại giao diện",
   },
@@ -163,6 +166,9 @@ export const vi = {
       customEngineUrlDescription:
         "Dùng %s tại vị trí cần chèn từ khóa tìm kiếm",
       customEngineUrlPlaceholder: "https://example.com/search?q=%s",
+
+      searchFocusEffect: "Hiệu ứng khi tìm kiếm",
+      searchFocusEffectDescription: "Làm tối và mờ hình nền khi nhập từ khóa",
     },
 
     clock: {
@@ -172,18 +178,6 @@ export const vi = {
 
       twelveHour: "12 giờ",
       twentyFourHour: "24 giờ",
-    },
-
-    appearance: {
-      title: "Giao diện",
-
-      searchFocusEffect: "Hiệu ứng khi tìm kiếm",
-      searchFocusEffectDescription: "Làm tối và mờ hình nền khi nhập từ khóa",
-
-      overlayStrength: "Mức độ tối của lớp phủ",
-      overlayStrengthDescription: "Làm tối hình nền để văn bản dễ đọc hơn",
-
-      overlayStrengthValue: "{value}%",
     },
 
     data: {
