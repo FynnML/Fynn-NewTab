@@ -1,5 +1,43 @@
 import { t } from "./i18n/i18n.js";
 
+// --- Non-blocking toast -------------------------------------------------
+// Used for notices that must not interrupt the user (e.g. a wallpaper falling
+// back to the default one). Unlike the dialogs above, toasts never steal
+// focus and disappear on their own.
+export function showToast(message, { duration = 5000, variant = "info" } = {}) {
+  if (!message) return;
+
+  let container = document.getElementById("fynnToastContainer");
+  if (!container) {
+    container = document.createElement("div");
+    container.id = "fynnToastContainer";
+    container.className = "toast-container";
+    document.body.appendChild(container);
+  }
+
+  const toast = document.createElement("div");
+  toast.className = `toast toast-${variant}`;
+  toast.setAttribute("role", "status");
+  toast.textContent = message;
+
+  const removeToast = () => {
+    if (!toast.isConnected) return;
+    toast.classList.remove("visible");
+    setTimeout(() => toast.remove(), 300);
+  };
+
+  toast.addEventListener("click", removeToast);
+  container.appendChild(toast);
+
+  // Double rAF so the "visible" transition reliably plays from the initial
+  // state even when the toast is appended mid-frame.
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => toast.classList.add("visible"));
+  });
+
+  setTimeout(removeToast, duration);
+}
+
 function setupA11y(overlay, cancelCallback) {
   const previousActiveElement = document.activeElement;
   

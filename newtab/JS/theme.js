@@ -61,7 +61,13 @@ export function initThemePanel(container) {
   function addSegmented(parent, { path, labelKey, options }) {
     const row = el("div", "tp-row tp-row--stack");
     const label = el("span", "tp-label", { "data-i18n": labelKey });
-    const group = el("div", "tp-segmented", { role: "radiogroup" });
+    // The visible label is removed for the mode row below, so the group must
+    // carry its own accessible name (kept in sync with language changes by
+    // the document-wide applyI18n pass).
+    const group = el("div", "tp-segmented", {
+      role: "radiogroup",
+      "data-i18n-attr": `aria-label:${labelKey}`,
+    });
     const buttons = options.map(({ value, key }) => {
       const button = el("button", "tp-seg", {
         type: "button",

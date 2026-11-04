@@ -139,7 +139,6 @@ export const en = {
       invalidFileTitle: "Invalid Wallpaper File",
       fileTooLargeTitle: "File Too Large",
       deleteConfirmation: "Are you sure you want to delete this wallpaper?",
-      loadFailedTitle: "Wallpaper Unavailable",
     },
   },
 
@@ -167,6 +166,13 @@ export const en = {
 
       searchFocusEffect: "Search focus effect",
       searchFocusEffectDescription: "Dim and blur wallpaper when searching",
+
+      searchHistory: "Search history",
+      clearHistoryDescription: "Remove all recent searches stored on this device",
+      clearHistoryButton: "Clear search history",
+      clearHistoryTitle: "Clear search history",
+      clearHistoryConfirmation:
+        "Delete all recent searches stored on this device? This cannot be undone.",
     },
 
     clock: {
@@ -182,7 +188,8 @@ export const en = {
       title: "Data",
 
       export: "Export data",
-      exportDescription: "Save your notes and settings as a JSON file",
+      exportDescription:
+        "Save your notes and settings as a JSON file (wallpapers are not included)",
       exportButton: "Export",
 
       import: "Import data",
@@ -271,7 +278,8 @@ export const en = {
 
     addNote: "Add note",
 
-    wallpaperMode: "Wallpaper mode",
+    wallpaperModeFor: 'Wallpaper mode for "{name}"',
+    deleteWallpaperFor: 'Delete wallpaper "{name}"',
   },
 
   greeting: {

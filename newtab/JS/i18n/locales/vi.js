@@ -140,7 +140,6 @@ export const vi = {
       invalidFileTitle: "Tệp hình nền không hợp lệ",
       fileTooLargeTitle: "Tệp quá lớn",
       deleteConfirmation: "Bạn có chắc chắn muốn xóa hình nền này không?",
-      loadFailedTitle: "Không tải được hình nền",
     },
   },
 
@@ -169,6 +168,14 @@ export const vi = {
 
       searchFocusEffect: "Hiệu ứng khi tìm kiếm",
       searchFocusEffectDescription: "Làm tối và mờ hình nền khi nhập từ khóa",
+
+      searchHistory: "Lịch sử tìm kiếm",
+      clearHistoryDescription:
+        "Xóa tất cả từ khóa đã tìm kiếm trên thiết bị này",
+      clearHistoryButton: "Xóa lịch sử tìm kiếm",
+      clearHistoryTitle: "Xóa lịch sử tìm kiếm",
+      clearHistoryConfirmation:
+        "Xóa tất cả từ khóa tìm kiếm gần đây trên thiết bị này? Hành động này không thể hoàn tác.",
     },
 
     clock: {
@@ -184,7 +191,8 @@ export const vi = {
       title: "Dữ liệu",
 
       export: "Xuất dữ liệu",
-      exportDescription: "Lưu ghi chú và cài đặt của bạn thành một file JSON",
+      exportDescription:
+        "Lưu ghi chú và cài đặt của bạn thành một file JSON (không bao gồm hình nền)",
       exportButton: "Xuất",
 
       import: "Nhập dữ liệu",
@@ -274,7 +282,8 @@ export const vi = {
 
     addNote: "Thêm ghi chú",
 
-    wallpaperMode: "Chế độ hình nền",
+    wallpaperModeFor: 'Chế độ hình nền cho "{name}"',
+    deleteWallpaperFor: 'Xóa hình nền "{name}"',
   },
 
 greeting: {

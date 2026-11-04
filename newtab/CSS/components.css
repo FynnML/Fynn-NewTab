@@ -562,3 +562,67 @@
 .custom-dialog-button.confirm:hover {
   background: var(--color-danger-hover);
 }
+
+/* --- Toasts (non-blocking notices) --- */
+.toast-container {
+  position: fixed;
+  bottom: 28px;
+  left: 50%;
+  transform: translateX(-50%);
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+
+  z-index: 11000;
+
+  /* The container never intercepts clicks; individual toasts may be clicked
+     to dismiss them early. */
+  pointer-events: none;
+}
+
+.toast {
+  max-width: min(420px, 90vw);
+  padding: 10px 16px;
+
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+
+  background: var(--glass-bg-panel);
+  backdrop-filter: var(--blur-lg);
+  -webkit-backdrop-filter: var(--blur-lg);
+
+  box-shadow: var(--shadow-strong);
+
+  color: var(--text-primary);
+  font-size: 13px;
+  line-height: 1.45;
+  text-align: center;
+
+  cursor: default;
+  user-select: none;
+
+  pointer-events: auto;
+
+  opacity: 0;
+  transform: translateY(8px);
+  transition:
+    opacity 0.25s var(--ease),
+    transform 0.25s var(--ease);
+}
+
+.toast.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.toast-error {
+  border-color: var(--color-danger-border);
+}
+
+@media (max-width: 640px) {
+  .toast-container {
+    bottom: 20px;
+  }
+}

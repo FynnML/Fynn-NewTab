@@ -1,5 +1,5 @@
 import { STORES, dbGetAll, dbPut, dbDelete } from "./db.js";
-import { showConfirmDialog, showAlertDialog } from "./dialog.js";
+import { showConfirmDialog, showAlertDialog, showToast } from "./dialog.js";
 import { t, onLanguageChange } from "./i18n/i18n.js";
 
 const DEFAULT_WALLPAPER_SRC = "../assets/wallpapers/default.mp4";
@@ -16,6 +16,51 @@ const WALLPAPER_MODES = {
 const VALID_WALLPAPER_MODES = Object.values(WALLPAPER_MODES);
 
 const MEDIA_VALIDATION_TIMEOUT_MS = 10 * 1000;
+const THUMBNAIL_MAX_WIDTH = 640;
+const THUMBNAIL_EXTRACT_TIMEOUT_MS = 5000;
+
+// Set to false when only the built-in fallback wallpaper is shown because the
+// database is unavailable, so DB-backed code paths stay untouched.
+let databaseAvailable = true;
+
+// Corrupt wallpaper ids are remembered across sessions/tabs (localStorage) so
+// a broken wallpaper is skipped right away instead of failing — and warning —
+// again on every New Tab.
+const BROKEN_WALLPAPERS_KEY = "fynn-broken-wallpapers";
+
+function loadBrokenWallpaperIds() {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(BROKEN_WALLPAPERS_KEY));
+    if (!Array.isArray(parsed)) return;
+    for (const id of parsed) {
+      if (typeof id === "string") failedWallpaperIds.add(id);
+    }
+  } catch {
+    localStorage.removeItem(BROKEN_WALLPAPERS_KEY);
+  }
+}
+
+function persistBrokenWallpaperIds() {
+  try {
+    localStorage.setItem(
+      BROKEN_WALLPAPERS_KEY,
+      JSON.stringify([...failedWallpaperIds]),
+    );
+  } catch {
+    /* Non-fatal: the in-memory set still guards this tab. */
+  }
+}
+
+// File names end up inside generated aria-labels, so they must be escaped
+// before being interpolated into innerHTML.
+function escapeHtml(value) {
+  return String(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;");
+}
 
 const wallpaperInput = document.querySelector("#wallpaperInput");
 const wallpaperUploadButton = document.querySelector("#wallpaperUploadButton");
@@ -227,6 +272,63 @@ function extractVideoThumbnail(file) {
   });
 }
 
+// Mirrors extractVideoThumbnail: downscale to a small JPEG so the dashboard
+// list does not have to decode the full-size blob for previews.
+function extractImageThumbnail(file) {
+  return new Promise((resolve) => {
+    const url = URL.createObjectURL(file);
+    const image = new Image();
+
+    let timeoutId;
+    const cleanup = () => {
+      clearTimeout(timeoutId);
+      URL.revokeObjectURL(url);
+      image.onload = null;
+      image.onerror = null;
+    };
+
+    timeoutId = setTimeout(() => {
+      console.warn("Image thumbnail extraction timed out.");
+      cleanup();
+      resolve(null);
+    }, THUMBNAIL_EXTRACT_TIMEOUT_MS);
+
+    image.onload = () => {
+      const canvas = document.createElement("canvas");
+
+      let width = image.naturalWidth;
+      let height = image.naturalHeight;
+      if (width > THUMBNAIL_MAX_WIDTH) {
+        height = Math.floor(height * (THUMBNAIL_MAX_WIDTH / width));
+        width = THUMBNAIL_MAX_WIDTH;
+      }
+
+      canvas.width = width;
+      canvas.height = height;
+
+      const ctx = canvas.getContext("2d");
+      ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+
+      canvas.toBlob(
+        (blob) => {
+          cleanup();
+          resolve(blob);
+        },
+        "image/jpeg",
+        0.7,
+      );
+    };
+
+    image.onerror = () => {
+      console.warn("Image thumbnail extraction failed.");
+      cleanup();
+      resolve(null);
+    };
+
+    image.src = url;
+  });
+}
+
 async function handleWallpaperUpload(event) {
   try {
     const file = event.target.files[0];
@@ -280,6 +382,8 @@ async function handleWallpaperUpload(event) {
 
     if (file.type.startsWith("video/")) {
       thumbnailBlob = await extractVideoThumbnail(file);
+    } else {
+      thumbnailBlob = await extractImageThumbnail(file);
     }
 
     if (navigator.storage && typeof navigator.storage.persist === "function") {
@@ -394,13 +498,13 @@ async function renderWallpapers(wallpapers) {
           ${t("wallpapers.modes." + currentMode).toUpperCase()}
         </span>
 
-        <select class="wallpaper-mode-select" data-mode="${wallpaper.id}" aria-label="${t("accessibility.wallpaperMode")}">
+        <select class="wallpaper-mode-select" data-mode="${wallpaper.id}" aria-label="${escapeHtml(t("accessibility.wallpaperModeFor", { name: wallpaper.name }))}">
           ${modeOptions}
         </select>
       </div>
 
       <div class="wallpaper-actions">
-        <button class="wallpaper-action delete-button" data-delete="${wallpaper.id}">
+        <button class="wallpaper-action delete-button" data-delete="${wallpaper.id}" aria-label="${escapeHtml(t("accessibility.deleteWallpaperFor", { name: wallpaper.name }))}">
           ${t("common.delete")}
         </button>
       </div>
@@ -558,6 +662,7 @@ async function handleBackgroundMediaError(mediaElement, mediaKind) {
 
   wallpaperRecoveryInProgress = true;
   failedWallpaperIds.add(failedId);
+  persistBrokenWallpaperIds();
 
   try {
     await applyActiveWallpaper();
@@ -569,10 +674,10 @@ async function handleBackgroundMediaError(mediaElement, mediaKind) {
 
   if (!wallpaperFallbackNoticeShown) {
     wallpaperFallbackNoticeShown = true;
-    showAlertDialog(
-      t("wallpapers.errors.loadFailed"),
-      t("wallpapers.dialogs.loadFailedTitle"),
-    ).catch(() => {});
+    // A non-blocking notice instead of a modal alert: the fallback wallpaper
+    // is already on screen, so the user does not have to acknowledge a dialog
+    // (which would otherwise pop up in every new tab).
+    showToast(t("wallpapers.errors.loadFailed"), { variant: "error" });
   }
 }
 
@@ -627,6 +732,7 @@ async function setWallpaperMode(id, mode) {
 async function removeWallpaper(id) {
   await deleteWallpaper(id);
   failedWallpaperIds.delete(id);
+  persistBrokenWallpaperIds();
 
   if (activeWallpaperId === id) {
     activeWallpaperId = null;
@@ -657,7 +763,7 @@ function bindWallpaperEvents() {
 
     updateVideoPlayback({ recover: isVisible });
 
-    if (isVisible) {
+    if (isVisible && databaseAvailable) {
       applyActiveWallpaper().catch((error) => {
         console.error("Wallpaper re-check failed:", error);
       });
@@ -686,6 +792,7 @@ function bindWallpaperEvents() {
 }
 
 export async function initWallpaper() {
+  loadBrokenWallpaperIds();
   bindWallpaperEvents();
 
   const wallpapers = await getWallpapers();
@@ -698,4 +805,20 @@ export async function initWallpaper() {
       console.error("Wallpaper re-render failed:", error);
     });
   });
+}
+
+// Fallback for when the database cannot be opened: user wallpapers are
+// unavailable, but the page must still show the built-in default wallpaper
+// instead of an empty background.
+export function initDefaultWallpaper() {
+  databaseAvailable = false;
+  bindWallpaperEvents();
+
+  activeWallpaperId = BUILTIN_WALLPAPER_ID;
+
+  backgroundVideo.src = DEFAULT_WALLPAPER_SRC;
+  backgroundVideo.classList.add("active");
+  updateVideoPlayback();
+
+  renderWallpapers([]);
 }

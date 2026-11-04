@@ -8,6 +8,13 @@ const APP_ID = "fynn-new-tab";
 const EXPORT_VERSION = 1;
 const STORAGE_PREFIX_RE = /^fynn[-:]/;
 
+// Keys that must never leave the device: they are left out of export files
+// and are not part of the import whitelist either.
+const EXCLUDED_SETTINGS = new Set([
+  "fynn-recent-searches", // search history stays on this device
+  "fynn-broken-wallpapers", // runtime state: wallpapers known to be corrupt
+]);
+
 // Only these keys are written back on import. Everything else found in a
 // backup file is ignored, so a hand-edited export cannot inject arbitrary
 // localStorage entries (runtime state and legacy keys stay out too).
@@ -18,7 +25,6 @@ const RESTORE_WHITELIST = new Set([
   "fynn-search-engine",
   "fynn-search-focus-effect",
   "fynn-custom-engine-url",
-  "fynn-recent-searches",
   "fynn-language",
 ]);
 
@@ -26,7 +32,7 @@ function collectSettings() {
   const settings = {};
   for (let i = 0; i < localStorage.length; i++) {
     const key = localStorage.key(i);
-    if (key && STORAGE_PREFIX_RE.test(key)) {
+    if (key && STORAGE_PREFIX_RE.test(key) && !EXCLUDED_SETTINGS.has(key)) {
       settings[key] = localStorage.getItem(key);
     }
   }

@@ -3,7 +3,7 @@ import { initClock } from "./JS/clock.js";
 import { initSearch } from "./JS/search.js";
 import { initDashboard } from "./JS/dashboard.js";
 import { openDatabase } from "./JS/db.js";
-import { initWallpaper } from "./JS/wallpaper.js";
+import { initWallpaper, initDefaultWallpaper } from "./JS/wallpaper.js";
 import { initNotes } from "./JS/notes.js";
 import { initI18n } from "./JS/i18n/i18n.js";
 import { showAlertDialog } from "./JS/dialog.js";
@@ -48,6 +48,11 @@ async function start() {
   if (dbReady) {
     await runInit("Wallpaper", initWallpaper);
     await runInit("Notes", initNotes);
+  } else {
+    // The database could not be opened: user wallpapers and notes are
+    // unavailable, but the built-in default wallpaper must still be shown
+    // instead of leaving the page with an empty background.
+    await runInit("Default wallpaper", initDefaultWallpaper);
   }
 
   if (initFailures.length === 0) return;

@@ -135,7 +135,6 @@ export const zh = {
       invalidFileTitle: "壁纸文件无效",
       fileTooLargeTitle: "文件过大",
       deleteConfirmation: "确定要删除这张壁纸吗？",
-      loadFailedTitle: "壁纸加载失败",
     },
   },
 
@@ -163,6 +162,13 @@ export const zh = {
 
       searchFocusEffect: "搜索时的聚焦效果",
       searchFocusEffectDescription: "搜索时调暗并模糊壁纸",
+
+      searchHistory: "搜索历史",
+      clearHistoryDescription: "移除此设备上保存的所有最近搜索",
+      clearHistoryButton: "清除搜索历史",
+      clearHistoryTitle: "清除搜索历史",
+      clearHistoryConfirmation:
+        "确定要删除此设备上的所有最近搜索吗？此操作无法撤销。",
     },
 
     clock: {
@@ -178,7 +184,7 @@ export const zh = {
       title: "数据",
 
       export: "导出数据",
-      exportDescription: "将便签和设置保存为 JSON 文件",
+      exportDescription: "将便签和设置保存为 JSON 文件（不包含壁纸）",
       exportButton: "导出",
 
       import: "导入数据",
@@ -266,7 +272,8 @@ export const zh = {
 
     addNote: "添加便签",
 
-    wallpaperMode: "壁纸模式",
+    wallpaperModeFor: "“{name}”的壁纸模式",
+    deleteWallpaperFor: "删除壁纸“{name}”",
   },
 
   greeting: {

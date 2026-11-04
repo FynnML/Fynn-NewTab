@@ -263,6 +263,11 @@ function removeRecentSearch(query) {
   localStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify(recent));
 }
 
+export function clearRecentSearches() {
+  localStorage.removeItem(RECENT_SEARCHES_KEY);
+  hideRecentSearches();
+}
+
 function hideRecentSearches() {
   searchSuggestions.classList.remove("active");
   selectedSuggestionIndex = -1;

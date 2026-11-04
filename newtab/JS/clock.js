@@ -4,6 +4,12 @@ const TIME_FORMAT_KEY = "fynn-time-format";
 const DEFAULT_TIME_FORMAT = "12h";
 const VALID_TIME_FORMATS = ["12h", "24h"];
 
+// The clock only shows hours and minutes, so instead of ticking every second
+// it is re-aligned to fire just after each minute boundary. 25ms of buffer
+// keeps the first tick of a new minute from resolving a millisecond early.
+const MINUTE_MS = 60 * 1000;
+const TICK_BUFFER_MS = 25;
+
 const clockElement = document.querySelector("#clock");
 const dateElement = document.querySelector("#date");
 
@@ -14,21 +20,33 @@ function loadTimeFormat() {
 
 let timeFormat = loadTimeFormat();
 
-function updateClock() {
-  const now = new Date();
+// Intl formatters are expensive to construct, so build them once and rebuild
+// only when the language or the time format actually changes.
+let timeFormatter = null;
+let dateFormatter = null;
 
-  const hour12 = timeFormat === "12h";
-  const timeParts = new Intl.DateTimeFormat(getLanguage(), {
+function buildFormatters() {
+  const locale = getLanguage();
+
+  timeFormatter = new Intl.DateTimeFormat(locale, {
     hour: "2-digit",
     minute: "2-digit",
-    hour12,
-  }).formatToParts(now);
+    hour12: timeFormat === "12h",
+  });
 
-  const date = now.toLocaleDateString(getLanguage(), {
+  dateFormatter = new Intl.DateTimeFormat(locale, {
     weekday: "long",
     month: "long",
     day: "numeric",
   });
+}
+
+function updateClock() {
+  if (!timeFormatter || !dateFormatter) buildFormatters();
+
+  const now = new Date();
+  const timeParts = timeFormatter.formatToParts(now);
+  const date = dateFormatter.format(now);
 
   const fragment = document.createDocumentFragment();
   let textBuffer = "";
@@ -55,6 +73,29 @@ function updateClock() {
   dateElement.textContent = date;
 }
 
+let tickTimer = null;
+
+function stopTicking() {
+  if (tickTimer === null) return;
+  clearTimeout(tickTimer);
+  tickTimer = null;
+}
+
+// One self-realigning timer instead of a 1s interval: the next tick is always
+// scheduled relative to the current time, so the clock never drifts. Ticks
+// that land while the page is hidden are skipped (nothing to repaint); the
+// clock catches up on visibilitychange below.
+function startTicking() {
+  stopTicking();
+
+  const delay = MINUTE_MS - (Date.now() % MINUTE_MS) + TICK_BUFFER_MS;
+  tickTimer = setTimeout(() => {
+    tickTimer = null;
+    if (!document.hidden) updateClock();
+    startTicking();
+  }, delay);
+}
+
 export function getTimeFormat() {
   return timeFormat;
 }
@@ -64,6 +105,7 @@ export function setTimeFormat(format) {
 
   timeFormat = format;
   localStorage.setItem(TIME_FORMAT_KEY, format);
+  buildFormatters();
   updateClock();
 }
 
@@ -71,14 +113,23 @@ export function resetTimeFormat() {
   localStorage.removeItem(TIME_FORMAT_KEY);
 
   timeFormat = DEFAULT_TIME_FORMAT;
+  buildFormatters();
   updateClock();
 }
 
 export function initClock() {
+  buildFormatters();
   updateClock();
-  setInterval(updateClock, 1000);
-  
+  startTicking();
+
   onLanguageChange(() => {
+    buildFormatters();
     updateClock();
+  });
+
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible") {
+      updateClock();
+    }
   });
 }

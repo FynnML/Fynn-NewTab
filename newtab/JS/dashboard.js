@@ -8,6 +8,7 @@ import {
   getCustomEngineUrl,
   setCustomEngineUrl,
   resetSearchSettings,
+  clearRecentSearches,
 } from "./search.js";
 import { showConfirmDialog } from "./dialog.js";
 import { t, onLanguageChange, getLanguage, setLanguage, resetLanguage } from "./i18n/i18n.js";
@@ -50,6 +51,18 @@ function setDashboardOpen(isOpen) {
   }
 }
 
+// Repositions the sliding indicator under the active tab. Must run whenever
+// the tabs are re-laid out: resize, language change (labels get longer or
+// shorter), etc.
+function syncTabIndicator() {
+  const currentActiveTab = document.querySelector(".dashboard-tab.active");
+  const tabsContainer = document.querySelector(".dashboard-tabs");
+  if (!currentActiveTab || !tabsContainer) return;
+
+  tabsContainer.style.setProperty("--tab-left", currentActiveTab.offsetLeft + "px");
+  tabsContainer.style.setProperty("--tab-width", currentActiveTab.offsetWidth + "px");
+}
+
 function selectTab(tab) {
   if (!tab) return;
   const target = tab.dataset.tab;
@@ -71,11 +84,7 @@ function selectTab(tab) {
     targetContent.classList.add("active");
   }
 
-  const tabsContainer = document.querySelector(".dashboard-tabs");
-  if (tabsContainer) {
-    tabsContainer.style.setProperty("--tab-left", tab.offsetLeft + "px");
-    tabsContainer.style.setProperty("--tab-width", tab.offsetWidth + "px");
-  }
+  syncTabIndicator();
 }
 
 function initPanel() {
@@ -112,16 +121,7 @@ function initPanel() {
     requestAnimationFrame(() => selectTab(activeTab));
   }
 
-  window.addEventListener("resize", () => {
-    const currentActiveTab = document.querySelector(".dashboard-tab.active");
-    if (currentActiveTab) {
-      const tabsContainer = document.querySelector(".dashboard-tabs");
-      if (tabsContainer) {
-        tabsContainer.style.setProperty("--tab-left", currentActiveTab.offsetLeft + "px");
-        tabsContainer.style.setProperty("--tab-width", currentActiveTab.offsetWidth + "px");
-      }
-    }
-  });
+  window.addEventListener("resize", syncTabIndicator);
 
   onLanguageChange(() => {
     if (!dashboard || !dashboardToggle) return;
@@ -129,6 +129,10 @@ function initPanel() {
       "aria-label",
       dashboard.classList.contains("open") ? t("dashboard.close") : t("dashboard.open")
     );
+
+    // Tab labels change with the language, so the indicator has to be
+    // re-measured once the new text has been applied.
+    requestAnimationFrame(syncTabIndicator);
   });
 
   document.addEventListener("click", (event) => {
@@ -273,6 +277,9 @@ function initSettings() {
   const exportDataButton = document.querySelector("#exportDataButton");
   const importDataButton = document.querySelector("#importDataButton");
   const importDataInput = document.querySelector("#importDataInput");
+  const clearSearchHistoryButton = document.querySelector(
+    "#clearSearchHistoryButton",
+  );
 
   const syncCustomEngineVisibility = () => {
     if (customEngineUrlItem && searchEngineSetting) {
@@ -333,6 +340,17 @@ function initSettings() {
     resetTheme();
 
     syncControls();
+  });
+
+  clearSearchHistoryButton?.addEventListener("click", async () => {
+    const confirmed = await showConfirmDialog(
+      t("settings.search.clearHistoryConfirmation"),
+      t("settings.search.clearHistoryTitle"),
+      t("settings.search.clearHistoryButton"),
+    );
+
+    if (!confirmed) return;
+    clearRecentSearches();
   });
 
   exportDataButton?.addEventListener("click", () => {
