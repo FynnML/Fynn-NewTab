@@ -30,7 +30,12 @@ const buildCustomUrl = (query) => {
   if (!PROTOCOL_PATTERN.test(template)) {
     template = DEFAULT_CUSTOM_ENGINE_URL;
   }
-  return template.includes("%s") ? template.replace("%s", query) : `${template}${query}`;
+  // replaceAll: templates may contain %s more than once (e.g. a referer
+  // parameter repeating the query). A plain replace() only rewrote the first
+  // occurrence and left stray %s in the URL. `query` is already
+  // encodeURIComponent-ed, so it cannot contain "$" patterns that would be
+  // interpreted in the replacement string.
+  return template.includes("%s") ? template.replaceAll("%s", query) : `${template}${query}`;
 };
 
 const ENGINES = {
@@ -213,8 +218,6 @@ function initTypeToSearch() {
   document.addEventListener("keydown", (event) => {
     if (event.ctrlKey || event.metaKey || event.altKey) return;
 
-    if (event.key.length !== 1) return;
-
     const active = document.activeElement;
     const isEditable =
       active?.tagName === "INPUT" ||
@@ -225,6 +228,16 @@ function initTypeToSearch() {
     if (isEditable) return;
     if (dashboard?.classList.contains("open")) return;
     if (document.querySelector(".custom-dialog-overlay.active")) return;
+
+    // While an IME is composing (Vietnamese Telex, Chinese Pinyin, ...),
+    // keydown reports "Process" (or "Unidentified"), and event.isComposing may be true.
+    // Allow single printable characters OR IME composition events to trigger focus.
+    const isImeKey =
+      event.isComposing ||
+      event.key === "Process" ||
+      event.key === "Unidentified";
+
+    if (event.key.length !== 1 && !isImeKey) return;
 
     searchInput.focus();
   });

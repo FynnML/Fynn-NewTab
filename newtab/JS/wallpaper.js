@@ -1,10 +1,23 @@
 import { STORES, dbGetAll, dbPut, dbDelete } from "./db.js";
+import { get as getSetting } from "./settings.js";
 import { showConfirmDialog, showAlertDialog, showToast } from "./dialog.js";
 import { t, onLanguageChange } from "./i18n/i18n.js";
 
-const DEFAULT_WALLPAPER_SRC = "../assets/wallpapers/default.mp4";
+const DEFAULT_WALLPAPER_MP4 = "../assets/wallpapers/default.mp4";
+const DEFAULT_WALLPAPER_WEBM = "../assets/wallpapers/default.webm";
 const BUILTIN_WALLPAPER_ID = "__builtin-default__";
 const SCHEDULE_INTERVAL_MS = 60 * 1000;
+
+/**
+ * Returns the best default wallpaper source supported by the current browser.
+ * Uses MP4 (H.264) when supported; falls back to WebM (VP9) on systems without
+ * proprietary H.264 codecs (e.g. Linux distributions without restricted codecs).
+ */
+function getDefaultWallpaperSrc() {
+  const probe = backgroundVideo || document.createElement("video");
+  const canPlayMp4 = probe?.canPlayType?.('video/mp4; codecs="avc1.42E01E"') !== "";
+  return canPlayMp4 ? DEFAULT_WALLPAPER_MP4 : DEFAULT_WALLPAPER_WEBM;
+}
 
 const WALLPAPER_MODES = {
   DEFAULT: "default",
@@ -81,6 +94,12 @@ let wallpaperFallbackNoticeShown = false;
 const saveWallpaper = (wallpaper) => dbPut(STORES.wallpapers, wallpaper);
 const getWallpapers = () => dbGetAll(STORES.wallpapers);
 const deleteWallpaper = (id) => dbDelete(STORES.wallpapers, id);
+
+// When the background source is "gradient", the gradient layer (rendered by
+// background.js) owns the screen and every media path below is bypassed.
+function backgroundSourceIsGradient() {
+  return getSetting("background.source") === "gradient";
+}
 
 function getWallpaperMode(wallpaper) {
   if (wallpaper.mode && VALID_WALLPAPER_MODES.includes(wallpaper.mode)) {
@@ -329,6 +348,38 @@ function extractImageThumbnail(file) {
   });
 }
 
+/**
+ * Resolves the MIME type of a file or wallpaper. Some OS/browser combinations
+ * (e.g. Linux/Windows for .mkv, .mov, .webm, or .avif) report an empty file.type;
+ * this falls back to inspecting the file extension before rejecting.
+ */
+function resolveFileType(file) {
+  if (file?.type) return file.type;
+  const name = file?.name || "";
+  const dotIndex = name.lastIndexOf(".");
+  if (dotIndex < 0) return "";
+  const ext = name.slice(dotIndex).toLowerCase();
+  const videoExts = {
+    ".mp4": "video/mp4",
+    ".webm": "video/webm",
+    ".mov": "video/quicktime",
+    ".mkv": "video/x-matroska",
+    ".ogg": "video/ogg",
+    ".ogv": "video/ogg",
+  };
+  const imageExts = {
+    ".jpg": "image/jpeg",
+    ".jpeg": "image/jpeg",
+    ".png": "image/png",
+    ".webp": "image/webp",
+    ".gif": "image/gif",
+    ".avif": "image/avif",
+    ".bmp": "image/bmp",
+    ".svg": "image/svg+xml",
+  };
+  return videoExts[ext] || imageExts[ext] || "";
+}
+
 async function handleWallpaperUpload(event) {
   try {
     const file = event.target.files[0];
@@ -343,7 +394,9 @@ async function handleWallpaperUpload(event) {
       return;
     }
 
-    if (!file.type.startsWith("video/") && !file.type.startsWith("image/")) {
+    const resolvedType = resolveFileType(file);
+
+    if (!resolvedType.startsWith("video/") && !resolvedType.startsWith("image/")) {
       await showAlertDialog(
         t("wallpapers.errors.invalidFileType"),
         t("wallpapers.dialogs.invalidFileTypeTitle"),
@@ -363,7 +416,7 @@ async function handleWallpaperUpload(event) {
     }
 
     try {
-      if (file.type.startsWith("video/")) {
+      if (resolvedType.startsWith("video/")) {
         await validateVideoFile(file);
       } else {
         await validateImageFile(file);
@@ -380,7 +433,7 @@ async function handleWallpaperUpload(event) {
 
     let thumbnailBlob = null;
 
-    if (file.type.startsWith("video/")) {
+    if (resolvedType.startsWith("video/")) {
       thumbnailBlob = await extractVideoThumbnail(file);
     } else {
       thumbnailBlob = await extractImageThumbnail(file);
@@ -400,7 +453,7 @@ async function handleWallpaperUpload(event) {
     const wallpaper = {
       id: crypto.randomUUID(),
       name: file.name,
-      type: file.type,
+      type: resolvedType,
       size: file.size,
       blob: file,
       thumbnailBlob,
@@ -458,6 +511,8 @@ async function renderWallpapers(wallpapers) {
     const currentMode = getWallpaperMode(wallpaper);
     const isPrimary = currentMode === WALLPAPER_MODES.PRIMARY;
     const isActive = wallpaper.id === activeWallpaperId;
+    const isBroken = failedWallpaperIds.has(wallpaper.id);
+    const wallpaperType = resolveFileType(wallpaper);
 
     const url = URL.createObjectURL(wallpaper.blob);
     wallpaperPreviewUrls.add(url);
@@ -473,7 +528,7 @@ async function renderWallpapers(wallpapers) {
     }
 
     const preview =
-      wallpaper.type.startsWith("video/") && !wallpaper.thumbnailBlob
+      wallpaperType.startsWith("video/") && !wallpaper.thumbnailBlob
         ? `<video src="${url}" muted loop playsinline></video>`
         : `<img src="${previewUrl}" alt="">`;
 
@@ -486,6 +541,7 @@ async function renderWallpapers(wallpapers) {
       <div class="wallpaper-preview">
         ${preview}
         ${isActive ? `<span class="wallpaper-active-badge">${t("wallpapers.active")}</span>` : ""}
+        ${isBroken ? `<span class="wallpaper-broken-badge" title="${escapeHtml(t("wallpapers.errors.loadFailed"))}">⚠️ ${t("common.error")}</span>` : ""}
       </div>
 
       <div class="wallpaper-info">
@@ -498,13 +554,13 @@ async function renderWallpapers(wallpapers) {
           ${t("wallpapers.modes." + currentMode).toUpperCase()}
         </span>
 
-        <select class="wallpaper-mode-select" data-mode="${wallpaper.id}" aria-label="${escapeHtml(t("accessibility.wallpaperModeFor", { name: wallpaper.name }))}">
+        <select class="wallpaper-mode-select" data-mode="${escapeHtml(wallpaper.id)}" aria-label="${escapeHtml(t("accessibility.wallpaperModeFor", { name: wallpaper.name }))}">
           ${modeOptions}
         </select>
       </div>
 
       <div class="wallpaper-actions">
-        <button class="wallpaper-action delete-button" data-delete="${wallpaper.id}" aria-label="${escapeHtml(t("accessibility.deleteWallpaperFor", { name: wallpaper.name }))}">
+        <button class="wallpaper-action delete-button" data-delete="${escapeHtml(wallpaper.id)}" aria-label="${escapeHtml(t("accessibility.deleteWallpaperFor", { name: wallpaper.name }))}">
           ${t("common.delete")}
         </button>
       </div>
@@ -542,6 +598,26 @@ function attachWallpaperActions() {
         console.error("Wallpaper deletion failed:", error);
       });
     });
+  });
+
+  // Clicking on a broken card's preview allows the user to retry playback
+  wallpaperList.querySelectorAll(".wallpaper-card").forEach((card) => {
+    const deleteBtn = card.querySelector("[data-delete]");
+    const id = deleteBtn?.dataset.delete;
+    if (!id || !failedWallpaperIds.has(id)) return;
+
+    const previewEl = card.querySelector(".wallpaper-preview");
+    if (previewEl) {
+      previewEl.style.cursor = "pointer";
+      previewEl.title = t("wallpapers.errors.loadFailed") + " (Click to retry)";
+      previewEl.addEventListener("click", async () => {
+        failedWallpaperIds.delete(id);
+        persistBrokenWallpaperIds();
+        const wallpapers = await getWallpapers();
+        await applyActiveWallpaper(wallpapers);
+        await renderWallpapers(wallpapers);
+      });
+    }
   });
 }
 
@@ -589,8 +665,14 @@ async function applyActiveWallpaper(wallpapers) {
   );
   if (token !== applyToken) return;
 
-  const activeWallpaper = getActiveWallpaper(list);
-  const nextWallpaperId = activeWallpaper?.id || BUILTIN_WALLPAPER_ID;
+  const gradientMode = backgroundSourceIsGradient();
+  const activeWallpaper = gradientMode ? null : getActiveWallpaper(list);
+  // In gradient mode the id resolves to null (media must re-apply when the
+  // user switches back); media mode keeps the BUILTIN sentinel so the default
+  // video is applied even when no user wallpaper exists yet.
+  const nextWallpaperId = gradientMode
+    ? null
+    : activeWallpaper?.id || BUILTIN_WALLPAPER_ID;
 
   if (nextWallpaperId === activeWallpaperId) {
     updateVideoPlayback();
@@ -600,7 +682,10 @@ async function applyActiveWallpaper(wallpapers) {
   activeWallpaperId = nextWallpaperId;
 
   wallpaperList.querySelectorAll(".wallpaper-card").forEach((card) => {
-    const isNowActive = card.querySelector(`[data-delete="${nextWallpaperId}"]`) !== null;
+    const isNowActive = Boolean(
+      nextWallpaperId &&
+        card.querySelector(`[data-delete="${CSS.escape(nextWallpaperId)}"]`),
+    );
     card.classList.toggle("active-wallpaper", isNowActive);
     const existingBadge = card.querySelector(".wallpaper-active-badge");
     if (isNowActive && !existingBadge) {
@@ -618,8 +703,11 @@ async function applyActiveWallpaper(wallpapers) {
 
   clearBackgroundMedia();
 
+  // Gradient mode: media stays off; the gradient layer is already on screen.
+  if (backgroundSourceIsGradient()) return;
+
   if (!activeWallpaper) {
-    backgroundVideo.src = DEFAULT_WALLPAPER_SRC;
+    backgroundVideo.src = getDefaultWallpaperSrc();
     backgroundVideo.classList.add("active");
     updateVideoPlayback();
     return;
@@ -627,7 +715,7 @@ async function applyActiveWallpaper(wallpapers) {
 
   currentWallpaperUrl = URL.createObjectURL(activeWallpaper.blob);
 
-  if (activeWallpaper.type.startsWith("video/")) {
+  if (resolveFileType(activeWallpaper).startsWith("video/")) {
     backgroundVideo.src = currentWallpaperUrl;
     backgroundVideo.classList.add("active");
     updateVideoPlayback();
@@ -648,6 +736,18 @@ async function handleBackgroundMediaError(mediaElement, mediaKind) {
       "Built-in wallpaper failed to load:",
       mediaElement.error ?? null,
     );
+
+    // If MP4 failed at runtime, try WebM fallback once before giving up
+    if (
+      mediaKind === "video" &&
+      !mediaElement.src.endsWith("default.webm")
+    ) {
+      console.warn("Retrying built-in wallpaper with WebM format...");
+      mediaElement.src = DEFAULT_WALLPAPER_WEBM;
+      mediaElement.load();
+      updateVideoPlayback();
+      return;
+    }
 
     mediaElement.classList.remove("active");
     mediaElement.removeAttribute("src");
@@ -699,6 +799,12 @@ async function setWallpaperMode(id, mode) {
   if (!VALID_WALLPAPER_MODES.includes(mode)) {
     console.warn(`Invalid wallpaper mode: ${mode}`);
     return;
+  }
+
+  // Clear broken flag if user actively updates mode, giving it another chance
+  if (failedWallpaperIds.has(id)) {
+    failedWallpaperIds.delete(id);
+    persistBrokenWallpaperIds();
   }
 
   const wallpapers = await getWallpapers();
@@ -808,15 +914,22 @@ export async function initWallpaper() {
 }
 
 // Fallback for when the database cannot be opened: user wallpapers are
-// unavailable, but the page must still show the built-in default wallpaper
-// instead of an empty background.
+// unavailable. The built-in default wallpaper is shown UNLESS the user has
+// chosen the gradient source — the gradient is plain CSS driven by settings,
+// so it works fine without the database.
 export function initDefaultWallpaper() {
   databaseAvailable = false;
   bindWallpaperEvents();
 
+  if (backgroundSourceIsGradient()) {
+    activeWallpaperId = null;
+    renderWallpapers([]);
+    return;
+  }
+
   activeWallpaperId = BUILTIN_WALLPAPER_ID;
 
-  backgroundVideo.src = DEFAULT_WALLPAPER_SRC;
+  backgroundVideo.src = getDefaultWallpaperSrc();
   backgroundVideo.classList.add("active");
   updateVideoPlayback();
 

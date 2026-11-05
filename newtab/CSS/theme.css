@@ -145,7 +145,8 @@ html[data-theme="light"] .wallpaper-mode-select option {
 
 .tp-row {
   display: grid;
-  grid-template-columns: 110px 1fr 40px;
+  /* 3rd column: number input + unit suffix (see addSlider in theme.js). */
+  grid-template-columns: 110px 1fr 58px;
   align-items: center;
   gap: var(--space-sm);
   min-height: 46px;
@@ -153,7 +154,7 @@ html[data-theme="light"] .wallpaper-mode-select option {
   border-radius: var(--radius-md);
   background: var(--surface-glass);
   color: var(--text-secondary);
-  transition: background var(--transition-fast);
+  transition: background var(--transition-fast), opacity var(--transition-fast);
 }
 
 .tp-row:hover {
@@ -172,6 +173,42 @@ html[data-theme="light"] .wallpaper-mode-select option {
 
 .tp-row--stack:hover {
   background: transparent;
+}
+
+/* Toggle rows (strong label + description left, switch right). */
+.tp-row--toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+}
+
+.tp-toggle-text strong {
+  display: block;
+
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.tp-toggle-text .tp-label {
+  color: var(--text-primary);
+}
+
+.tp-toggle-desc {
+  display: block;
+
+  color: var(--text-muted);
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+/* Sliders dim + disable while the accent follows the gradient. */
+.tp-row--disabled {
+  opacity: 0.45;
+}
+
+.tp-row--disabled .tp-range {
+  pointer-events: none;
 }
 
 .tp-desc {
@@ -196,6 +233,54 @@ html[data-theme="light"] .wallpaper-mode-select option {
   color: var(--text-secondary);
   text-align: right;
   min-width: 36px;
+}
+
+/* Number input synced with the range slider (exact values). */
+.tp-number-wrap {
+  display: flex;
+  align-items: baseline;
+  gap: 2px;
+  justify-content: flex-end;
+}
+
+.tp-number {
+  width: 40px;
+  padding: 3px 4px;
+
+  border: 1px solid var(--glass-border-soft);
+  border-radius: var(--radius-sm);
+
+  background: var(--surface-glass);
+  color: var(--text-primary);
+
+  font-size: 11px;
+  font-family: inherit;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+
+.tp-number::-webkit-outer-spin-button,
+.tp-number::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.tp-number:focus {
+  outline: none;
+  border-color: var(--accent-border);
+}
+
+.tp-number:disabled {
+  opacity: 0.5;
+}
+
+.tp-number-unit {
+  color: var(--text-dim);
+  font-size: 10px;
+  user-select: none;
 }
 
 .tp-range {
@@ -308,6 +393,12 @@ html[data-theme="light"] .wallpaper-mode-select option {
 .tp-preset[aria-pressed="true"] {
   border-color: var(--accent);
   box-shadow: 0 0 0 2px var(--accent-subtle);
+}
+
+/* Keep the preset swatches full-strength even while the sliders are dimmed,
+   because clicking one switches the accent back to manual. */
+.tp-presets--active .tp-preset {
+  opacity: 1;
 }
 
 .tp-reset {

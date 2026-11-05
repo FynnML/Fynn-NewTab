@@ -87,6 +87,10 @@ export const zh = {
       "青色",
       ],
     },
+    accentSource: {
+      title: "强调色跟随渐变",
+      description: "从背景渐变中推导强调色，而不是使用下方滑块",
+    },
     header: {
       title: "页面顶部",
       clockSize: "时钟大小",
@@ -138,6 +142,64 @@ export const zh = {
     },
   },
 
+  background: {
+    title: "背景",
+
+    source: {
+      title: "背景来源",
+      description: "显示颜色渐变，代替你的媒体壁纸",
+      gradient: "渐变",
+      media: "媒体",
+    },
+
+    presets: "预设",
+    presetNames: [
+      "海洋",
+      "极光",
+      "日落",
+      "紫罗兰",
+      "余烬",
+      "薄荷",
+      "暮色",
+      "糖果",
+    ],
+
+    type: {
+      title: "样式",
+      linear: "线性",
+      radial: "径向",
+      conic: "锥形",
+    },
+
+    angle: "角度",
+    grain: "颗粒",
+
+    stops: "颜色",
+    addStop: "添加颜色",
+    removeStop: "移除最后一个颜色",
+    stopPosition: "位置",
+
+    drift: "漂移效果",
+    driftDescription: "渐变缓慢漂移，让背景更有生气",
+
+    schedule: "按时段变色",
+    scheduleDescription: "黄昏更暖，夜晚更深",
+
+    autoContrast: "自动对比度",
+    autoContrastDescription: "在明亮的渐变上保持文字可读",
+
+    share: {
+      title: "分享代码",
+      placeholder: "粘贴 FYNNBG1 代码",
+      apply: "应用",
+      copy: "复制",
+      applied: "背景已应用。",
+      copied: "分享代码已复制到剪贴板。",
+      copyFailed: "无法复制分享代码。",
+      invalid: "这不是有效的背景分享代码。",
+    },
+  },
+
   widgets: {
     title: "小组件",
 
@@ -184,11 +246,14 @@ export const zh = {
       title: "数据",
 
       export: "导出数据",
-      exportDescription: "将便签和设置保存为 JSON 文件（不包含壁纸）",
+      exportDescription: "将便签和设置保存为 JSON 文件。如需包含壁纸，请开启下方的“包含壁纸”。",
       exportButton: "导出",
 
+      exportIncludeWallpapers: "包含壁纸",
+      exportIncludeWallpapersDescription: "将壁纸文件一并写入备份（文件会显著变大）",
+
       import: "导入数据",
-      importDescription: "从备份文件恢复便签和设置",
+      importDescription: "从备份文件恢复便签、设置和壁纸（如果备份中包含）",
       importButton: "导入",
     },
 
@@ -243,13 +308,28 @@ export const zh = {
     errors: {
       invalidFile: "此文件不是有效的 Fynn New Tab 备份。",
       readFailed: "无法读取数据，请稍后重试。",
+      exportFailed: "无法生成备份文件，请重试。",
+    },
+
+    notices: {
+      wallpapersSkipped:
+        "已跳过 {count} 张超过 {maxSize} MB 限制的壁纸，未写入备份。",
     },
 
     dialogs: {
       importTitle: "导入数据",
       importConfirmation: "此操作将覆盖当前设置，并添加此文件中的便签。是否继续？",
+      importConfirmationWallpapers: "文件还包含 {count} 张壁纸，将一并恢复。",
       importSuccessTitle: "导入完成",
-      importSuccess: "数据已恢复，页面即将重新加载。",
+      importSuccessNotes: {
+        other: "已导入 {count} 条便签。",
+      },
+      importSuccessRenamed:
+        "其中 {count} 条便签 ID 重复，已作为新副本导入，未覆盖现有便签。",
+      importSuccessWallpapers: "已恢复 {count} 张壁纸。",
+      importWallpapersSkipped:
+        "文件中 {count} 张壁纸无效，已跳过。",
+      importSuccess: "关闭此对话框后页面将重新加载。",
     },
   },
 

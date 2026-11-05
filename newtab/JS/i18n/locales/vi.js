@@ -89,6 +89,11 @@ export const vi = {
       "Xanh ngọc",
       ],
     },
+    accentSource: {
+      title: "Màu nhấn theo gradient",
+      description:
+        "Suy ra màu nhấn từ gradient nền thay vì dùng các thanh kéo phía dưới",
+    },
     header: {
       title: "Phần đầu trang",
       clockSize: "Cỡ đồng hồ",
@@ -143,6 +148,64 @@ export const vi = {
     },
   },
 
+  background: {
+    title: "Nền",
+
+    source: {
+      title: "Nguồn nền",
+      description: "Hiện gradient màu thay cho hình nền của bạn",
+      gradient: "Gradient",
+      media: "Hình nền",
+    },
+
+    presets: "Mẫu có sẵn",
+    presetNames: [
+      "Đại dương",
+      "Cực quang",
+      "Hoàng hôn",
+      "Tím than",
+      "Lửa hồng",
+      "Bạc hà",
+      "Chạng vạng",
+      "Kẹo ngọt",
+    ],
+
+    type: {
+      title: "Kiểu",
+      linear: "Tuyến tính",
+      radial: "Tròn tâm",
+      conic: "Nón",
+    },
+
+    angle: "Góc",
+    grain: "Hạt nhiễu",
+
+    stops: "Màu sắc",
+    addStop: "Thêm màu",
+    removeStop: "Bớt màu cuối",
+    stopPosition: "Vị trí",
+
+    drift: "Hiệu ứng trôi",
+    driftDescription: "Gradient trôi chậm rãi tạo cảm giác nền sống động",
+
+    schedule: "Màu theo giờ trong ngày",
+    scheduleDescription: "Ấm hơn lúc chiều tà, tối hơn về đêm",
+
+    autoContrast: "Tự động tương phản",
+    autoContrastDescription: "Giữ chữ luôn đọc được trên nền gradient sáng",
+
+    share: {
+      title: "Mã chia sẻ",
+      placeholder: "Dán mã FYNNBG1 vào đây",
+      apply: "Áp dụng",
+      copy: "Sao chép",
+      applied: "Đã áp dụng nền.",
+      copied: "Đã sao chép mã chia sẻ.",
+      copyFailed: "Không thể sao chép mã chia sẻ.",
+      invalid: "Mã này không phải mã chia sẻ nền hợp lệ.",
+    },
+  },
+
   widgets: {
     title: "Tiện ích",
 
@@ -192,11 +255,16 @@ export const vi = {
 
       export: "Xuất dữ liệu",
       exportDescription:
-        "Lưu ghi chú và cài đặt của bạn thành một file JSON (không bao gồm hình nền)",
+        "Lưu ghi chú và cài đặt của bạn thành một file JSON. Bật “Bao gồm hình nền” bên dưới nếu muốn kèm cả hình nền.",
       exportButton: "Xuất",
 
+      exportIncludeWallpapers: "Bao gồm hình nền",
+      exportIncludeWallpapersDescription:
+        "Kèm các file hình nền vào bản sao lưu (file sẽ lớn hơn)",
+
       import: "Nhập dữ liệu",
-      importDescription: "Khôi phục ghi chú và cài đặt từ một file sao lưu",
+      importDescription:
+        "Khôi phục ghi chú, cài đặt và hình nền (nếu file có chứa) từ một file sao lưu",
       importButton: "Nhập",
     },
 
@@ -252,14 +320,31 @@ export const vi = {
     errors: {
       invalidFile: "File này không phải bản sao lưu hợp lệ của Fynn New Tab.",
       readFailed: "Không thể đọc dữ liệu. Vui lòng thử lại sau ít phút.",
+      exportFailed: "Không thể tạo file sao lưu. Vui lòng thử lại.",
+    },
+
+    notices: {
+      wallpapersSkipped:
+        "Đã bỏ qua {count} hình nền vượt quá {maxSize} MB (mỗi file) khỏi bản sao lưu.",
     },
 
     dialogs: {
       importTitle: "Nhập dữ liệu",
       importConfirmation:
         "Thao tác này sẽ ghi đè cài đặt hiện tại và thêm các ghi chú từ file này. Tiếp tục?",
+      importConfirmationWallpapers:
+        "File còn chứa {count} hình nền, chúng cũng sẽ được khôi phục.",
       importSuccessTitle: "Nhập dữ liệu thành công",
-      importSuccess: "Dữ liệu của bạn đã được khôi phục. Trang sẽ tải lại.",
+      importSuccessNotes: {
+        one: "Đã nhập {count} ghi chú.",
+        other: "Đã nhập {count} ghi chú.",
+      },
+      importSuccessRenamed:
+        "{count} ghi chú trùng ID nên đã được thêm thành bản sao mới, không ghi đè.",
+      importSuccessWallpapers: "Đã khôi phục {count} hình nền.",
+      importWallpapersSkipped:
+        "{count} hình nền trong file không hợp lệ nên đã bị bỏ qua.",
+      importSuccess: "Trang sẽ tải lại ngay sau khi bạn đóng hộp thoại này.",
     },
   },
 

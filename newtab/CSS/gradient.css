@@ -1,0 +1,300 @@
+/* ---------------------------------------------------------------------------
+   Gradient background feature (JS/background.js + settings background.*).
+   The gradient layer sits next to the video/image layers, below .overlay.
+   Visible only when html[data-bg-source="gradient"].
+--------------------------------------------------------------------------- */
+
+.background-gradient {
+  position: absolute;
+  inset: 0;
+
+  z-index: 0;
+
+  display: none;
+  opacity: 0;
+
+  /* --bg-gradient is written by background.js; this fallback keeps the page
+     presentable before the module renders. */
+  background: var(--bg-gradient, linear-gradient(135deg, #1e3a8a, #db2777));
+
+  pointer-events: none;
+  will-change: transform;
+
+  transition: opacity 0.4s var(--ease);
+}
+
+/* Film-grain overlay: a small tiling SVG noise texture whose opacity follows
+   the background.grain setting (0-100 -> 0-0.5). */
+.background-grain {
+  position: absolute;
+  inset: 0;
+
+  z-index: 0;
+
+  display: none;
+
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.55'/%3E%3C/svg%3E");
+  background-size: 160px 160px;
+
+  mix-blend-mode: overlay;
+  opacity: calc(var(--bg-grain, 0) * 0.5);
+
+  pointer-events: none;
+}
+
+html[data-bg-source="gradient"] .background-gradient {
+  display: block;
+  opacity: 1;
+}
+
+html[data-bg-source="gradient"] .background-grain {
+  display: block;
+}
+
+/* Safety net: in gradient mode the media layers must never paint, even if a
+   stale src was set before the switch. */
+html[data-bg-source="gradient"] .background-video,
+html[data-bg-source="gradient"] .background-image {
+  display: none !important;
+}
+
+/* Drift: a slow pan/zoom loop for a "living" gradient. */
+html[data-bg-source="gradient"][data-bg-drift="on"] .background-gradient {
+  animation: bg-gradient-drift 26s var(--ease) infinite alternate;
+}
+
+@keyframes bg-gradient-drift {
+  from {
+    transform: scale(1.06) translate3d(-1.2%, -0.8%, 0);
+  }
+  to {
+    transform: scale(1.12) translate3d(1.2%, 0.8%, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html[data-bg-source="gradient"][data-bg-drift="on"] .background-gradient {
+    animation: none;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Overlay handling
+
+   The cinematic overlay darkens the bottom to 0.6 for video wallpapers —
+   that would muddy a bright user gradient. In gradient mode the curve is
+   gentler and is scaled by --gradient-dim (auto contrast, computed by
+   background.js from the stops' luminance).
+--------------------------------------------------------------------------- */
+
+html[data-bg-source="gradient"] .overlay {
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, calc(0.1 * var(--overlay-strength) * var(--gradient-dim, 1))) 0%,
+    rgba(0, 0, 0, calc(0.07 * var(--overlay-strength) * var(--gradient-dim, 1))) 35%,
+    rgba(0, 0, 0, calc(0.13 * var(--overlay-strength) * var(--gradient-dim, 1))) 65%,
+    rgba(0, 0, 0, calc(0.4 * var(--overlay-strength) * var(--gradient-dim, 1))) 100%
+  );
+}
+
+/* Bright gradients need a touch more separation for the hero text. */
+html[data-bg-tone="light"] .hero {
+  text-shadow: 0 1px 18px rgba(0, 0, 0, 0.5);
+}
+
+/* ---------------------------------------------------------------------------
+   Background editor (inside the Wallpapers tab)
+--------------------------------------------------------------------------- */
+
+.background-editor {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+
+  padding-top: var(--space-sm);
+}
+
+.bg-editor-block {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.bg-editor-label {
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+}
+
+.bg-presets {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.bg-preset {
+  height: 34px;
+
+  border: 1px solid var(--glass-border-soft);
+  border-radius: var(--radius-sm);
+
+  background: var(--swatch);
+
+  cursor: pointer;
+
+  transition:
+    transform var(--transition-fast),
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast);
+}
+
+.bg-preset:hover {
+  transform: scale(1.04);
+  border-color: var(--glass-border);
+}
+
+.bg-preset:focus-visible {
+  outline: 2px solid var(--accent-border);
+  outline-offset: 2px;
+}
+
+.bg-preset[aria-pressed="true"] {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-subtle);
+}
+
+.bg-source-toggle {
+  max-width: 200px;
+}
+
+.bg-row {
+  display: grid;
+  grid-template-columns: 92px 1fr 56px;
+  align-items: center;
+  gap: 8px;
+  min-height: 36px;
+}
+
+.bg-stops {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.bg-stop-row {
+  display: grid;
+  grid-template-columns: 40px 1fr 28px;
+  align-items: center;
+  gap: 8px;
+}
+
+.bg-stop-color {
+  width: 100%;
+  height: 30px;
+  padding: 2px;
+
+  border: 1px solid var(--glass-border-soft);
+  border-radius: var(--radius-sm);
+
+  background: var(--surface-glass);
+
+  cursor: pointer;
+}
+
+input[type="color"]::-webkit-color-swatch-wrapper {
+  padding: 1px;
+}
+
+input[type="color"]::-webkit-color-swatch {
+  border: none;
+  border-radius: 4px;
+}
+
+.bg-stop-remove {
+  width: 28px;
+  height: 28px;
+
+  border: 1px solid var(--glass-border-soft);
+  border-radius: var(--radius-sm);
+
+  background: var(--surface-glass);
+  color: var(--color-danger);
+
+  font-size: 15px;
+  line-height: 1;
+
+  cursor: pointer;
+
+  transition:
+    background var(--transition-fast),
+    color var(--transition-fast);
+}
+
+.bg-stop-remove:hover {
+  background: var(--color-danger-subtle);
+}
+
+.bg-stop-remove:focus-visible {
+  outline: 2px solid var(--accent-border);
+  outline-offset: 2px;
+}
+
+.bg-stop-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.bg-stop-actions .setting-action-button {
+  flex: 1;
+}
+
+.bg-stop-actions .setting-action-button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.bg-switch-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+
+  min-height: 34px;
+  padding: var(--space-2xs) var(--space-sm);
+
+  border-radius: var(--radius-md);
+  background: var(--surface-glass);
+}
+
+.bg-switch-text strong {
+  display: block;
+
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.bg-switch-text span {
+  color: var(--text-muted);
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.bg-share-row {
+  display: flex;
+  gap: 6px;
+}
+
+.bg-share-row .setting-text-input {
+  flex: 1;
+  min-width: 0;
+
+  font-family: ui-monospace, "Cascadia Mono", "Source Code Pro", Menlo, monospace;
+  font-size: 11px;
+}
+
+.bg-share-row .setting-action-button {
+  flex-shrink: 0;
+}

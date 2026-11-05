@@ -621,6 +621,10 @@
   border-color: var(--color-danger-border);
 }
 
+.toast-warning {
+  border-color: var(--accent-border);
+}
+
 @media (max-width: 640px) {
   .toast-container {
     bottom: 20px;

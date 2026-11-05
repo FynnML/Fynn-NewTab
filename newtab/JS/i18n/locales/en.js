@@ -89,6 +89,11 @@ export const en = {
       "Teal",
       ],
     },
+    accentSource: {
+      title: "Accent follows gradient",
+      description:
+        "Derive the accent color from your background gradient instead of the sliders",
+    },
     header: {
       title: "Header",
       clockSize: "Clock size",
@@ -142,6 +147,64 @@ export const en = {
     },
   },
 
+  background: {
+    title: "Background",
+
+    source: {
+      title: "Background source",
+      description: "Show a color gradient instead of your media wallpapers",
+      gradient: "Gradient",
+      media: "Media",
+    },
+
+    presets: "Presets",
+    presetNames: [
+      "Ocean",
+      "Aurora",
+      "Sunset",
+      "Violet",
+      "Ember",
+      "Mint",
+      "Dusk",
+      "Candy",
+    ],
+
+    type: {
+      title: "Style",
+      linear: "Linear",
+      radial: "Radial",
+      conic: "Conic",
+    },
+
+    angle: "Angle",
+    grain: "Grain",
+
+    stops: "Colors",
+    addStop: "Add color",
+    removeStop: "Remove last color",
+    stopPosition: "Position",
+
+    drift: "Drift effect",
+    driftDescription: "Slowly pans the gradient for a living background",
+
+    schedule: "Time-of-day colors",
+    scheduleDescription: "Warmer at dusk, darker at night",
+
+    autoContrast: "Auto contrast",
+    autoContrastDescription: "Keeps text readable on bright gradients",
+
+    share: {
+      title: "Share code",
+      placeholder: "Paste a FYNNBG1 code",
+      apply: "Apply",
+      copy: "Copy",
+      applied: "Background applied.",
+      copied: "Share code copied to clipboard.",
+      copyFailed: "Couldn't copy the share code.",
+      invalid: "This doesn't look like a valid background share code.",
+    },
+  },
+
   widgets: {
     title: "Widgets",
 
@@ -189,11 +252,16 @@ export const en = {
 
       export: "Export data",
       exportDescription:
-        "Save your notes and settings as a JSON file (wallpapers are not included)",
+        "Save your notes and settings as a JSON file. Turn on “Include wallpapers” below to add them to the backup.",
       exportButton: "Export",
 
+      exportIncludeWallpapers: "Include wallpapers",
+      exportIncludeWallpapersDescription:
+        "Adds your wallpaper files to the backup (larger file)",
+
       import: "Import data",
-      importDescription: "Restore notes and settings from a backup file",
+      importDescription:
+        "Restore notes, settings and wallpapers (if the backup contains them) from a backup file",
       importButton: "Import",
     },
 
@@ -248,14 +316,40 @@ export const en = {
     errors: {
       invalidFile: "This file is not a valid Fynn New Tab backup.",
       readFailed: "Couldn't read your data. Please try again in a moment.",
+      exportFailed: "Couldn't create the backup file. Please try again.",
+    },
+
+    notices: {
+      wallpapersSkipped: {
+        one: "1 wallpaper larger than {maxSize} MB was left out of the backup.",
+        other: "{count} wallpapers larger than {maxSize} MB were left out of the backup.",
+      },
     },
 
     dialogs: {
       importTitle: "Import data",
       importConfirmation:
         "This will overwrite your current settings and add the notes from this file. Continue?",
+      importConfirmationWallpapers:
+        "The file also contains {count} wallpaper(s), which will be restored.",
       importSuccessTitle: "Import complete",
-      importSuccess: "Your data has been restored. The page will now reload.",
+      importSuccessNotes: {
+        one: "{count} note imported.",
+        other: "{count} notes imported.",
+      },
+      importSuccessRenamed: {
+        one: "1 of them had a duplicate ID and was imported as a new copy instead of overwriting.",
+        other: "{count} of them had duplicate IDs and were imported as new copies instead of overwriting.",
+      },
+      importSuccessWallpapers: {
+        one: "{count} wallpaper restored.",
+        other: "{count} wallpapers restored.",
+      },
+      importWallpapersSkipped: {
+        one: "{count} wallpaper in the file was invalid and was skipped.",
+        other: "{count} wallpapers in the file were invalid and were skipped.",
+      },
+      importSuccess: "The page will reload as soon as you close this dialog.",
     },
   },
 

@@ -1,7 +1,15 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" style="background-color: #050505; color-scheme: dark;">
   <head>
     <meta charset="UTF-8" />
+    <meta name="color-scheme" content="dark light" />
+    <style>
+      html,
+      body {
+        background-color: #050505;
+        color-scheme: dark;
+      }
+    </style>
 
     <title data-i18n="app.name">Fynn New Tab</title>
 
@@ -43,6 +51,10 @@
         loop
       ></video>
       <img class="background-image" id="backgroundImage" alt="" />
+      <!-- Gradient background layer (see CSS/gradient.css + JS/background.js);
+           only visible when settings background.source = "gradient". -->
+      <div class="background-gradient" id="backgroundGradient"></div>
+      <div class="background-grain" id="backgroundGrain"></div>
       <div class="background-dim" id="backgroundDim"></div>
       <div class="overlay"></div>
 
@@ -83,6 +95,7 @@
             <input
               type="text"
               id="searchInput"
+              autofocus
               placeholder="Search the Web"
               data-i18n-attr="placeholder:search.placeholder"
               autocomplete="off"
@@ -249,6 +262,105 @@
       <!-- Wallpapers -->
       <section class="dashboard-content active" id="wallpapers" role="tabpanel" aria-labelledby="tab-wallpapers">
         <h2 data-i18n="wallpapers.title">Wallpapers</h2>
+
+        <!-- Gradient background: source toggle, presets, editor, share code.
+             Wired up by JS/background.js. -->
+        <div class="setting-group background-group">
+          <div class="setting-group-title" data-i18n="background.title">Background</div>
+
+          <div class="setting-item">
+            <div>
+              <strong data-i18n="background.source.title">Background source</strong>
+              <span data-i18n="background.source.description">Show a color gradient instead of your wallpapers</span>
+            </div>
+
+            <div
+              class="tp-segmented bg-source-toggle"
+              id="backgroundSourceToggle"
+              role="radiogroup"
+              data-i18n-attr="aria-label:background.source.title"
+            >
+              <button
+                type="button"
+                class="tp-seg"
+                data-source="gradient"
+                role="radio"
+                aria-checked="false"
+                data-i18n="background.source.gradient"
+              >
+                Gradient
+              </button>
+              <button
+                type="button"
+                class="tp-seg"
+                data-source="media"
+                role="radio"
+                aria-checked="true"
+                data-i18n="background.source.media"
+              >
+                Media
+              </button>
+            </div>
+          </div>
+
+          <div class="background-editor" id="backgroundEditor">
+            <div class="bg-editor-block">
+              <span class="bg-editor-label" data-i18n="background.presets">Presets</span>
+              <div
+                class="bg-presets"
+                id="backgroundPresets"
+                role="group"
+                data-i18n-attr="aria-label:background.presets"
+              ></div>
+            </div>
+
+            <div class="bg-editor-block">
+              <span class="bg-editor-label" data-i18n="background.type.title">Style</span>
+              <div
+                class="tp-segmented bg-type-toggle"
+                id="backgroundTypeToggle"
+                role="radiogroup"
+                data-i18n-attr="aria-label:background.type.title"
+              >
+                <button type="button" class="tp-seg" data-type="linear" role="radio" aria-checked="true" data-i18n="background.type.linear">Linear</button>
+                <button type="button" class="tp-seg" data-type="radial" role="radio" aria-checked="false" data-i18n="background.type.radial">Radial</button>
+                <button type="button" class="tp-seg" data-type="conic" role="radio" aria-checked="false" data-i18n="background.type.conic">Conic</button>
+              </div>
+            </div>
+
+            <div class="bg-editor-block" id="backgroundSliders"></div>
+
+            <div class="bg-editor-block">
+              <span class="bg-editor-label" data-i18n="background.stops">Colors</span>
+              <div class="bg-stops" id="backgroundStopList"></div>
+              <div class="bg-stop-actions">
+                <button type="button" class="setting-action-button" id="backgroundAddStop" data-i18n="background.addStop">Add color</button>
+                <button type="button" class="setting-action-button" id="backgroundRemoveStop" data-i18n="background.removeStop">Remove last color</button>
+              </div>
+            </div>
+
+            <div class="bg-editor-block" id="backgroundSwitches"></div>
+
+            <div class="bg-editor-block">
+              <span class="bg-editor-label" data-i18n="background.share.title">Share code</span>
+              <div class="bg-share-row">
+                <input
+                  type="text"
+                  id="backgroundShareInput"
+                  class="setting-text-input"
+                  placeholder="FYNNBG1-…"
+                  spellcheck="false"
+                  autocomplete="off"
+                  aria-label="Background share code"
+                  data-i18n-attr="placeholder:background.share.placeholder;aria-label:background.share.title"
+                />
+                <button type="button" class="setting-action-button" id="backgroundShareApply" data-i18n="background.share.apply">Apply</button>
+                <button type="button" class="setting-action-button" id="backgroundShareCopy" data-i18n="background.share.copy">Copy</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <button
           type="button"
           class="upload-wallpaper"
@@ -472,6 +584,23 @@
             >
               Export
             </button>
+          </div>
+
+          <div class="setting-item">
+            <div>
+              <strong data-i18n="settings.data.exportIncludeWallpapers">Include wallpapers</strong>
+              <span data-i18n="settings.data.exportIncludeWallpapersDescription">Adds your wallpaper files to the backup (larger file)</span>
+            </div>
+
+            <label class="switch">
+              <input
+                type="checkbox"
+                id="exportWallpapersSetting"
+                aria-label="Include wallpapers"
+                data-i18n-attr="aria-label:settings.data.exportIncludeWallpapers"
+              />
+              <span class="slider"></span>
+            </label>
           </div>
 
           <div class="setting-item">

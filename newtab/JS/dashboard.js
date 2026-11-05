@@ -275,6 +275,7 @@ function initSettings() {
   );
   const resetSettingsButton = document.querySelector("#resetSettingsButton");
   const exportDataButton = document.querySelector("#exportDataButton");
+  const exportWallpapersSetting = document.querySelector("#exportWallpapersSetting");
   const importDataButton = document.querySelector("#importDataButton");
   const importDataInput = document.querySelector("#importDataInput");
   const clearSearchHistoryButton = document.querySelector(
@@ -354,7 +355,7 @@ function initSettings() {
   });
 
   exportDataButton?.addEventListener("click", () => {
-    exportData();
+    exportData({ includeWallpapers: exportWallpapersSetting?.checked ?? false });
   });
 
   importDataButton?.addEventListener("click", () => {

@@ -10,6 +10,7 @@ import { showAlertDialog } from "./JS/dialog.js";
 import { t } from "./JS/i18n/i18n.js";
 import { initSettings } from './JS/settings.js';
 import { initThemePanel } from './JS/theme.js';
+import { initBackground } from './JS/background.js';
 
 
 initSettings();
@@ -38,6 +39,10 @@ async function start() {
   await runInit("Theme panel", () =>
     initThemePanel(document.getElementById("themePanel")),
   );
+  // Gradient background: runs before the IndexedDB step on purpose — the
+  // gradient is settings-driven and must also be available when the database
+  // fails (initDefaultWallpaper defers to it).
+  await runInit("Background", initBackground);
 
   let dbReady = false;
   await runInit("IndexedDB", async () => {
